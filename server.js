@@ -700,10 +700,19 @@ function publicState(
       JASLIN_JETTON_MASTER,
 
     minimumWithdraw:
-      MIN_WITHDRAW_JASLIN
+  MIN_WITHDRAW_JASLIN,
 
-  };
-}
+level:
+  Math.min(
+    MAX_LEVEL,
+    Math.max(1, Number(user.level || 1))
+  ),
+
+maxLevel:
+  MAX_LEVEL,
+
+levelPriceUsd:
+  LEVEL_PRICE_USD
 
 
 /* =========================================
