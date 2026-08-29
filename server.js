@@ -909,6 +909,39 @@ app.post(
         claimed,
         "Mining claim"
       );
+      if (user.referred_by) {
+  const referrer = await getUser(user.referred_by);
+
+  if (referrer) {
+    const referralCommission = claimed * 0.10;
+
+    const referrerNewBalance =
+      Number(referrer.balance) + referralCommission;
+
+    const {
+      error: commissionError
+    } = await supabase
+      .from("users")
+      .update({
+        balance: referrerNewBalance
+      })
+      .eq(
+        "telegram_id",
+        String(user.referred_by)
+      );
+
+    if (commissionError) {
+      throw commissionError;
+    }
+
+    await saveTransaction(
+      user.referred_by,
+      "referral_commission",
+      referralCommission,
+      `10% mining commission dari ${req.tgUser.id}`
+    );
+  }
+      }
 
       const updated =
         await getUser(
