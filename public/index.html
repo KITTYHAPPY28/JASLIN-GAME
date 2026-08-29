@@ -1,898 +1,911 @@
-<!doctype html>
-
-<html lang="id">
-
+<!DOCTYPE html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
-<meta charset="UTF-8">
+  <title>JASLIN</title>
 
-<meta
-  name="viewport"
-  content="width=device-width,
-  initial-scale=1,
-  user-scalable=no"
->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-<title>JASLIN Game</title>
-
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-<script src="https://cdn.tailwindcss.com"></script>
-
-<style>
-
-body {
-  background:
-    radial-gradient(
-      circle at top,
-      #252547 0%,
-      #0f0f1a 60%
-    );
-
-  color: white;
-
-  font-family: system-ui, sans-serif;
-
-  user-select: none;
-}
-
-.gold-gradient {
-  background:
-    linear-gradient(
-      135deg,
-      #f39c12,
-      #f1c40f,
-      #e67e22
-    );
-}
-
-.gold-text {
-  background:
-    linear-gradient(
-      135deg,
-      #ffe066,
-      #f39c12
-    );
-
-  -webkit-background-clip: text;
-
-  -webkit-text-fill-color: transparent;
-}
-
-.wheel {
-  transition:
-    transform 4s
-    cubic-bezier(.15,.8,.15,1);
-}
-
-</style>
-
-</head>
-
-<body class="min-h-screen p-4">
-
-<main
-  class="max-w-md mx-auto
-  min-h-[95vh]
-  flex flex-col"
->
-
-<!-- HEADER -->
-
-<header
-  class="
-  flex justify-between items-center
-  bg-gray-900/80
-  p-3
-  rounded-2xl
-  border border-yellow-500/30
-  "
->
-
-<div class="flex items-center gap-2">
-
-<div
-  id="avatar"
-  class="
-  w-10 h-10
-  rounded-full
-  gold-gradient
-  flex items-center
-  justify-center
-  font-bold
-  text-black
-  "
->
-J
-</div>
-
-<div>
-
-<h1
-  id="username"
-  class="text-xs font-bold text-gray-300"
->
-User
-</h1>
-
-<span
-  class="
-  text-[10px]
-  bg-green-500/20
-  text-green-400
-  px-2 py-0.5
-  rounded-full
-  "
->
-PLAYER
-</span>
-
-</div>
-
-</div>
-
-<button
-  id="walletBtn"
-  class="
-  bg-yellow-500
-  text-black
-  font-bold
-  text-xs
-  px-3 py-2
-  rounded-xl
-  "
->
-Wallet
-</button>
-
-</header>
-
-
-<!-- BALANCE -->
-
-<section class="text-center my-5">
-
-<p
-  class="
-  text-xs
-  text-gray-400
-  tracking-widest
-  uppercase
-  "
->
-JASLIN Balance
-</p>
-
-<h2
-  id="balance"
-  class="
-  text-4xl
-  font-extrabold
-  gold-text
-  my-1
-  "
->
-0.0000
-</h2>
-
-<p class="text-xs text-gray-500">
-Confirmed server balance
-</p>
-
-
-<div
-  class="
-  mt-3
-  bg-gray-900/70
-  rounded-xl
-  p-3
-  border border-gray-800
-  "
->
-
-<div class="flex justify-between text-xs">
-
-<span class="text-gray-400">
-Mining pending
-</span>
-
-<b
-  id="mining"
-  class="text-green-400"
->
-+0.0000
-</b>
-
-</div>
-
-
-<div
-  class="
-  flex justify-between
-  text-xs
-  mt-1
-  "
->
-
-<span class="text-gray-400">
-Rate
-</span>
-
-<b id="rate">
-0.0450/min
-</b>
-
-</div>
-
-</div>
-
-</section>
-
-
-<!-- GAME -->
-
-<section
-  class="
-  flex-1
-  flex flex-col
-  items-center
-  justify-center
-  "
->
-
-<div
-  class="
-  relative
-  w-52 h-52
-  my-4
-  flex
-  items-center
-  justify-center
-  "
->
-
-<div
-  id="wheel-disc"
-  class="
-  wheel
-  w-full h-full
-  rounded-full
-  border-4
-  border-yellow-500/50
-  flex
-  items-center
-  justify-center
-  gold-gradient
-  "
->
-
-<div
-  class="
-  w-44 h-44
-  rounded-full
-  bg-gray-950
-  flex flex-col
-  items-center
-  justify-center
-  border-2
-  border-yellow-400/30
-  "
->
-
-<span class="text-3xl">
-🚀
-</span>
-
-<span
-  class="
-  gold-text
-  font-black
-  text-lg
-  mt-1
-  "
->
-JASLIN
-</span>
-
-</div>
-
-</div>
-
-</div>
-
-
-<div
-  class="
-  w-full
-  max-w-xs
-  space-y-2
-  "
->
-
-<button
-  id="claimBtn"
-  class="
-  w-full
-  py-3
-  rounded-xl
-  font-extrabold
-  text-black
-  gold-gradient
-  shadow-lg
-  text-sm
-  "
->
-⚡ CLAIM MINING
-</button>
-
-
-<button
-  id="spinBtn"
-  class="
-  w-full
-  py-3
-  rounded-xl
-  font-bold
-  text-yellow-400
-  bg-gray-900
-  border border-yellow-500/40
-  text-xs
-  "
->
-🎰 DAILY SPIN
-</button>
-
-
-<button
-  id="refBtn"
-  class="
-  w-full
-  py-3
-  rounded-xl
-  font-bold
-  bg-gray-900
-  border border-gray-700
-  text-xs
-  "
->
-👥 INVITE FRIENDS
-</button>
-
-</div>
-
-</section>
-
-
-<!-- NAV -->
-
-<footer
-  class="
-  mt-5
-  bg-gray-900/90
-  border border-gray-800
-  rounded-2xl
-  p-2
-  flex
-  justify-around
-  text-center
-  text-xs
-  text-gray-400
-  "
->
-
-<div class="text-yellow-400 font-bold">
-⛏️
-<br>
-<span class="text-[10px]">
-Mine
-</span>
-</div>
-
-
-<div id="taskBtn">
-📋
-<br>
-<span class="text-[10px]">
-Tasks
-</span>
-</div>
-
-
-<div id="buyBtn">
-🪐
-<br>
-<span class="text-[10px]">
-Buy
-</span>
-</div>
-
-
-<div id="friendBtn">
-👥
-<br>
-<span class="text-[10px]">
-Friends
-</span>
-</div>
-
-</footer>
-
-
-<div
-  id="status"
-  class="
-  text-center
-  text-[11px]
-  text-gray-500
-  mt-3
-  min-h-4
-  "
->
-</div>
-
-</main>
-
-
-<script>
-
-const tg =
-  window.Telegram.WebApp;
-
-tg.ready();
-
-tg.expand();
-
-
-let state = null;
-
-let busy = false;
-
-
-/*
-==================================================
-ELEMENT HELPER
-==================================================
-*/
-
-const $ =
-  id =>
-  document.getElementById(id);
-
-
-/*
-==================================================
-API
-==================================================
-*/
-
-async function api(
-  endpoint,
-  options = {}
-) {
-
-  const response =
-    await fetch(
-      endpoint,
-      {
-
-        ...options,
-
-        headers: {
-
-          "Content-Type":
-            "application/json",
-
-          "X-Telegram-Init-Data":
-            tg.initData || "",
-
-          ...(options.headers || {})
-        }
-      }
-    );
-
-
-  const data =
-    await response
-      .json()
-      .catch(() => ({}));
-
-
-  if (!response.ok) {
-
-    throw new Error(
-      data.error ||
-      "Request gagal"
-    );
-
-  }
-
-
-  return data;
-}
-
-
-/*
-==================================================
-STATUS
-==================================================
-*/
-
-function showStatus(message) {
-
-  $("status").textContent =
-    message || "";
-
-}
-
-
-/*
-==================================================
-RENDER
-==================================================
-*/
-
-function render(data) {
-
-  state = data;
-
-
-  $("username").textContent =
-    data.user.firstName ||
-    data.user.username ||
-    "Player";
-
-
-  $("avatar").textContent =
-    (
-      data.user.firstName ||
-      "J"
-    )
-    .charAt(0)
-    .toUpperCase();
-
-
-  $("balance").textContent =
-    Number(data.balance)
-      .toFixed(4);
-
-
-  $("mining").textContent =
-    "+" +
-    Number(data.mining)
-      .toFixed(4);
-
-
-  $("rate").textContent =
-    Number(data.miningPerMinute)
-      .toFixed(4) +
-    "/min";
-
-
-  $("spinBtn").disabled =
-    !data.dailySpinAvailable;
-
-
-  $("spinBtn").textContent =
-    data.dailySpinAvailable
-      ? "🎰 DAILY SPIN"
-      : "⏳ SPIN BESOK";
-}
-
-
-/*
-==================================================
-INITIALIZE
-==================================================
-*/
-
-async function init() {
-
-  if (!tg.initData) {
-
-    showStatus(
-      "Buka game dari Telegram."
-    );
-
-    return;
-  }
-
-
-  try {
-
-    const startParam =
-      tg.initDataUnsafe
-        ?.start_param || "";
-
-
-    const data =
-      await api(
-        "/api/session",
-        {
-
-          method: "POST",
-
-          body:
-            JSON.stringify({
-              startParam
-            })
-
-        }
-      );
-
-
-    render(data);
-
-    showStatus(
-      "JASLIN server connected."
-    );
-
-  }
-
-  catch(error) {
-
-    showStatus(
-      error.message
-    );
-
-  }
-
-}
-
-
-/*
-==================================================
-CLAIM
-==================================================
-*/
-
-$("claimBtn").onclick =
-async () => {
-
-  if (busy) return;
-
-
-  busy = true;
-
-  $("claimBtn").disabled =
-    true;
-
-  $("claimBtn").textContent =
-    "PROCESSING...";
-
-
-  try {
-
-    const data =
-      await api(
-        "/api/claim",
-        {
-          method: "POST",
-
-          body: "{}"
-        }
-      );
-
-
-    render(data);
-
-
-    showStatus(
-      `+${data.claimed} JASLIN berhasil di-claim.`
-    );
-
-
-    tg.HapticFeedback
-      ?.notificationOccurred(
-        "success"
-      );
-
-  }
-
-  catch(error) {
-
-    showStatus(
-      error.message
-    );
-
-  }
-
-
-  finally {
-
-    busy = false;
-
-    $("claimBtn").disabled =
-      false;
-
-    $("claimBtn").textContent =
-      "⚡ CLAIM MINING";
-  }
-
-};
-
-
-/*
-==================================================
-DAILY SPIN
-==================================================
-*/
-
-$("spinBtn").onclick =
-async () => {
-
-  if (
-    busy ||
-    !state?.dailySpinAvailable
-  ) return;
-
-
-  busy = true;
-
-  $("spinBtn").disabled =
-    true;
-
-
-  const degree =
-    1440 +
-    Math.floor(
-      Math.random() * 360
-    );
-
-
-  $("wheel-disc")
-    .style.transform =
-    `rotate(${degree}deg)`;
-
-
-  try {
-
-    const data =
-      await api(
-        "/api/spin",
-        {
-          method: "POST",
-
-          body: "{}"
-        }
-      );
-
-
-    setTimeout(
-      () => {
-
-        render(data);
-
-        showStatus(
-          `🎉 +${data.reward} JASLIN dari Daily Spin!`
-        );
-
-        tg.HapticFeedback
-          ?.notificationOccurred(
-            "success"
-          );
-
-        busy = false;
-
-      },
-      4100
-    );
-
-  }
-
-  catch(error) {
-
-    $("wheel-disc")
-      .style.transform =
-      "rotate(0deg)";
-
-    showStatus(
-      error.message
-    );
-
-    busy = false;
-
-    render(state);
-  }
-
-};
-
-
-/*
-==================================================
-REFERRAL
-==================================================
-*/
-
-function shareReferral() {
-
-  if (!state) return;
-
-
-  const text =
-    encodeURIComponent(
-      "Ayo main JASLIN Game dan kumpulkan JASLIN!"
-    );
-
-
-  const url =
-    encodeURIComponent(
-      state.referralLink
-    );
-
-
-  tg.openTelegramLink(
-    `https://t.me/share/url?url=${url}&text=${text}`
-  );
-}
-
-
-$("refBtn").onclick =
-  shareReferral;
-
-
-$("friendBtn").onclick =
-  shareReferral;
-
-
-/*
-==================================================
-WALLET
-==================================================
-*/
-
-$("walletBtn").onclick =
-async () => {
-
-  const current =
-    state?.user?.wallet || "";
-
-
-  const wallet =
-    prompt(
-      "Masukkan alamat wallet Solana:",
-      current
-    );
-
-
-  if (wallet === null)
-    return;
-
-
-  try {
-
-    const result =
-      await api(
-        "/api/wallet",
-        {
-
-          method: "POST",
-
-          body:
-            JSON.stringify({
-              wallet
-            })
-
-        }
-      );
-
-
-    if (state) {
-
-      state.user.wallet =
-        result.wallet;
-
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
     }
 
+    :root {
+      --bg: #050505;
+      --bg2: #0b0a07;
+      --card: rgba(20, 17, 10, 0.86);
+      --card2: rgba(12, 12, 12, 0.94);
+      --gold: #f6c453;
+      --gold2: #b67a16;
+      --gold3: #7a4b08;
+      --text: #fff6d5;
+      --muted: #9d937b;
+      --green: #65ff9a;
+      --red: #ff6b6b;
+      --border: rgba(246, 196, 83, 0.20);
+    }
 
-    showStatus(
-      result.wallet
-        ? "Wallet tersimpan."
-        : "Wallet dihapus."
-    );
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at 50% -10%, rgba(188, 126, 24, .22), transparent 38%),
+        linear-gradient(180deg, #090704 0%, #030303 65%, #050505 100%);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+    }
 
-  }
+    body {
+      padding-bottom: 95px;
+      overflow-x: hidden;
+    }
 
-  catch(error) {
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .17;
+      background-image:
+        linear-gradient(rgba(255, 196, 75, .07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 196, 75, .07) 1px, transparent 1px);
+      background-size: 34px 34px;
+      mask-image: linear-gradient(to bottom, black, transparent 75%);
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .app {
+      max-width: 520px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 2;
+    }
+
+    .header {
+      padding: 20px 18px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+
+    .logo {
+      width: 46px;
+      height: 46px;
+      border-radius: 15px;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      font-size: 25px;
+      color: #090704;
+      background:
+        linear-gradient(145deg, #fff0a4, #f1bd47 43%, #8d5508);
+      box-shadow:
+        0 0 25px rgba(246, 196, 83, .22),
+        inset 0 0 0 2px rgba(255,255,255,.17);
+      transform: rotate(-4deg);
+    }
+
+    .brand-title {
+      font-weight: 900;
+      letter-spacing: 1px;
+      font-size: 16px;
+    }
+
+    .brand-sub {
+      color: var(--muted);
+      font-size: 11px;
+      margin-top: 3px;
+    }
+
+    .online {
+      border: 1px solid rgba(101, 255, 154, .24);
+      color: var(--green);
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 10px;
+      font-weight: 800;
+      background: rgba(101, 255, 154, .07);
+    }
+
+    .page {
+      display: none;
+      padding: 10px 15px 25px;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    .card {
+      background:
+        linear-gradient(145deg, rgba(30, 24, 11, .92), rgba(8, 8, 8, .94));
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 18px;
+      margin-bottom: 14px;
+      box-shadow:
+        0 12px 35px rgba(0,0,0,.35),
+        inset 0 1px 0 rgba(255,255,255,.025);
+    }
+
+    .section-title {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1.4px;
+      margin-bottom: 8px;
+      font-weight: 800;
+    }
+
+    .balance {
+      font-size: clamp(32px, 9vw, 48px);
+      font-weight: 900;
+      letter-spacing: -1.5px;
+      color: #ffe49a;
+      text-shadow: 0 0 25px rgba(246,196,83,.17);
+    }
+
+    .token-label {
+      color: var(--gold);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      margin-top: 3px;
+    }
+
+    .core-wrap {
+      margin: 23px auto 20px;
+      width: 210px;
+      height: 210px;
+      position: relative;
+      display: grid;
+      place-items: center;
+    }
+
+    .ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 1px solid rgba(246,196,83,.16);
+      box-shadow:
+        0 0 35px rgba(246,196,83,.07),
+        inset 0 0 35px rgba(246,196,83,.04);
+    }
+
+    .ring::before,
+    .ring::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      border: 2px dashed rgba(246,196,83,.20);
+    }
+
+    .ring::before {
+      inset: 13px;
+      animation: spin 18s linear infinite;
+    }
+
+    .ring::after {
+      inset: 31px;
+      animation: spinBack 13s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes spinBack {
+      to { transform: rotate(-360deg); }
+    }
+
+    .core {
+      width: 122px;
+      height: 122px;
+      border-radius: 31px;
+      position: relative;
+      display: grid;
+      place-items: center;
+      transform: rotate(45deg);
+      background:
+        linear-gradient(145deg, #241704, #090704 60%, #332009);
+      border: 1px solid rgba(255, 202, 84, .52);
+      box-shadow:
+        0 0 40px rgba(246,196,83,.16),
+        inset 0 0 23px rgba(246,196,83,.12);
+    }
+
+    .core::before {
+      content: "";
+      position: absolute;
+      inset: 11px;
+      border-radius: 23px;
+      border: 1px solid rgba(246,196,83,.19);
+    }
+
+    .core-j {
+      transform: rotate(-45deg);
+      font-size: 54px;
+      font-weight: 1000;
+      color: var(--gold);
+      text-shadow: 0 0 25px rgba(246,196,83,.38);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 9px;
+      margin-top: 15px;
+    }
+
+    .stat {
+      border: 1px solid rgba(246,196,83,.11);
+      background: rgba(255,255,255,.018);
+      border-radius: 15px;
+      padding: 11px 8px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 14px;
+      font-weight: 900;
+      color: #ffe098;
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 9px;
+      margin-top: 5px;
+      text-transform: uppercase;
+    }
+
+    .progress {
+      height: 8px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: #16130d;
+      margin-top: 9px;
+    }
+
+    .progress > div {
+      height: 100%;
+      width: 35%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #8f5709, #ffd66d);
+      box-shadow: 0 0 13px rgba(246,196,83,.35);
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 15px;
+      width: 100%;
+      padding: 14px 16px;
+      font-weight: 900;
+      margin-top: 11px;
+      transition: transform .12s ease, opacity .12s ease;
+    }
+
+    .btn:active {
+      transform: scale(.98);
+    }
+
+    .btn-gold {
+      color: #130d03;
+      background: linear-gradient(90deg, #b77a16, #f7cf68, #d39a2a);
+      box-shadow: 0 8px 25px rgba(177,117,18,.18);
+    }
+
+    .btn-dark {
+      color: #f5ce72;
+      border: 1px solid rgba(246,196,83,.22);
+      background: #0c0a07;
+    }
+
+    .btn-danger {
+      color: #ffadad;
+      border: 1px solid rgba(255,107,107,.24);
+      background: rgba(255,107,107,.05);
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .gold {
+      color: var(--gold);
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .small {
+      font-size: 11px;
+    }
+
+    .big {
+      font-size: 22px;
+      font-weight: 900;
+    }
+
+    .protocol {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+      margin-top: 14px;
+    }
+
+    .day {
+      padding: 9px 3px;
+      min-width: 0;
+      border-radius: 12px;
+      text-align: center;
+      border: 1px solid rgba(246,196,83,.12);
+      background: rgba(255,255,255,.018);
+    }
+
+    .day-num {
+      font-size: 9px;
+      color: var(--muted);
+    }
+
+    .day-reward {
+      font-size: 9px;
+      color: #f3ca6e;
+      margin-top: 4px;
+      font-weight: 800;
+    }
+
+    .day.active {
+      border-color: rgba(246,196,83,.50);
+      background: rgba(246,196,83,.09);
+      box-shadow: 0 0 18px rgba(246,196,83,.08);
+    }
+
+    .task {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(255,255,255,.045);
+    }
+
+    .task:last-child {
+      border-bottom: 0;
+    }
+
+    .task-icon {
+      width: 42px;
+      height: 42px;
+      flex: 0 0 42px;
+      border-radius: 13px;
+      display: grid;
+      place-items: center;
+      background: rgba(246,196,83,.07);
+      border: 1px solid rgba(246,196,83,.15);
+      font-size: 19px;
+    }
+
+    .task-info {
+      flex: 1;
+    }
+
+    .task-title {
+      font-weight: 800;
+      font-size: 13px;
+    }
+
+    .task-reward {
+      color: var(--gold);
+      font-size: 10px;
+      margin-top: 4px;
+    }
+
+    .mini-btn {
+      border: 1px solid rgba(246,196,83,.22);
+      color: var(--gold);
+      background: rgba(246,196,83,.05);
+      padding: 8px 10px;
+      border-radius: 11px;
+      font-size: 10px;
+      font-weight: 900;
+    }
+
+    .code-box {
+      border: 1px dashed rgba(246,196,83,.24);
+      border-radius: 14px;
+      background: #080705;
+      padding: 12px;
+      word-break: break-all;
+      font-size: 10px;
+      color: #c7b88d;
+      margin-top: 12px;
+    }
+
+    .rank {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,.045);
+    }
+
+    .rank:last-child {
+      border-bottom: 0;
+    }
+
+    .rank-num {
+      width: 27px;
+      font-weight: 900;
+      color: var(--gold);
+    }
+
+    .rank-user {
+      flex: 1;
+      font-size: 12px;
+    }
+
+    .rank-bal {
+      font-size: 11px;
+      color: #e3c577;
+      font-weight: 800;
+    }
+
+    .wallet-input {
+      width: 100%;
+      padding: 14px;
+      border-radius: 13px;
+      margin-top: 10px;
+      outline: none;
+      border: 1px solid rgba(246,196,83,.18);
+      background: #080705;
+      color: white;
+    }
+
+    .wallet-input:focus {
+      border-color: rgba(246,196,83,.55);
+    }
+
+    .notice {
+      border-radius: 13px;
+      padding: 11px;
+      background: rgba(246,196,83,.05);
+      border: 1px solid rgba(246,196,83,.11);
+      color: #b4a481;
+      font-size: 10px;
+      line-height: 1.5;
+      margin-top: 11px;
+    }
+
+    .history {
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,.045);
+    }
+
+    .history:last-child {
+      border-bottom: 0;
+    }
+
+    .history-title {
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .history-time {
+      font-size: 9px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      z-index: 99;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(520px, 100%);
+      padding:
+        9px 10px
+        calc(9px + env(safe-area-inset-bottom));
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border-top: 1px solid rgba(246,196,83,.12);
+      background: rgba(5,5,5,.95);
+      backdrop-filter: blur(16px);
+    }
+
+    .nav-btn {
+      border: 0;
+      background: transparent;
+      color: #6f6757;
+      border-radius: 12px;
+      padding: 7px 3px;
+      font-size: 9px;
+      font-weight: 900;
+    }
+
+    .nav-icon {
+      font-size: 20px;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .nav-btn.active {
+      color: var(--gold);
+      background: rgba(246,196,83,.045);
+    }
+
+    .toast {
+      position: fixed;
+      z-index: 200;
+      left: 50%;
+      bottom: 105px;
+      transform: translateX(-50%) translateY(20px);
+      width: calc(100% - 34px);
+      max-width: 480px;
+      color: #0b0802;
+      background: #f2c85f;
+      padding: 12px 15px;
+      border-radius: 14px;
+      font-size: 12px;
+      font-weight: 800;
+      opacity: 0;
+      pointer-events: none;
+      transition: .25s ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .loading {
+      opacity: .55;
+      pointer-events: none;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+
+<body>
+<div class="app">
+
+  <header class="header">
+    <div class="brand">
+      <div class="logo">J</div>
+
+      <div>
+        <div class="brand-title">JASLIN NETWORK</div>
+        <div class="brand-sub" id="helloUser">Initializing network...</div>
+      </div>
+    </div>
+
+    <div class="online">● ONLINE</div>
+  </header>
+
+
+  <!-- ================= CORE ================= -->
+
+  <main id="page-core" class="page active">
+
+    <section class="card">
+      <div class="section-title">Digital Vault Balance</div>
+
+      <div class="balance" id="balance">0.00</div>
+      <div class="token-label">JASLIN</div>
+
+      <div class="core-wrap">
+        <div class="ring"></div>
+
+        <div class="core">
+          <div class="core-j">J</div>
+        </div>
+      </div>
+
+      <div style="text-align:center">
+        <div class="section-title">Jaslin Core Output</div>
+        <div class="big gold" id="pendingMining">0.000 JASLIN</div>
+        <div class="small muted" style="margin-top:5px">
+          Accumulated mining rewards
+        </div>
+      </div>
+
+      <button class="btn btn-gold" id="collectBtn" onclick="claimMining()">
+        COLLECT JASLIN
+      </button>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-value" id="coreLevel">1</div>
+          <div class="stat-label">Core Level</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-value" id="miningRate">0.045</div>
+          <div class="stat-label">JAS / Min</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-value" id="energyText">100/100</div>
+          <div class="stat-label">Energy</div>
+        </div>
+      </div>
+    </section>
+
+
+    <section class="card">
+      <div class="row">
+        <div>
+          <div class="section-title">Core Progress</div>
+          <div class="big">
+            LEVEL <span id="levelNumber">1</span>
+          </div>
+        </div>
+
+        <div style="text-align:right">
+          <div class="small muted">Next upgrade</div>
+          <div class="gold" style="font-weight:900" id="upgradePrice">
+            200 JASLIN
+          </div>
+        </div>
+      </div>
+
+      <div class="progress">
+        <div id="xpBar"></div>
+      </div>
+
+      <div class="row small muted" style="margin-top:7px">
+        <span id="xpText">0 / 100 XP</span>
+        <span>+5% Output / Level</span>
+      </div>
+
+      <button class="btn btn-dark" onclick="upgradeCore()">
+        ⚡ UPGRADE CORE
+      </button>
+
+      <div class="notice">
+        Upgrade dimulai dari 200 JASLIN dan meningkat +200 JASLIN
+        setiap level.
+      </div>
+    </section>
+
+
+    <section class="card">
+      <div class="row">
+        <div>
+          <div class="section-title">Daily Protocol</div>
+          <div style="font-weight:900">07:00 WIB RESET</div>
+        </div>
+
+        <div class="gold small" id="dailyStatus">Checking...</div>
+      </div>
+
+      <div class="protocol">
+        <div class="day active">
+          <div class="day-num">D1</div>
+          <div class="day-reward">25</div>
+        </div>
+
+        <div class="day">
+          <div class="day-num">D2</div>
+          <div class="day-reward">30</div>
+        </div>
+
+        <div class="day">
+          <div class="day-num">D3</div>
+          <div class="day-reward">40</div>
+        </div>
+
+        <div class="day">
+          <div class="day-num">D4</div>
+          <div class="day-reward">50</div>
+        </div>
+
+        <div class="day">
+          <div class="day-num">D5</div>
+          <div class="day-reward">65</div>
+        </div>
+
+        <div class="day">
+          <div class="day-num">D6</div>
+          <div class="day-reward">80</div>
+        </div>
+
+        <div class="day">
+          <div class="day-num">D7</div>
+          <div class="day-reward">100</div>
+        </div>
+      </div>
+
+      <button class="btn btn-gold" id="dailyBtn" onclick="claimDaily()">
+        CLAIM DAILY PROTOCOL
+      </button>
+    </section>
+
+  </main>
+
+
+  <!-- ================= OPERATIONS ================= -->
+
+  <main id="page-operations" class="page">
+
+    <section class="card">
+      <div class="section-title">Network Operations</div>
+      <div class="big">MISSIONS</div>
+
+      <div class="notice">
+        Selesaikan misi untuk meningkatkan aktivitas JASLIN Network.
+      </div>
+
+      <div class="task">
+        <div class="task-icon">✈️</div>
+
+        <div class="task-info">
+          <div class="task-title">Join JASLIN Telegram</div>
+          <div class="task-reward">+50 JASLIN</div>
+        </div>
+
+        <button class="mini-btn" onclick="taskComingSoon()">
+          START
+        </button>
+      </div>
+
+
+      <div class="task">
+        <div class="task-icon">𝕏</div>
+
+        <div class="task-info">
+          <div class="task-title">Follow JASLIN on X</div>
+          <div class="task-reward">+50 JASLIN</div>
+        </div>
+
+        <button class="mini-btn" onclick="taskComingSoon()">
+          START
+        </button>
+      </div>
+
+
+      <div class="task">
+        <div class="task-icon">👥</div>
+
+        <div class="task-info">
+          <div class="task-title">Invite 1 Network Member</div>
+          <div class="task-reward">Referral Reward</div>
+        </div>
+
+        <button class="mini-btn" onclick="showPage('network')">
+          OPEN
+        </button>
+      </div>
+
+
+      <div class="task">
+        <div class="task-icon">⚡</div>
+
+        <div class="task-info">
+          <div class="task-title">Collect Core Output</div>
+          <div class="task-reward">Daily Activity</div>
+        </div>
+
+        <button class="mini-btn" onclick="showPage('core')">
+          MINE
+        </button>
+      </div>
+    </section>
+
+
+    <section class="card">
+      <div class="section-title">Operation Progress</div>
+
+      <div class="row">
+        <div class="big">0 / 4</div>
+        <div class="gold small">TODAY</div>
+      </div>
+
+      <div class="progress">
+        <div style="width:0%"></div>
+      </div>
+    </section>
+
+  </main>
+
+
+  <!-- ================= NETWORK ================= -->
+
+  <main id="page-network" class="page">
+
+    <section class="card">
+      <div class="section-title">Build Your Network</div>
+
+      <div class="big">
+        INVITE & EARN
+      </div>
+
+      <div class="notice">
+        Ajak teman bergabung ke JASLIN Network melalui link referral kamu.
+      </div>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-value" id="referralsCount">0</div>
+          <div class="stat-label">Members</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-value">10</div>
+          <div class="stat-label">Reward</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-value">Tier 1</div>
+          <div class="stat-label">Network</div>
+        </div>
+      </div>
+
+      <div class="code-box" id="referralLink">
+        Referral link loading...
+      </div>
+
+      <button class="btn btn-gold" onclick="shareReferral()">
+        INVITE NETWORK MEMBER
+      </button>
+
+      <button class="btn btn-dark" onclick="copyReferral()">
+        COPY REFERRAL LINK
+      </button>
+    </section>
+
+
+    <section class="card">
+      <div class="section-title">Network Milestones</div>
+
+      <div class="task">
+        <div class="task-icon">1</div>
+        <div class="task-info">
+          <div class="task-title">First Member</div>
+          <div class="task-reward">Invite 1 friend</div>
+        </div>
+        <div class="muted small">0 / 1</div>
+      </div>
+
+      <div class="task">
+        <div class="task-icon">5</div>
+        <div class="task-info">
+          <div class="task-title">Small Network</div>
+          <div class="task-reward">Invite 5 friends</div>
+        </div>
+        <div class="muted small">0 / 5</div>
+      </div>
+
+      <div class="task">
+        <div class="task-icon">10</div>
+        <div class="task-info">
+          <div class="task-title">Network Builder</div>
+          <div class="task-
 
     showStatus(
       error.message
