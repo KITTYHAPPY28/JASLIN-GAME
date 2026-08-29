@@ -9,7 +9,6 @@ import { createClient } from "@supabase/supabase-js";
 import { Address } from "@ton/core";
 import { mnemonicToPrivateKey } from "@ton/crypto";
 import {
-  import {
   TonClient,
   JettonMaster,
   WalletContractV4,
