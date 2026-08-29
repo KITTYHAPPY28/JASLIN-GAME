@@ -1138,6 +1138,61 @@ app.post(
   }
 );
 
+/* =========================================
+   LEVEL QUOTE
+========================================= */
+
+app.post(
+  "/api/level-quote",
+  auth,
+  async (req, res) => {
+    try {
+      const user = await getUser(req.tgUser.id);
+
+      if (!user) {
+        return res.status(404).json({
+          error: "User tidak ditemukan."
+        });
+      }
+
+      const currentLevel =
+        Math.max(1, Number(user.level || 1));
+
+      const targetLevel =
+        Math.floor(Number(req.body?.targetLevel));
+
+      if (
+        !Number.isFinite(targetLevel) ||
+        targetLevel <= currentLevel ||
+        targetLevel > MAX_LEVEL
+      ) {
+        return res.status(400).json({
+          error: "Target level tidak valid."
+        });
+      }
+
+      const levelsToBuy =
+        targetLevel - currentLevel;
+
+      const priceUsd =
+        levelsToBuy * LEVEL_PRICE_USD;
+
+      res.json({
+        currentLevel,
+        targetLevel,
+        levelsToBuy,
+        priceUsd
+      });
+
+    } catch (error) {
+      console.error(error);
+
+      res.status(500).json({
+        error: "Gagal menghitung harga level."
+      });
+    }
+  }
+);
 
 /* =========================================
    TON WALLET
