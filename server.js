@@ -1143,37 +1143,65 @@ app.post(
    JASLIN MARKET PRICE
 ========================================= */
 
+/* =========================================
+   JASLIN MARKET PRICE - DEDUST CPMM V2
+========================================= */
+
 app.get("/api/jaslin-price", async (req, res) => {
   try {
-    const poolAddress = "EQBtaODtADXS7R6KJClA_-uOQlFkXG8_GCjjVfk4vUbMImxb";
-
-    const response = await fetch(
-      `https://api.dedust.io/v2/pools/${poolAddress}`
+    const poolAddress = Address.parse(
+      "EQBtaODtADXS7R6KJClA_-uOQlFkXG8_GCjjVfk4vUbMImxb"
     );
 
-    if (!response.ok) {
-      throw new Error(`DeDust API error: ${response.status}`);
-    }
+    const result = await tonClient.runMethod(
+      poolAddress,
+      "get_pool_data"
+    );
 
-    const pool = await response.json();
+    // Posisi sesuai getter resmi DeDust CPMM v2
+    const status = result.stack.readBigNumber();
+    const depositActive = result.stack.readBigNumber();
+    const swapActive = result.stack.readBigNumber();
+
+    const assetX = result.stack.readCell();
+    const assetY = result.stack.readCell();
+
+    // Lewati 3 mapping cells:
+    // walletsByAssets, assetsByWallets, walletsResolutions
+    result.stack.readCell();
+    result.stack.readCell();
+    result.stack.readCell();
+
+    const baseFeeBPS = result.stack.readBigNumber();
+
+    const reserveX = result.stack.readBigNumber();
+    const reserveY = result.stack.readBigNumber();
 
     res.json({
       ok: true,
       symbol: "JASLIN",
-      source: "dedust",
-      poolAddress,
-      pool
+      source: "dedust_onchain",
+      status: status.toString(),
+      depositActive: depositActive.toString(),
+      swapActive: swapActive.toString(),
+      baseFeeBPS: baseFeeBPS.toString(),
+      reserveX: reserveX.toString(),
+      reserveY: reserveY.toString(),
+
+      // sementara untuk memastikan urutan aset
+      assetX: assetX.toBoc().toString("base64"),
+      assetY: assetY.toBoc().toString("base64")
     });
+
   } catch (error) {
-    console.error("JASLIN price error:", error);
+    console.error("JASLIN pool error:", error);
 
     res.status(500).json({
       ok: false,
-      error: "Failed to fetch JASLIN pool data"
+      error: error?.message || "Failed to read DeDust pool"
     });
   }
 });
-
 /* =========================================
    LEVEL QUOTE
 ========================================= */
