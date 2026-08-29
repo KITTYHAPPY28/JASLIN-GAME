@@ -1237,12 +1237,16 @@ res.json({
    LEVEL QUOTE
 ========================================= */
 
+
+/* =========================================
+   LEVEL QUOTE - HOLDING POWER
+========================================= */
+
 app.post(
   "/api/level-quote",
   auth,
   async (req, res) => {
     try {
-
       const user =
         await getUser(
           req.tgUser.id
@@ -1278,30 +1282,135 @@ app.post(
         });
       }
 
-      const levelsToBuy =
-        targetLevel - currentLevel;
+      const gameBalance =
+        Number(user.balance || 0);
 
-      const priceUsd =
-        levelsToBuy * LEVEL_PRICE_USD;
+      let walletBalance = 0;
 
-      const priceJaslin =
-        levelsToBuy * UPGRADE_COST_JASLIN;
+      if (user.wallet) {
+        try {
+          const ownerAddress =
+            Address.parse(user.wallet);
+
+          const master =
+            tonClient.open(
+              JettonMaster.create(
+                Address.parse(
+                  JASLIN_JETTON_MASTER
+                )
+              )
+            );
+
+          const jettonWalletAddress =
+            await master.getWalletAddress(
+              ownerAddress
+            );
+
+          const walletData =
+            await tonClient.runMethod(
+              jettonWalletAddress,
+              "get_wallet_data"
+            );
+
+          const rawBalance =
+            BigInt(
+              walletData.stack.items[0].value
+            );
+
+          walletBalance =
+            Number(rawBalance) /
+            (10 ** JASLIN_DECIMALS);
+
+        } catch (error) {
+          console.error(
+            "Level quote wallet error:",
+            error
+          );
+
+          walletBalance = 0;
+        }
+      }
+
+      const totalHoldingJaslin =
+        gameBalance + walletBalance;
+
+      const poolAddress =
+        Address.parse(
+          "EQBtaODtADXS7R6KJClA_-uOQlFkXG8_GCjjVfk4vUbMImxb"
+        );
+
+      const poolResult =
+        await tonClient.runMethod(
+          poolAddress,
+          "get_pool_data"
+        );
+
+      const items =
+        poolResult.stack.items;
+
+      const reserveX =
+        BigInt(items[9].value);
+
+      const reserveY =
+        BigInt(items[10].value);
+
+      const gramReserve =
+        Number(reserveX) / 1e9;
+
+      const jaslinReserve =
+        Number(reserveY) / 1e9;
+
+      const priceGram =
+        gramReserve / jaslinReserve;
+
+      const holdingPowerGram =
+        totalHoldingJaslin * priceGram;
+
+      const requiredGram =
+        requiredHoldingGram(
+          targetLevel
+        );
+
+      const missingGram =
+        Math.max(
+          0,
+          requiredGram -
+          holdingPowerGram
+        );
+
+      const requiredJaslin =
+        requiredGram /
+        priceGram;
+
+      const missingJaslin =
+        missingGram /
+        priceGram;
 
       res.json({
         ok: true,
+
         currentLevel,
         targetLevel,
-        levelsToBuy,
-        priceUsd,
-        priceJaslin,
-        pricePerLevelJaslin:
-          UPGRADE_COST_JASLIN,
-        pricePerLevelUsd:
-          LEVEL_PRICE_USD
+
+        gameBalance,
+        walletBalance,
+        totalHoldingJaslin,
+
+        priceGram,
+
+        holdingPowerGram,
+        requiredGram,
+
+        requiredJaslin,
+        missingGram,
+        missingJaslin,
+
+        eligible:
+          holdingPowerGram >=
+          requiredGram
       });
 
     } catch (error) {
-
       console.error(
         "Level quote error:",
         error
@@ -1309,9 +1418,8 @@ app.post(
 
       res.status(500).json({
         error:
-          "Gagal menghitung harga level."
+          "Gagal menghitung Holding Power."
       });
-
     }
   }
 );
