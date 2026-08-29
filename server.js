@@ -1318,7 +1318,7 @@ app.post(
 
 
 /* =========================================
-   UPGRADE CORE
+   UPGRADE CORE - HOLDING POWER
 ========================================= */
 
 app.post(
@@ -1326,11 +1326,7 @@ app.post(
   auth,
   async (req, res) => {
     try {
-
-      const user =
-        await getUser(
-          req.tgUser.id
-        );
+      const user = await getUser(req.tgUser.id);
 
       if (!user) {
         return res.status(404).json({
@@ -1338,49 +1334,139 @@ app.post(
         });
       }
 
-      const currentLevel =
-        Math.min(
-          MAX_LEVEL,
-          Math.max(
-            1,
-            Number(user.level || 1)
-          )
-        );
+      const currentLevel = Math.min(
+        MAX_LEVEL,
+        Math.max(1, Number(user.level || 1))
+      );
 
       if (currentLevel >= MAX_LEVEL) {
         return res.status(400).json({
-          error:
-            "Level maksimum sudah tercapai."
+          error: "Level maksimum sudah tercapai."
         });
       }
 
-      const balance =
+      const targetLevel = currentLevel + 1;
+
+      /* SALDO GAME */
+
+      const gameBalance =
         Number(user.balance || 0);
 
-      const cost =
-        UPGRADE_COST_JASLIN;
+      /* SALDO JASLIN WALLET */
 
-      if (balance < cost) {
+      let walletBalance = 0;
+
+      if (user.wallet) {
+        try {
+          const ownerAddress =
+            Address.parse(user.wallet);
+
+          const master =
+            tonClient.open(
+              JettonMaster.create(
+                Address.parse(
+                  JASLIN_JETTON_MASTER
+                )
+              )
+            );
+
+          const jettonWalletAddress =
+            await master.getWalletAddress(
+              ownerAddress
+            );
+
+          const walletData =
+            await tonClient.runMethod(
+              jettonWalletAddress,
+              "get_wallet_data"
+            );
+
+          const rawBalance =
+            BigInt(
+              walletData.stack.items[0].value
+            );
+
+          walletBalance =
+            Number(rawBalance) /
+            (10 ** JASLIN_DECIMALS);
+
+        } catch (error) {
+          console.error(
+            "JASLIN wallet balance error:",
+            error
+          );
+
+          walletBalance = 0;
+        }
+      }
+
+      /* TOTAL HOLDING */
+
+      const totalHoldingJaslin =
+        gameBalance + walletBalance;
+
+      /* RATE JASLIN / GRAM DARI POOL */
+
+      const poolAddress =
+        Address.parse(
+          "EQBtaODtADXS7R6KJClA_-uOQlFkXG8_GCjjVfk4vUbMImxb"
+        );
+
+      const poolResult =
+        await tonClient.runMethod(
+          poolAddress,
+          "get_pool_data"
+        );
+
+      const items =
+        poolResult.stack.items;
+
+      const reserveX =
+        BigInt(items[9].value);
+
+      const reserveY =
+        BigInt(items[10].value);
+
+      // X = GRAM, Y = JASLIN
+      const gramReserve =
+        Number(reserveX) / 1e9;
+
+      const jaslinReserve =
+        Number(reserveY) / 1e9;
+
+      const priceGram =
+        gramReserve / jaslinReserve;
+
+      /* HOLDING POWER */
+
+      const holdingPowerGram =
+        totalHoldingJaslin * priceGram;
+
+      const requiredGram =
+        requiredHoldingGram(targetLevel);
+
+      if (holdingPowerGram < requiredGram) {
         return res.status(400).json({
-          error:
-            `Saldo tidak cukup. Butuh ${cost} JASLIN.`
+          error: "Holding Power belum cukup.",
+          currentLevel,
+          targetLevel,
+          gameBalance,
+          walletBalance,
+          totalHoldingJaslin,
+          holdingPowerGram,
+          requiredGram,
+          missingGram:
+            requiredGram - holdingPowerGram
         });
       }
 
-      const newBalance =
-        balance - cost;
+      /* NAIK LEVEL TANPA POTONG SALDO */
 
-      const newLevel =
-        currentLevel + 1;
-
-      const {
-        error
-      } =
+      const { error } =
         await supabase
           .from("users")
           .update({
-            balance: newBalance,
-            level: newLevel
+            level: targetLevel
           })
           .eq(
             "telegram_id",
@@ -1394,25 +1480,30 @@ app.post(
       await saveTransaction(
         req.tgUser.id,
         "upgrade_core",
-        -cost,
-        `Upgrade Core Level ${currentLevel} ke ${newLevel}`
+        0,
+        `Holding Power upgrade Level ${currentLevel} ke ${targetLevel}`
       );
 
       const updated =
-        await getUser(
-          req.tgUser.id
-        );
+        await getUser(req.tgUser.id);
 
       res.json({
         ...publicState(updated),
+
         upgraded: true,
         previousLevel: currentLevel,
-        newLevel,
-        cost
+        newLevel: targetLevel,
+
+        gameBalance,
+        walletBalance,
+        totalHoldingJaslin,
+
+        priceGram,
+        holdingPowerGram,
+        requiredGram
       });
 
     } catch (error) {
-
       console.error(
         "Upgrade Core error:",
         error
@@ -1421,7 +1512,6 @@ app.post(
       res.status(500).json({
         error: "Upgrade Core gagal."
       });
-
     }
   }
 );
