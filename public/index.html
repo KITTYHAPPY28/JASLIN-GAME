@@ -2311,130 +2311,147 @@ function render(){
 
 /* ================= LEVEL ================= */
 
-function upgradeCost(){
+function upgradeCost() {
+  const currentLevel =
+    Number(state?.level || 1);
 
-  return level * 200;
+  const targetLevel =
+    currentLevel + 1;
 
+  return (
+    0.023 +
+    (targetLevel - 2) * 0.002
+  );
 }
 
 
-function renderUpgrade(balance){
+async function renderUpgrade(balance) {
+  try {
+    const currentLevel =
+      Number(state?.level || 1);
 
-  const cost =
-    upgradeCost();
+    const targetLevel =
+      currentLevel + 1;
 
-
-  const progress =
-    Math.min(
-      100,
-      balance / cost * 100
+    const response = await fetch(
+      "/api/level-quote",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-telegram-init-data":
+            window.Telegram?.WebApp?.initData || ""
+        },
+        body: JSON.stringify({
+          targetLevel
+        })
+      }
     );
 
+    const data =
+      await response.json();
 
-  const tokenPriceUsd =
-    Number(
-      state?.tokenPriceUsd ||
-      0.00005
+    if (!response.ok) {
+      console.error(
+        "Level quote error:",
+        data
+      );
+      return;
+    }
+
+    const holdingPower =
+      Number(
+        data.holdingPowerGram || 0
+      );
+
+    const requiredGram =
+      Number(
+        data.requiredGram || 0
+      );
+
+    const progress =
+      requiredGram > 0
+        ? Math.min(
+            100,
+            holdingPower /
+              requiredGram *
+              100
+          )
+        : 0;
+
+    const priceText =
+      requiredGram.toFixed(3) +
+      " GRAM";
+
+    const progressText =
+      holdingPower.toFixed(4) +
+      " / " +
+      requiredGram.toFixed(3) +
+      " GRAM";
+
+    document
+      .getElementById(
+        "topLevelPrice"
+      )
+      .textContent =
+        priceText;
+
+    document
+      .getElementById(
+        "upgradePrice"
+      )
+      .textContent =
+        priceText;
+
+    document
+      .getElementById(
+        "topUsd"
+      )
+      .textContent =
+        "HOLDING POWER";
+
+    document
+      .getElementById(
+        "upgradeUsd"
+      )
+      .textContent =
+        "HOLDING POWER";
+
+    document
+      .getElementById(
+        "topProgress"
+      )
+      .style.width =
+        progress + "%";
+
+    document
+      .getElementById(
+        "bottomProgress"
+      )
+      .style.width =
+        progress + "%";
+
+    document
+      .getElementById(
+        "topProgressText"
+      )
+      .textContent =
+        progressText;
+
+    document
+      .getElementById(
+        "bottomProgressText"
+      )
+      .textContent =
+        progressText;
+
+  } catch (error) {
+    console.error(
+      "Render upgrade error:",
+      error
     );
-
-
-  const usd =
-    cost *
-    tokenPriceUsd;
-
-
-  const priceText =
-    number(
-      cost,
-      0
-    ) +
-    " JASLIN";
-
-
-  const usdText =
-    "≈ $" +
-    usd.toFixed(2);
-
-
-  document
-    .getElementById(
-      "topLevelPrice"
-    )
-    .textContent =
-      priceText;
-
-
-  document
-    .getElementById(
-      "upgradePrice"
-    )
-    .textContent =
-      priceText;
-  
-  document
-  .getElementById(
-    "topUsd"
-  )
-  .textContent =
-    "$1 / LEVEL";
-
-document
-  .getElementById(
-    "upgradeUsd"
-  )
-  .textContent =
-    "$1 / LEVEL";
-
-
-  document
-    .getElementById(
-      "topProgress"
-    )
-    .style.width =
-      progress + "%";
-
-
-  document
-    .getElementById(
-      "bottomProgress"
-    )
-    .style.width =
-      progress + "%";
-
-
-  const progressText =
-    number(
-      Math.min(
-        balance,
-        cost
-      ),
-      0
-    ) +
-    " / " +
-    number(
-      cost,
-      0
-    ) +
-    " JASLIN";
-
-
-  document
-    .getElementById(
-      "topProgressText"
-    )
-    .textContent =
-      progressText;
-
-
-  document
-    .getElementById(
-      "bottomProgressText"
-    )
-    .textContent =
-      progressText;
-
+  }
 }
-
 
 /* ================= TIMER ================= */
 
