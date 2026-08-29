@@ -1258,7 +1258,49 @@ app.post(
 
       const priceUsd =
         levelsToBuy * LEVEL_PRICE_USD;
-      const jaslinPriceUsd = 0;
+      const gramPriceResponse = await fetch(
+  "https://api.coingecko.com/api/v3/simple/price?names=Gram%20%28prev.%20Toncoin%29&vs_currencies=usd"
+);
+
+if (!gramPriceResponse.ok) {
+  throw new Error("Gagal mengambil harga GRAM/USD");
+}
+
+const gramPriceData =
+  await gramPriceResponse.json();
+
+const gramPriceUsd =
+  Number(
+    gramPriceData?.["Gram (prev. Toncoin)"]?.usd || 0
+  );
+
+const poolAddress = Address.parse(
+  "EQBtaODtADXS7R6KJClA_-uOQlFkXG8_GCjjVfk4vUbMImxb"
+);
+
+const poolData =
+  await tonClient.runMethod(
+    poolAddress,
+    "get_pool_data"
+  );
+
+const items =
+  poolData.stack.items;
+
+const gramReserve =
+  Number(BigInt(items[9].value)) / 1e9;
+
+const jaslinReserve =
+  Number(BigInt(items[10].value)) / 1e9;
+
+const priceGram =
+  gramReserve / jaslinReserve;
+
+const jaslinPriceUsd =
+  priceGram * gramPriceUsd;
+ 
+const priceUsd =
+  levelsToBuy * LEVEL_PRICE_USD;
 
 const priceJaslin =
   jaslinPriceUsd > 0
