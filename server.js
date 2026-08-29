@@ -1194,13 +1194,21 @@ app.post(
 
       const priceUsd =
         levelsToBuy * LEVEL_PRICE_USD;
+      const jaslinPriceUsd = 0;
+
+const priceJaslin =
+  jaslinPriceUsd > 0
+    ? priceUsd / jaslinPriceUsd
+    : null;
 
       res.json({
-        currentLevel,
-        targetLevel,
-        levelsToBuy,
-        priceUsd
-      });
+  currentLevel,
+  targetLevel,
+  levelsToBuy,
+  priceUsd,
+  jaslinPriceUsd,
+  priceJaslin
+});
 
     } catch (error) {
       console.error(error);
