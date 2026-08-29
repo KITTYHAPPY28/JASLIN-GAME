@@ -1158,39 +1158,11 @@ app.get("/api/jaslin-price", async (req, res) => {
       "get_pool_data"
     );
 
-    // Posisi sesuai getter resmi DeDust CPMM v2
-    const status = result.stack.readBigNumber();
-    const depositActive = result.stack.readBigNumber();
-    const swapActive = result.stack.readBigNumber();
-
-    const assetX = result.stack.readCell();
-    const assetY = result.stack.readCell();
-
-    // Lewati 3 mapping cells:
-    // walletsByAssets, assetsByWallets, walletsResolutions
-    result.stack.readCell();
-    result.stack.readCell();
-    result.stack.readCell();
-
-    const baseFeeBPS = result.stack.readBigNumber();
-
-    const reserveX = result.stack.readBigNumber();
-    const reserveY = result.stack.readBigNumber();
-
     res.json({
       ok: true,
       symbol: "JASLIN",
       source: "dedust_onchain",
-      status: status.toString(),
-      depositActive: depositActive.toString(),
-      swapActive: swapActive.toString(),
-      baseFeeBPS: baseFeeBPS.toString(),
-      reserveX: reserveX.toString(),
-      reserveY: reserveY.toString(),
-
-      // sementara untuk memastikan urutan aset
-      assetX: assetX.toBoc().toString("base64"),
-      assetY: assetY.toBoc().toString("base64")
+      stack: result.stack.items
     });
 
   } catch (error) {
@@ -1198,7 +1170,7 @@ app.get("/api/jaslin-price", async (req, res) => {
 
     res.status(500).json({
       ok: false,
-      error: error?.message || "Failed to read DeDust pool"
+      error: error?.message || String(error)
     });
   }
 });
