@@ -1158,12 +1158,22 @@ app.get("/api/jaslin-price", async (req, res) => {
       "get_pool_data"
     );
 
-    res.json({
-      ok: true,
-      symbol: "JASLIN",
-      source: "dedust_onchain",
-      stack: result.stack.items
-    });
+    const safeStack = JSON.parse(
+  JSON.stringify(
+    result.stack.items,
+    (_, value) =>
+      typeof value === "bigint"
+        ? value.toString()
+        : value
+  )
+);
+
+res.json({
+  ok: true,
+  symbol: "JASLIN",
+  source: "dedust_onchain",
+  stack: safeStack
+});
 
   } catch (error) {
     console.error("JASLIN pool error:", error);
