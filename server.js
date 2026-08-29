@@ -1161,8 +1161,8 @@ app.get("/api/jaslin-price", async (req, res) => {
     const items = result.stack.items;
 
 // Reserve CPMM v2 dari output pool kita
-const reserveX = BigInt(items[10].value);
-const reserveY = BigInt(items[11].value);
+const reserveX = BigInt(items[9].value);
+const reserveY = BigInt(items[10].value);
 
 // Kedua token memakai 9 decimals.
 // Pool ini: X = JASLIN, Y = GRAM.
