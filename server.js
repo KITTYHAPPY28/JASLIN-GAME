@@ -3,20 +3,47 @@ import crypto from "crypto";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
+
 import { createClient } from "@supabase/supabase-js";
+
+import { Address } from "@ton/core";
+import { mnemonicToPrivateKey } from "@ton/crypto";
+import {
+  WalletContractV4,
+  WalletContractV5R1
+} from "@ton/ton";
+
 
 dotenv.config();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
-const app = express();
+/* =========================================
+   BASIC SETUP
+========================================= */
 
-const PORT = Number(process.env.PORT || 3000);
+const __filename =
+  fileURLToPath(import.meta.url);
 
-const BOT_TOKEN = process.env.BOT_TOKEN || "";
+const __dirname =
+  path.dirname(__filename);
+
+const app =
+  express();
+
+const PORT =
+  Number(process.env.PORT || 3000);
+
+
+/* =========================================
+   ENVIRONMENT VARIABLES
+========================================= */
+
+const BOT_TOKEN =
+  process.env.BOT_TOKEN || "";
+
 const BOT_USERNAME =
-  process.env.BOT_USERNAME || "JaslinGameBot";
+  process.env.BOT_USERNAME ||
+  "JaslinEarnBot";
 
 const SUPABASE_URL =
   process.env.SUPABASE_URL || "";
@@ -25,36 +52,80 @@ const SUPABASE_SECRET_KEY =
   process.env.SUPABASE_SECRET_KEY || "";
 
 const MINING_PER_MINUTE =
-  Number(process.env.MINING_PER_MINUTE || 0.045);
+  Number(
+    process.env.MINING_PER_MINUTE ||
+    0.045
+  );
 
 const DAILY_SPIN_REWARD =
-  Number(process.env.DAILY_SPIN_REWARD || 25);
+  Number(
+    process.env.DAILY_SPIN_REWARD ||
+    25
+  );
 
 const REFERRAL_REWARD =
-  Number(process.env.REFERRAL_REWARD || 10);
+  Number(
+    process.env.REFERRAL_REWARD ||
+    10
+  );
+
+const TON_TREASURY_MNEMONIC =
+  process.env.TON_TREASURY_MNEMONIC ||
+  "";
+
+const TON_TREASURY_ADDRESS =
+  process.env.TON_TREASURY_ADDRESS ||
+  "";
+
+const TON_NETWORK =
+  process.env.TON_NETWORK ||
+  "mainnet";
+
+
+/* =========================================
+   JASLIN TOKEN
+========================================= */
+
+const JASLIN_JETTON_MASTER =
+  "EQAmDnasFQqqiEFBjHy4tI0iIw1r-OtFeOSa0J9CJ4fNhjjx";
+
+const JASLIN_DECIMALS = 9;
+
+const MIN_WITHDRAW_JASLIN =
+  2000;
 
 
 /* =========================================
    SUPABASE
 ========================================= */
 
-const supabase = createClient(
-  SUPABASE_URL,
-  SUPABASE_SECRET_KEY,
-  {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false
+const supabase =
+  createClient(
+    SUPABASE_URL,
+    SUPABASE_SECRET_KEY,
+    {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false
+      }
     }
-  }
+  );
+
+
+/* =========================================
+   EXPRESS
+========================================= */
+
+app.use(
+  express.json()
 );
-
-
-app.use(express.json());
 
 app.use(
   express.static(
-    path.join(__dirname, "public")
+    path.join(
+      __dirname,
+      "public"
+    )
   )
 );
 
@@ -63,36 +134,56 @@ app.use(
    TELEGRAM AUTH
 ========================================= */
 
-function verifyTelegramInitData(initData) {
+function verifyTelegramInitData(
+  initData
+) {
 
-  if (!BOT_TOKEN || !initData) {
+  if (
+    !BOT_TOKEN ||
+    !initData
+  ) {
     return null;
   }
 
   const params =
-    new URLSearchParams(initData);
+    new URLSearchParams(
+      initData
+    );
 
   const hash =
     params.get("hash");
 
   const authDate =
-    Number(params.get("auth_date"));
+    Number(
+      params.get(
+        "auth_date"
+      )
+    );
 
-  if (!hash || !authDate) {
+  if (
+    !hash ||
+    !authDate
+  ) {
     return null;
   }
 
   const now =
-    Math.floor(Date.now() / 1000);
+    Math.floor(
+      Date.now() /
+      1000
+    );
 
   if (
-    now - authDate >
+    now -
+    authDate >
     86400
   ) {
     return null;
   }
 
-  params.delete("hash");
+  params.delete(
+    "hash"
+  );
 
   const dataCheckString =
     [...params.entries()]
@@ -112,7 +203,9 @@ function verifyTelegramInitData(initData) {
         "sha256",
         "WebAppData"
       )
-      .update(BOT_TOKEN)
+      .update(
+        BOT_TOKEN
+      )
       .digest();
 
   const calculatedHash =
@@ -121,8 +214,12 @@ function verifyTelegramInitData(initData) {
         "sha256",
         secretKey
       )
-      .update(dataCheckString)
-      .digest("hex");
+      .update(
+        dataCheckString
+      )
+      .digest(
+        "hex"
+      );
 
   try {
 
@@ -143,11 +240,15 @@ function verifyTelegramInitData(initData) {
     }
 
   } catch {
+
     return null;
+
   }
 
   const userData =
-    params.get("user");
+    params.get(
+      "user"
+    );
 
   if (!userData) {
     return null;
@@ -155,7 +256,9 @@ function verifyTelegramInitData(initData) {
 
   try {
 
-    return JSON.parse(userData);
+    return JSON.parse(
+      userData
+    );
 
   } catch {
 
@@ -169,7 +272,11 @@ function verifyTelegramInitData(initData) {
    AUTH MIDDLEWARE
 ========================================= */
 
-function auth(req, res, next) {
+function auth(
+  req,
+  res,
+  next
+) {
 
   const initData =
     req.headers[
@@ -192,7 +299,8 @@ function auth(req, res, next) {
 
   }
 
-  req.tgUser = user;
+  req.tgUser =
+    user;
 
   next();
 }
@@ -200,10 +308,11 @@ function auth(req, res, next) {
 
 /* =========================================
    GET USER
-   TABEL: users
 ========================================= */
 
-async function getUser(id) {
+async function getUser(
+  id
+) {
 
   const {
     data,
@@ -227,8 +336,7 @@ async function getUser(id) {
 
 
 /* =========================================
-   TRANSACTION LOG
-   TABEL: transactions
+   SAVE TRANSACTION
 ========================================= */
 
 async function saveTransaction(
@@ -244,17 +352,23 @@ async function saveTransaction(
     error
   } =
     await supabase
-      .from("transactions")
+      .from(
+        "transactions"
+      )
       .insert({
 
         telegram_id:
-          String(telegramId),
+          String(
+            telegramId
+          ),
 
         type:
           type,
 
         amount:
-          Number(amount),
+          Number(
+            amount
+          ),
 
         status:
           status,
@@ -285,7 +399,9 @@ async function saveTransaction(
    MINING CALCULATION
 ========================================= */
 
-function calculateMining(user) {
+function calculateMining(
+  user
+) {
 
   const started =
     Number(
@@ -341,10 +457,12 @@ async function ensureUser(
         .update({
 
           username:
-            telegramUser.username || "",
+            telegramUser.username ||
+            "",
 
           first_name:
-            telegramUser.first_name || ""
+            telegramUser.first_name ||
+            ""
 
         })
         .eq(
@@ -364,11 +482,13 @@ async function ensureUser(
 
   /* REFERRAL */
 
-  let referredBy = null;
+  let referredBy =
+    null;
 
   if (
     referralCode &&
-    referralCode !== telegramId
+    referralCode !==
+    telegramId
   ) {
 
     const referrer =
@@ -377,10 +497,8 @@ async function ensureUser(
       );
 
     if (referrer) {
-
       referredBy =
         referralCode;
-
     }
 
   }
@@ -390,7 +508,7 @@ async function ensureUser(
     Date.now();
 
 
-  /* BUAT USER */
+  /* CREATE USER */
 
   const {
     error
@@ -403,10 +521,12 @@ async function ensureUser(
           telegramId,
 
         username:
-          telegramUser.username || "",
+          telegramUser.username ||
+          "",
 
         first_name:
-          telegramUser.first_name || "",
+          telegramUser.first_name ||
+          "",
 
         wallet:
           "",
@@ -433,7 +553,7 @@ async function ensureUser(
   }
 
 
-  /* BONUS REFERRAL */
+  /* REFERRAL BONUS */
 
   if (referredBy) {
 
@@ -457,30 +577,25 @@ async function ensureUser(
         await supabase
           .from("users")
           .update({
-
             balance:
               newBalance
-
           })
           .eq(
             "telegram_id",
             referredBy
           );
 
-      if (referralError) {
+      if (
+        referralError
+      ) {
         throw referralError;
       }
 
       await saveTransaction(
-
         referredBy,
-
         "referral",
-
         REFERRAL_REWARD,
-
         `Referral dari ${telegramId}`
-
       );
 
     }
@@ -497,10 +612,14 @@ async function ensureUser(
    PUBLIC STATE
 ========================================= */
 
-function publicState(user) {
+function publicState(
+  user
+) {
 
   const mining =
-    calculateMining(user);
+    calculateMining(
+      user
+    );
 
   const lastSpin =
     Number(
@@ -512,7 +631,8 @@ function publicState(user) {
     (
       Date.now() -
       lastSpin
-    ) >= 86400000;
+    ) >=
+    86400000;
 
 
   return {
@@ -529,7 +649,8 @@ function publicState(user) {
         user.first_name,
 
       wallet:
-        user.wallet || ""
+        user.wallet ||
+        ""
 
     },
 
@@ -552,7 +673,16 @@ function publicState(user) {
       spinAvailable,
 
     referralLink:
-      `https://t.me/${BOT_USERNAME}?startapp=ref_${user.telegram_id}`
+      `https://t.me/${BOT_USERNAME}?startapp=ref_${user.telegram_id}`,
+
+    network:
+      "TON",
+
+    jetton:
+      JASLIN_JETTON_MASTER,
+
+    minimumWithdraw:
+      MIN_WITHDRAW_JASLIN
 
   };
 }
@@ -565,17 +695,22 @@ function publicState(user) {
 app.post(
   "/api/session",
   auth,
-  async (req, res) => {
+  async (
+    req,
+    res
+  ) => {
 
     try {
 
       const startParam =
         String(
-          req.body?.startParam ||
+          req.body
+            ?.startParam ||
           ""
         );
 
-      let referralCode = "";
+      let referralCode =
+        "";
 
       if (
         startParam.startsWith(
@@ -597,12 +732,18 @@ app.post(
         );
 
       res.json(
-        publicState(user)
+        publicState(
+          user
+        )
       );
 
-    } catch (error) {
+    } catch (
+      error
+    ) {
 
-      console.error(error);
+      console.error(
+        error
+      );
 
       res
         .status(500)
@@ -624,7 +765,10 @@ app.post(
 app.get(
   "/api/state",
   auth,
-  async (req, res) => {
+  async (
+    req,
+    res
+  ) => {
 
     try {
 
@@ -645,12 +789,18 @@ app.get(
       }
 
       res.json(
-        publicState(user)
+        publicState(
+          user
+        )
       );
 
-    } catch (error) {
+    } catch (
+      error
+    ) {
 
-      console.error(error);
+      console.error(
+        error
+      );
 
       res
         .status(500)
@@ -672,7 +822,10 @@ app.get(
 app.post(
   "/api/claim",
   auth,
-  async (req, res) => {
+  async (
+    req,
+    res
+  ) => {
 
     try {
 
@@ -694,11 +847,14 @@ app.post(
 
       const claimed =
         Number(
-          calculateMining(user)
-            .toFixed(8)
+          calculateMining(
+            user
+          ).toFixed(8)
         );
 
-      if (claimed <= 0) {
+      if (
+        claimed <= 0
+      ) {
 
         return res
           .status(400)
@@ -744,15 +900,10 @@ app.post(
       }
 
       await saveTransaction(
-
         req.tgUser.id,
-
         "mining",
-
         claimed,
-
         "Mining claim"
-
       );
 
       const updated =
@@ -762,18 +913,26 @@ app.post(
 
       res.json({
 
-        ...publicState(updated),
+        ...publicState(
+          updated
+        ),
 
         claimed:
           Number(
-            claimed.toFixed(4)
+            claimed.toFixed(
+              4
+            )
           )
 
       });
 
-    } catch (error) {
+    } catch (
+      error
+    ) {
 
-      console.error(error);
+      console.error(
+        error
+      );
 
       res
         .status(500)
@@ -795,7 +954,10 @@ app.post(
 app.post(
   "/api/spin",
   auth,
-  async (req, res) => {
+  async (
+    req,
+    res
+  ) => {
 
     try {
 
@@ -874,15 +1036,10 @@ app.post(
       }
 
       await saveTransaction(
-
         req.tgUser.id,
-
         "daily_spin",
-
         reward,
-
         "Daily Spin"
-
       );
 
       const updated =
@@ -892,16 +1049,22 @@ app.post(
 
       res.json({
 
-        ...publicState(updated),
+        ...publicState(
+          updated
+        ),
 
         reward:
           reward
 
       });
 
-    } catch (error) {
+    } catch (
+      error
+    ) {
 
-      console.error(error);
+      console.error(
+        error
+      );
 
       res
         .status(500)
@@ -917,13 +1080,16 @@ app.post(
 
 
 /* =========================================
-   WALLET
+   TON WALLET
 ========================================= */
 
 app.post(
   "/api/wallet",
   auth,
-  async (req, res) => {
+  async (
+    req,
+    res
+  ) => {
 
     try {
 
@@ -933,20 +1099,24 @@ app.post(
           ""
         ).trim();
 
-      if (
-        wallet &&
-        (
-          wallet.length < 32 ||
-          wallet.length > 44
-        )
-      ) {
+      if (wallet) {
 
-        return res
-          .status(400)
-          .json({
-            error:
-              "Alamat wallet Solana tidak valid."
-          });
+        try {
+
+          Address.parse(
+            wallet
+          );
+
+        } catch {
+
+          return res
+            .status(400)
+            .json({
+              error:
+                "Alamat wallet TON tidak valid."
+            });
+
+        }
 
       }
 
@@ -956,10 +1126,8 @@ app.post(
         await supabase
           .from("users")
           .update({
-
             wallet:
               wallet
-
           })
           .eq(
             "telegram_id",
@@ -974,18 +1142,239 @@ app.post(
 
       res.json({
         wallet:
-          wallet
+          wallet,
+        network:
+          "TON"
       });
 
-    } catch (error) {
+    } catch (
+      error
+    ) {
 
-      console.error(error);
+      console.error(
+        error
+      );
 
       res
         .status(500)
         .json({
           error:
-            "Gagal menyimpan wallet."
+            "Gagal menyimpan wallet TON."
+        });
+
+    }
+
+  }
+);
+
+
+/* =========================================
+   TREASURY CHECK
+   TIDAK MENGIRIM TRANSAKSI
+========================================= */
+
+app.get(
+  "/api/treasury-check",
+  async (
+    req,
+    res
+  ) => {
+
+    try {
+
+      if (
+        !TON_TREASURY_MNEMONIC
+      ) {
+
+        return res
+          .status(500)
+          .json({
+            ok:
+              false,
+            error:
+              "TON_TREASURY_MNEMONIC belum tersedia."
+          });
+
+      }
+
+      if (
+        !TON_TREASURY_ADDRESS
+      ) {
+
+        return res
+          .status(500)
+          .json({
+            ok:
+              false,
+            error:
+              "TON_TREASURY_ADDRESS belum tersedia."
+          });
+
+      }
+
+
+      /* VALIDATE EXPECTED ADDRESS */
+
+      const expected =
+        Address.parse(
+          TON_TREASURY_ADDRESS
+        );
+
+      const mnemonic =
+        TON_TREASURY_MNEMONIC
+          .trim()
+          .split(/\s+/);
+
+
+      if (
+        mnemonic.length !== 12 &&
+        mnemonic.length !== 24
+      ) {
+
+        return res
+          .status(500)
+          .json({
+            ok:
+              false,
+            error:
+              "Recovery phrase harus 12 atau 24 kata."
+          });
+
+      }
+
+
+      /* DERIVE KEY */
+
+      const keyPair =
+        await mnemonicToPrivateKey(
+          mnemonic
+        );
+
+
+      /* WALLET V4 */
+
+      const walletV4 =
+        WalletContractV4.create({
+          workchain:
+            0,
+          publicKey:
+            keyPair.publicKey
+        });
+
+
+      /* WALLET V5 MAINNET */
+
+      const walletV5 =
+        WalletContractV5R1.create({
+          workchain:
+            0,
+          publicKey:
+            keyPair.publicKey,
+          walletId: {
+            networkGlobalId:
+              -239
+          }
+        });
+
+
+      const expectedRaw =
+        expected.toRawString();
+
+      const v4Raw =
+        walletV4.address
+          .toRawString();
+
+      const v5Raw =
+        walletV5.address
+          .toRawString();
+
+
+      const v4Match =
+        expectedRaw ===
+        v4Raw;
+
+      const v5Match =
+        expectedRaw ===
+        v5Raw;
+
+
+      res.json({
+
+        ok:
+          true,
+
+        network:
+          TON_NETWORK,
+
+        expectedAddress:
+          expected.toString({
+            bounceable:
+              false,
+            urlSafe:
+              true
+          }),
+
+        walletV4:
+          walletV4.address
+            .toString({
+              bounceable:
+                false,
+              urlSafe:
+                true
+            }),
+
+        walletV5:
+          walletV5.address
+            .toString({
+              bounceable:
+                false,
+              urlSafe:
+                true
+            }),
+
+        v4Match:
+          v4Match,
+
+        v5Match:
+          v5Match,
+
+        matched:
+          v4Match ||
+          v5Match,
+
+        walletVersion:
+          v4Match
+            ? "V4R2"
+            : v5Match
+              ? "V5R1"
+              : "UNKNOWN",
+
+        message:
+          v4Match ||
+          v5Match
+            ? "Treasury cocok dengan recovery phrase."
+            : "Alamat treasury belum cocok dengan V4/V5."
+
+      });
+
+    } catch (
+      error
+    ) {
+
+      console.error(
+        "Treasury check error:",
+        error
+      );
+
+      res
+        .status(500)
+        .json({
+          ok:
+            false,
+          error:
+            "Treasury check gagal.",
+          detail:
+            error.message
         });
 
     }
@@ -1000,7 +1389,10 @@ app.post(
 
 app.get(
   "/api/health",
-  (req, res) => {
+  (
+    req,
+    res
+  ) => {
 
     res.json({
 
@@ -1011,7 +1403,16 @@ app.get(
         "JASLIN",
 
       database:
-        "Supabase"
+        "Supabase",
+
+      network:
+        "TON",
+
+      jetton:
+        JASLIN_JETTON_MASTER,
+
+      decimals:
+        JASLIN_DECIMALS
 
     });
 
@@ -1028,7 +1429,8 @@ app.listen(
   () => {
 
     console.log(
-      `JASLIN server running on port ${PORT}`
+      `JASLIN server running on port
+${PORT}`
     );
 
   }
