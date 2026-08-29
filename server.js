@@ -107,6 +107,7 @@ const MIN_WITHDRAW_JASLIN =
 
 const MAX_LEVEL = 5000;
 const LEVEL_PRICE_USD = 1;
+const UPGRADE_COST_JASLIN = 200;
 
 /* =========================================
    SUPABASE
@@ -1221,6 +1222,8 @@ res.json({
   }
 });
 /* =========================================
+   
+        /* =========================================
    LEVEL QUOTE
 ========================================= */
 
@@ -1229,7 +1232,11 @@ app.post(
   auth,
   async (req, res) => {
     try {
-      const user = await getUser(req.tgUser.id);
+
+      const user =
+        await getUser(
+          req.tgUser.id
+        );
 
       if (!user) {
         return res.status(404).json({
@@ -1238,10 +1245,18 @@ app.post(
       }
 
       const currentLevel =
-        Math.max(1, Number(user.level || 1));
+        Math.min(
+          MAX_LEVEL,
+          Math.max(
+            1,
+            Number(user.level || 1)
+          )
+        );
 
       const targetLevel =
-        Math.floor(Number(req.body?.targetLevel));
+        Math.floor(
+          Number(req.body?.targetLevel)
+        );
 
       if (
         !Number.isFinite(targetLevel) ||
@@ -1259,83 +1274,171 @@ app.post(
       const priceUsd =
         levelsToBuy * LEVEL_PRICE_USD;
 
-      // Ambil harga GRAM/USD
-      const gramPriceResponse = await fetch(
-        "https://api.coingecko.com/api/v3/simple/price?names=Gram%20%28prev.%20Toncoin%29&vs_currencies=usd"
-      );
-
-      if (!gramPriceResponse.ok) {
-        throw new Error(
-          "Gagal mengambil harga GRAM/USD"
-        );
-      }
-
-      const gramPriceData =
-        await gramPriceResponse.json();
-
-      const gramPriceUsd =
-        Number(
-          gramPriceData?.["Gram (prev. Toncoin)"]?.usd || 0
-        );
-
-      if (gramPriceUsd <= 0) {
-        throw new Error(
-          "Harga GRAM/USD tidak valid"
-        );
-      }
-
-      // Ambil reserve pool JASLIN/GRAM
-      const poolAddress = Address.parse(
-        "EQBtaODtADXS7R6KJClA_-uOQlFkXG8_GCjjVfk4vUbMImxb"
-      );
-
-      const poolData =
-        await tonClient.runMethod(
-          poolAddress,
-          "get_pool_data"
-        );
-
-      const items =
-        poolData.stack.items;
-
-      const gramReserve =
-        Number(BigInt(items[9].value)) / 1e9;
-
-      const jaslinReserve =
-        Number(BigInt(items[10].value)) / 1e9;
-
-      const priceGram =
-        gramReserve / jaslinReserve;
-
-      const jaslinPriceUsd =
-        priceGram * gramPriceUsd;
-
       const priceJaslin =
-        priceUsd / jaslinPriceUsd;
+        levelsToBuy * UPGRADE_COST_JASLIN;
 
       res.json({
+        ok: true,
         currentLevel,
         targetLevel,
         levelsToBuy,
         priceUsd,
-        gramPriceUsd,
-        jaslinPriceUsd,
-        priceJaslin
+        priceJaslin,
+        pricePerLevelJaslin:
+          UPGRADE_COST_JASLIN,
+        pricePerLevelUsd:
+          LEVEL_PRICE_USD
       });
 
     } catch (error) {
+
       console.error(
         "Level quote error:",
         error
       );
 
       res.status(500).json({
-        error: "Gagal menghitung harga level."
+        error:
+          "Gagal menghitung harga level."
       });
+
     }
   }
 );
 
+
+/* =========================================
+   UPGRADE CORE
+/* =========================================
+   LEVEL QUOTE
+========================================= */
+
+app.post(
+  "/api/level-quote",
+  auth,
+  async (req, res) => {
+    try {
+
+      const user =
+        await getUser(
+          req.tgUser.id
+        );
+
+      if (!user) {
+        return res.status(404).json({
+          error: "User tidak ditemukan."
+        });
+      }
+
+      const currentLevel =
+        Math.min(
+          MAX_LEVEL,
+          Math.max(
+            1,
+            Number(user.level || 1)
+          )
+        );
+
+      if (currentLevel >= MAX_LEVEL) {
+        return res.status(400).json({
+          error:
+            "Level maksimum sudah tercapai."
+        });
+      }
+
+      const balance =
+        Number(
+          user.balance || 0
+        );
+
+      const cost =
+        UPGRADE_COST_JASLIN;
+
+      if (balance < cost) {
+
+        return res.status(400).json({
+          error:
+            `Saldo tidak cukup. Butuh ${cost} JASLIN.`
+        });
+
+      }
+
+      const newBalance =
+        balance - cost;
+
+      const newLevel =
+        currentLevel + 1;
+
+      const {
+        error
+      } =
+        await supabase
+          .from("users")
+          .update({
+            balance:
+              newBalance,
+
+            level:
+              newLevel
+          })
+          .eq(
+            "telegram_id",
+            String(
+              req.tgUser.id
+            )
+          );
+
+      if (error) {
+        throw error;
+      }
+
+      await saveTransaction(
+        req.tgUser.id,
+        "upgrade_core",
+        -cost,
+        `Upgrade Core Level ${currentLevel} ke ${newLevel}`
+      );
+
+      const updated =
+        await getUser(
+          req.tgUser.id
+        );
+
+      res.json({
+
+        ...publicState(
+          updated
+        ),
+
+        upgraded:
+          true,
+
+        previousLevel:
+          currentLevel,
+
+        newLevel:
+          newLevel,
+
+        cost:
+          cost
+
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Upgrade Core error:",
+        error
+      );
+
+      res.status(500).json({
+        error:
+          "Upgrade Core gagal."
+      });
+
+    }
+  }
+);
 /* =========================================
    TON WALLET
 ========================================= */
