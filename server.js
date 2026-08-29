@@ -67,7 +67,7 @@ const DAILY_SPIN_REWARD =
 const REFERRAL_REWARD =
   Number(
     process.env.REFERRAL_REWARD ||
-    10
+    500
   );
 
 const TON_TREASURY_MNEMONIC =
