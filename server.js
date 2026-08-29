@@ -1158,22 +1158,36 @@ app.get("/api/jaslin-price", async (req, res) => {
       "get_pool_data"
     );
 
-    const compactStack = result.stack.items.map((item, index) => {
-  return {
-    index,
-    type: item.type,
-    value:
-      item.type === "int"
-        ? item.value.toString()
-        : item.type
-  };
-});
+    const items = result.stack.items;
+
+// Reserve CPMM v2 dari output pool kita
+const reserveX = BigInt(items[10].value);
+const reserveY = BigInt(items[11].value);
+
+// Kedua token memakai 9 decimals.
+// Pool ini: X = JASLIN, Y = GRAM.
+const jaslinReserve = Number(reserveX) / 1e9;
+const gramReserve = Number(reserveY) / 1e9;
+
+const priceGram =
+  gramReserve / jaslinReserve;
+
+const jaslinPerGram =
+  jaslinReserve / gramReserve;
 
 res.json({
   ok: true,
   symbol: "JASLIN",
+  pair: "JASLIN/GRAM",
   source: "dedust_onchain",
-  stack: compactStack
+
+  jaslinReserve,
+  gramReserve,
+
+  priceGram,
+  jaslinPerGram,
+
+  updatedAt: Date.now()
 });
 
   } catch (error) {
