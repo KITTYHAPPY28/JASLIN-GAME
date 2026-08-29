@@ -1222,8 +1222,7 @@ res.json({
   }
 });
 /* =========================================
-   
-        /* =========================================
+/* =========================================
    LEVEL QUOTE
 ========================================= */
 
@@ -1309,12 +1308,10 @@ app.post(
 
 /* =========================================
    UPGRADE CORE
-/* =========================================
-   LEVEL QUOTE
 ========================================= */
 
 app.post(
-  "/api/level-quote",
+  "/api/upgrade-core",
   auth,
   async (req, res) => {
     try {
@@ -1347,20 +1344,16 @@ app.post(
       }
 
       const balance =
-        Number(
-          user.balance || 0
-        );
+        Number(user.balance || 0);
 
       const cost =
         UPGRADE_COST_JASLIN;
 
       if (balance < cost) {
-
         return res.status(400).json({
           error:
             `Saldo tidak cukup. Butuh ${cost} JASLIN.`
         });
-
       }
 
       const newBalance =
@@ -1375,17 +1368,12 @@ app.post(
         await supabase
           .from("users")
           .update({
-            balance:
-              newBalance,
-
-            level:
-              newLevel
+            balance: newBalance,
+            level: newLevel
           })
           .eq(
             "telegram_id",
-            String(
-              req.tgUser.id
-            )
+            String(req.tgUser.id)
           );
 
       if (error) {
@@ -1405,23 +1393,11 @@ app.post(
         );
 
       res.json({
-
-        ...publicState(
-          updated
-        ),
-
-        upgraded:
-          true,
-
-        previousLevel:
-          currentLevel,
-
-        newLevel:
-          newLevel,
-
-        cost:
-          cost
-
+        ...publicState(updated),
+        upgraded: true,
+        previousLevel: currentLevel,
+        newLevel,
+        cost
       });
 
     } catch (error) {
@@ -1432,13 +1408,14 @@ app.post(
       );
 
       res.status(500).json({
-        error:
-          "Upgrade Core gagal."
+        error: "Upgrade Core gagal."
       });
 
     }
   }
 );
+
+
 /* =========================================
    TON WALLET
 ========================================= */
