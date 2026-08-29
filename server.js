@@ -105,6 +105,8 @@ const JASLIN_DECIMALS = 9;
 const MIN_WITHDRAW_JASLIN =
   2000;
 
+const MAX_LEVEL = 5000;
+const LEVEL_PRICE_USD = 1;
 
 /* =========================================
    SUPABASE
