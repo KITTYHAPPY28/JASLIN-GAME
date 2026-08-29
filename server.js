@@ -9,10 +9,12 @@ import { createClient } from "@supabase/supabase-js";
 import { Address } from "@ton/core";
 import { mnemonicToPrivateKey } from "@ton/crypto";
 import {
+  import {
+  TonClient,
+  JettonMaster,
   WalletContractV4,
   WalletContractV5R1
 } from "@ton/ton";
-
 
 dotenv.config();
 
@@ -81,6 +83,11 @@ const TON_NETWORK =
   process.env.TON_NETWORK ||
   "mainnet";
 
+const TON_RPC_URL =
+  process.env.TON_RPC_URL || "https://toncenter.com/api/v2/jsonRPC";
+
+const TONCENTER_API_KEY =
+  process.env.TONCENTER_API_KEY;
 
 /* =========================================
    JASLIN TOKEN
@@ -88,6 +95,11 @@ const TON_NETWORK =
 
 const JASLIN_JETTON_MASTER =
   "EQAmDnasFQqqiEFBjHy4tI0iIw1r-OtFeOSa0J9CJ4fNhjjx";
+
+const tonClient = new TonClient({
+  endpoint: TON_RPC_URL,
+  apiKey: TONCENTER_API_KEY
+});
 
 const JASLIN_DECIMALS = 9;
 
@@ -1423,6 +1435,33 @@ app.get(
 /* =========================================
    START
 ========================================= */
+app.get("/api/treasury-balance", async (req, res) => {
+  try {
+    const treasuryAddress = Address.parse(TON_TREASURY_ADDRESS);
+    const jettonMasterAddress = Address.parse(JASLIN_JETTON_MASTER);
+
+    const jettonMaster = tonClient.open(
+      JettonMaster.create(jettonMasterAddress)
+    );
+
+    const jettonWalletAddress =
+      await jettonMaster.getWalletAddress(treasuryAddress);
+
+    const tonBalance = await tonClient.getBalance(treasuryAddress);
+
+    res.json({
+      ok: true,
+      treasuryAddress: treasuryAddress.toString(),
+      treasuryJettonWallet: jettonWalletAddress.toString(),
+      tonBalanceNano: tonBalance.toString()
+    });
+  } catch (err) {
+    res.status(500).json({
+      ok: false,
+      error: err?.message || "Gagal membaca treasury"
+    });
+  }
+});
 
 app.listen(
   PORT,
