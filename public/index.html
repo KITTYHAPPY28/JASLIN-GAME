@@ -1,0 +1,1002 @@
+<!doctype html>
+
+<html lang="id">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+  name="viewport"
+  content="width=device-width,
+  initial-scale=1,
+  user-scalable=no"
+>
+
+<title>JASLIN Game</title>
+
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+
+body {
+  background:
+    radial-gradient(
+      circle at top,
+      #252547 0%,
+      #0f0f1a 60%
+    );
+
+  color: white;
+
+  font-family: system-ui, sans-serif;
+
+  user-select: none;
+}
+
+.gold-gradient {
+  background:
+    linear-gradient(
+      135deg,
+      #f39c12,
+      #f1c40f,
+      #e67e22
+    );
+}
+
+.gold-text {
+  background:
+    linear-gradient(
+      135deg,
+      #ffe066,
+      #f39c12
+    );
+
+  -webkit-background-clip: text;
+
+  -webkit-text-fill-color: transparent;
+}
+
+.wheel {
+  transition:
+    transform 4s
+    cubic-bezier(.15,.8,.15,1);
+}
+
+</style>
+
+</head>
+
+<body class="min-h-screen p-4">
+
+<main
+  class="max-w-md mx-auto
+  min-h-[95vh]
+  flex flex-col"
+>
+
+<!-- HEADER -->
+
+<header
+  class="
+  flex justify-between items-center
+  bg-gray-900/80
+  p-3
+  rounded-2xl
+  border border-yellow-500/30
+  "
+>
+
+<div class="flex items-center gap-2">
+
+<div
+  id="avatar"
+  class="
+  w-10 h-10
+  rounded-full
+  gold-gradient
+  flex items-center
+  justify-center
+  font-bold
+  text-black
+  "
+>
+J
+</div>
+
+<div>
+
+<h1
+  id="username"
+  class="text-xs font-bold text-gray-300"
+>
+User
+</h1>
+
+<span
+  class="
+  text-[10px]
+  bg-green-500/20
+  text-green-400
+  px-2 py-0.5
+  rounded-full
+  "
+>
+PLAYER
+</span>
+
+</div>
+
+</div>
+
+<button
+  id="walletBtn"
+  class="
+  bg-yellow-500
+  text-black
+  font-bold
+  text-xs
+  px-3 py-2
+  rounded-xl
+  "
+>
+Wallet
+</button>
+
+</header>
+
+
+<!-- BALANCE -->
+
+<section class="text-center my-5">
+
+<p
+  class="
+  text-xs
+  text-gray-400
+  tracking-widest
+  uppercase
+  "
+>
+JASLIN Balance
+</p>
+
+<h2
+  id="balance"
+  class="
+  text-4xl
+  font-extrabold
+  gold-text
+  my-1
+  "
+>
+0.0000
+</h2>
+
+<p class="text-xs text-gray-500">
+Confirmed server balance
+</p>
+
+
+<div
+  class="
+  mt-3
+  bg-gray-900/70
+  rounded-xl
+  p-3
+  border border-gray-800
+  "
+>
+
+<div class="flex justify-between text-xs">
+
+<span class="text-gray-400">
+Mining pending
+</span>
+
+<b
+  id="mining"
+  class="text-green-400"
+>
++0.0000
+</b>
+
+</div>
+
+
+<div
+  class="
+  flex justify-between
+  text-xs
+  mt-1
+  "
+>
+
+<span class="text-gray-400">
+Rate
+</span>
+
+<b id="rate">
+0.0450/min
+</b>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- GAME -->
+
+<section
+  class="
+  flex-1
+  flex flex-col
+  items-center
+  justify-center
+  "
+>
+
+<div
+  class="
+  relative
+  w-52 h-52
+  my-4
+  flex
+  items-center
+  justify-center
+  "
+>
+
+<div
+  id="wheel-disc"
+  class="
+  wheel
+  w-full h-full
+  rounded-full
+  border-4
+  border-yellow-500/50
+  flex
+  items-center
+  justify-center
+  gold-gradient
+  "
+>
+
+<div
+  class="
+  w-44 h-44
+  rounded-full
+  bg-gray-950
+  flex flex-col
+  items-center
+  justify-center
+  border-2
+  border-yellow-400/30
+  "
+>
+
+<span class="text-3xl">
+🚀
+</span>
+
+<span
+  class="
+  gold-text
+  font-black
+  text-lg
+  mt-1
+  "
+>
+JASLIN
+</span>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div
+  class="
+  w-full
+  max-w-xs
+  space-y-2
+  "
+>
+
+<button
+  id="claimBtn"
+  class="
+  w-full
+  py-3
+  rounded-xl
+  font-extrabold
+  text-black
+  gold-gradient
+  shadow-lg
+  text-sm
+  "
+>
+⚡ CLAIM MINING
+</button>
+
+
+<button
+  id="spinBtn"
+  class="
+  w-full
+  py-3
+  rounded-xl
+  font-bold
+  text-yellow-400
+  bg-gray-900
+  border border-yellow-500/40
+  text-xs
+  "
+>
+🎰 DAILY SPIN
+</button>
+
+
+<button
+  id="refBtn"
+  class="
+  w-full
+  py-3
+  rounded-xl
+  font-bold
+  bg-gray-900
+  border border-gray-700
+  text-xs
+  "
+>
+👥 INVITE FRIENDS
+</button>
+
+</div>
+
+</section>
+
+
+<!-- NAV -->
+
+<footer
+  class="
+  mt-5
+  bg-gray-900/90
+  border border-gray-800
+  rounded-2xl
+  p-2
+  flex
+  justify-around
+  text-center
+  text-xs
+  text-gray-400
+  "
+>
+
+<div class="text-yellow-400 font-bold">
+⛏️
+<br>
+<span class="text-[10px]">
+Mine
+</span>
+</div>
+
+
+<div id="taskBtn">
+📋
+<br>
+<span class="text-[10px]">
+Tasks
+</span>
+</div>
+
+
+<div id="buyBtn">
+🪐
+<br>
+<span class="text-[10px]">
+Buy
+</span>
+</div>
+
+
+<div id="friendBtn">
+👥
+<br>
+<span class="text-[10px]">
+Friends
+</span>
+</div>
+
+</footer>
+
+
+<div
+  id="status"
+  class="
+  text-center
+  text-[11px]
+  text-gray-500
+  mt-3
+  min-h-4
+  "
+>
+</div>
+
+</main>
+
+
+<script>
+
+const tg =
+  window.Telegram.WebApp;
+
+tg.ready();
+
+tg.expand();
+
+
+let state = null;
+
+let busy = false;
+
+
+/*
+==================================================
+ELEMENT HELPER
+==================================================
+*/
+
+const $ =
+  id =>
+  document.getElementById(id);
+
+
+/*
+==================================================
+API
+==================================================
+*/
+
+async function api(
+  endpoint,
+  options = {}
+) {
+
+  const response =
+    await fetch(
+      endpoint,
+      {
+
+        ...options,
+
+        headers: {
+
+          "Content-Type":
+            "application/json",
+
+          "X-Telegram-Init-Data":
+            tg.initData || "",
+
+          ...(options.headers || {})
+        }
+      }
+    );
+
+
+  const data =
+    await response
+      .json()
+      .catch(() => ({}));
+
+
+  if (!response.ok) {
+
+    throw new Error(
+      data.error ||
+      "Request gagal"
+    );
+
+  }
+
+
+  return data;
+}
+
+
+/*
+==================================================
+STATUS
+==================================================
+*/
+
+function showStatus(message) {
+
+  $("status").textContent =
+    message || "";
+
+}
+
+
+/*
+==================================================
+RENDER
+==================================================
+*/
+
+function render(data) {
+
+  state = data;
+
+
+  $("username").textContent =
+    data.user.firstName ||
+    data.user.username ||
+    "Player";
+
+
+  $("avatar").textContent =
+    (
+      data.user.firstName ||
+      "J"
+    )
+    .charAt(0)
+    .toUpperCase();
+
+
+  $("balance").textContent =
+    Number(data.balance)
+      .toFixed(4);
+
+
+  $("mining").textContent =
+    "+" +
+    Number(data.mining)
+      .toFixed(4);
+
+
+  $("rate").textContent =
+    Number(data.miningPerMinute)
+      .toFixed(4) +
+    "/min";
+
+
+  $("spinBtn").disabled =
+    !data.dailySpinAvailable;
+
+
+  $("spinBtn").textContent =
+    data.dailySpinAvailable
+      ? "🎰 DAILY SPIN"
+      : "⏳ SPIN BESOK";
+}
+
+
+/*
+==================================================
+INITIALIZE
+==================================================
+*/
+
+async function init() {
+
+  if (!tg.initData) {
+
+    showStatus(
+      "Buka game dari Telegram."
+    );
+
+    return;
+  }
+
+
+  try {
+
+    const startParam =
+      tg.initDataUnsafe
+        ?.start_param || "";
+
+
+    const data =
+      await api(
+        "/api/session",
+        {
+
+          method: "POST",
+
+          body:
+            JSON.stringify({
+              startParam
+            })
+
+        }
+      );
+
+
+    render(data);
+
+    showStatus(
+      "JASLIN server connected."
+    );
+
+  }
+
+  catch(error) {
+
+    showStatus(
+      error.message
+    );
+
+  }
+
+}
+
+
+/*
+==================================================
+CLAIM
+==================================================
+*/
+
+$("claimBtn").onclick =
+async () => {
+
+  if (busy) return;
+
+
+  busy = true;
+
+  $("claimBtn").disabled =
+    true;
+
+  $("claimBtn").textContent =
+    "PROCESSING...";
+
+
+  try {
+
+    const data =
+      await api(
+        "/api/claim",
+        {
+          method: "POST",
+
+          body: "{}"
+        }
+      );
+
+
+    render(data);
+
+
+    showStatus(
+      `+${data.claimed} JASLIN berhasil di-claim.`
+    );
+
+
+    tg.HapticFeedback
+      ?.notificationOccurred(
+        "success"
+      );
+
+  }
+
+  catch(error) {
+
+    showStatus(
+      error.message
+    );
+
+  }
+
+
+  finally {
+
+    busy = false;
+
+    $("claimBtn").disabled =
+      false;
+
+    $("claimBtn").textContent =
+      "⚡ CLAIM MINING";
+  }
+
+};
+
+
+/*
+==================================================
+DAILY SPIN
+==================================================
+*/
+
+$("spinBtn").onclick =
+async () => {
+
+  if (
+    busy ||
+    !state?.dailySpinAvailable
+  ) return;
+
+
+  busy = true;
+
+  $("spinBtn").disabled =
+    true;
+
+
+  const degree =
+    1440 +
+    Math.floor(
+      Math.random() * 360
+    );
+
+
+  $("wheel-disc")
+    .style.transform =
+    `rotate(${degree}deg)`;
+
+
+  try {
+
+    const data =
+      await api(
+        "/api/spin",
+        {
+          method: "POST",
+
+          body: "{}"
+        }
+      );
+
+
+    setTimeout(
+      () => {
+
+        render(data);
+
+        showStatus(
+          `🎉 +${data.reward} JASLIN dari Daily Spin!`
+        );
+
+        tg.HapticFeedback
+          ?.notificationOccurred(
+            "success"
+          );
+
+        busy = false;
+
+      },
+      4100
+    );
+
+  }
+
+  catch(error) {
+
+    $("wheel-disc")
+      .style.transform =
+      "rotate(0deg)";
+
+    showStatus(
+      error.message
+    );
+
+    busy = false;
+
+    render(state);
+  }
+
+};
+
+
+/*
+==================================================
+REFERRAL
+==================================================
+*/
+
+function shareReferral() {
+
+  if (!state) return;
+
+
+  const text =
+    encodeURIComponent(
+      "Ayo main JASLIN Game dan kumpulkan JASLIN!"
+    );
+
+
+  const url =
+    encodeURIComponent(
+      state.referralLink
+    );
+
+
+  tg.openTelegramLink(
+    `https://t.me/share/url?url=${url}&text=${text}`
+  );
+}
+
+
+$("refBtn").onclick =
+  shareReferral;
+
+
+$("friendBtn").onclick =
+  shareReferral;
+
+
+/*
+==================================================
+WALLET
+==================================================
+*/
+
+$("walletBtn").onclick =
+async () => {
+
+  const current =
+    state?.user?.wallet || "";
+
+
+  const wallet =
+    prompt(
+      "Masukkan alamat wallet Solana:",
+      current
+    );
+
+
+  if (wallet === null)
+    return;
+
+
+  try {
+
+    const result =
+      await api(
+        "/api/wallet",
+        {
+
+          method: "POST",
+
+          body:
+            JSON.stringify({
+              wallet
+            })
+
+        }
+      );
+
+
+    if (state) {
+
+      state.user.wallet =
+        result.wallet;
+
+    }
+
+
+    showStatus(
+      result.wallet
+        ? "Wallet tersimpan."
+        : "Wallet dihapus."
+    );
+
+  }
+
+  catch(error) {
+
+    showStatus(
+      error.message
+    );
+
+  }
+
+};
+
+
+/*
+==================================================
+BUY JASLIN
+==================================================
+*/
+
+$("buyBtn").onclick =
+() => {
+
+  const mint =
+    "YOUR_JASLIN_MINT_ADDRESS";
+
+
+  if (
+    mint ===
+    "YOUR_JASLIN_MINT_ADDRESS"
+  ) {
+
+    showStatus(
+      "Mint address JASLIN belum dipasang."
+    );
+
+    return;
+  }
+
+
+  tg.openLink(
+    `https://jup.ag/swap/SOL-${mint}`
+  );
+};
+
+
+/*
+==================================================
+TASK
+==================================================
+*/
+
+$("taskBtn").onclick =
+() => {
+
+  showStatus(
+    "Task system belum diaktifkan."
+  );
+
+};
+
+
+/*
+==================================================
+AUTO REFRESH
+==================================================
+*/
+
+setInterval(
+  async () => {
+
+    if (
+      !tg.initData ||
+      busy
+    ) return;
+
+
+    try {
+
+      const data =
+        await api(
+          "/api/state"
+        );
+
+
+      render(data);
+
+    }
+
+    catch {}
+
+  },
+  10000
+);
+
+
+/*
+==================================================
+START
+==================================================
+*/
+
+init();
+
+</script>
+
+</body>
+
+</html>
+
+
