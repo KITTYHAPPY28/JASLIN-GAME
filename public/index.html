@@ -2962,46 +2962,95 @@ function withdrawJaslin(){
 
 async function upgradeCore() {
   try {
-    const balance = Number(state?.balance || 0);
-    const cost = 200;
+    const currentLevel =
+      Number(state?.level || 1);
 
-    if (balance < cost) {
-      toast(`Butuh ${number(cost, 0)} JASLIN.`);
+    const targetLevel =
+      currentLevel + 1;
+
+    const quoteResponse =
+      await fetch(
+        "/api/level-quote",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-telegram-init-data":
+              window.Telegram?.WebApp?.initData || ""
+          },
+          body: JSON.stringify({
+            targetLevel
+          })
+        }
+      );
+
+    const quote =
+      await quoteResponse.json();
+
+    if (!quoteResponse.ok) {
+      toast(
+        quote?.error ||
+        "Gagal mengecek Holding Power."
+      );
       return;
     }
 
-    const initData =
-      window.Telegram?.WebApp?.initData || "";
+    if (!quote.eligible) {
+      toast(
+        `Holding Power belum cukup. Kurang ${Number(
+          quote.missingGram || 0
+        ).toFixed(4)} GRAM.`
+      );
+      return;
+    }
 
-    const response = await fetch(
-      "/api/upgrade-core",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-telegram-init-data": initData
+    const response =
+      await fetch(
+        "/api/upgrade-core",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-telegram-init-data":
+              window.Telegram?.WebApp?.initData || ""
+          }
         }
-      }
-    );
+      );
 
-    const data = await response.json();
+    const data =
+      await response.json();
 
     if (!response.ok) {
-      toast(data?.error || "Upgrade gagal.");
+      toast(
+        data?.error ||
+        "Upgrade Core gagal."
+      );
       return;
     }
 
     state = data;
+
     updateUI();
+
+    await renderUpgrade(
+      Number(state?.balance || 0)
+    );
 
     toast(
       `Core berhasil naik ke Level ${data.newLevel}!`
     );
 
   } catch (error) {
-    console.error("Upgrade Core error:", error);
-    toast("Upgrade Core gagal.");
+    console.error(
+      "Upgrade Core error:",
+      error
+    );
+
+    toast(
+      "Upgrade Core gagal."
+    );
   }
+}
 }
 
 
