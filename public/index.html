@@ -2943,38 +2943,48 @@ function withdrawJaslin(){
 
 /* ================= UPGRADE ================= */
 
-function upgradeCore(){
+async function upgradeCore() {
+  try {
+    const balance = Number(state?.balance || 0);
+    const cost = 200;
 
-  const balance =
-    Number(
-      state?.balance || 0
+    if (balance < cost) {
+      toast(`Butuh ${number(cost, 0)} JASLIN.`);
+      return;
+    }
+
+    const initData =
+      window.Telegram?.WebApp?.initData || "";
+
+    const response = await fetch(
+      "/api/upgrade-core",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-telegram-init-data": initData
+        }
+      }
     );
 
+    const data = await response.json();
 
-  const cost =
-    upgradeCost();
+    if (!response.ok) {
+      toast(data?.error || "Upgrade gagal.");
+      return;
+    }
 
-
-  if(balance < cost){
+    state = data;
+    updateUI();
 
     toast(
-      "Butuh " +
-      number(
-        cost,
-        0
-      ) +
-      " JASLIN."
+      `Core berhasil naik ke Level ${data.newLevel}!`
     );
 
-    return;
-
+  } catch (error) {
+    console.error("Upgrade Core error:", error);
+    toast("Upgrade Core gagal.");
   }
-
-
-  toast(
-    "Backend Upgrade Core belum diaktifkan."
-  );
-
 }
 
 
