@@ -425,7 +425,19 @@ function calculateMining(user) {
 
   const minutes = miningTime / 60000;
 
-  return minutes * MINING_PER_MINUTE;
+  const MAX_LEVEL = 5000;
+
+  const level = Math.min(
+  MAX_LEVEL,
+  Math.max(1, Number(user.level || 1))
+);
+
+// Level 1 = 100%
+// Level 5000 = 200%
+   const levelSpeed =
+  1 + ((level - 1) / (MAX_LEVEL - 1));
+
+  return minutes * MINING_PER_MINUTE * levelSpeed;
 }
 
 
