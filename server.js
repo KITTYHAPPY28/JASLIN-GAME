@@ -1175,8 +1175,6 @@ const priceGram =
 const jaslinPerGram =
   jaslinReserve / gramReserve;
 const gramPriceResponse = await fetch(
-  "https://api.coingecko.com/api/v3/simple/price?ids=gram&vs_currencies=usd"
-const gramPriceResponse = await fetch(
   "https://api.coingecko.com/api/v3/simple/price?names=Gram%20%28prev.%20Toncoin%29&vs_currencies=usd"
 );
 
