@@ -1174,7 +1174,25 @@ const priceGram =
 
 const jaslinPerGram =
   jaslinReserve / gramReserve;
+const gramPriceResponse = await fetch(
+  "https://api.coingecko.com/api/v3/simple/price?ids=gram&vs_currencies=usd"
+);
 
+if (!gramPriceResponse.ok) {
+  throw new Error("Gagal mengambil harga GRAM/USD");
+}
+
+const gramPriceData =
+  await gramPriceResponse.json();
+
+const gramPriceUsd =
+  Number(
+    gramPriceData?.gram?.usd || 0
+  );
+
+const priceUsd =
+  priceGram * gramPriceUsd;
+    
 res.json({
   ok: true,
   symbol: "JASLIN",
@@ -1186,6 +1204,9 @@ res.json({
 
   priceGram,
   jaslinPerGram,
+
+  gramPriceUsd,
+  priceUsd,
 
   updatedAt: Date.now()
 });
