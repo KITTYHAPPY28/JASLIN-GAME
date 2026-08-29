@@ -1144,7 +1144,6 @@ app.post(
 ========================================= */
 
 app.get("/api/jaslin-price", async (req, res) => {
-app.get("/api/jaslin-price", async (req, res) => {
   try {
     const poolAddress = "EQBtaODtADXS7R6KJClA_-uOQlFkXG8_GCjjVfk4vUbMImxb";
 
