@@ -714,6 +714,9 @@ maxLevel:
 levelPriceUsd:
   LEVEL_PRICE_USD
 
+  };
+}
+
 
 /* =========================================
    SESSION
