@@ -1432,6 +1432,5 @@ app.listen(
       `JASLIN server running on port
 ${PORT}`
     );
-
   }
 );
