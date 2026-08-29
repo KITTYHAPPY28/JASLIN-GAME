@@ -410,29 +410,22 @@ async function saveTransaction(
    MINING CALCULATION
 ========================================= */
 
-function calculateMining(
-  user
-) {
+function calculateMining(user) {
+  const started = Number(user.mining_started_at);
 
-  const started =
-    Number(
-      user.mining_started_at
-    );
+  const elapsed = Date.now() - started;
 
-  const elapsed =
-    Date.now() -
-    started;
+  // Maksimal mining 8 jam
+  const MAX_MINING_TIME = 8 * 60 * 60 * 1000;
 
-  const minutes =
-    Math.max(
-      0,
-      elapsed / 60000
-    );
-
-  return (
-    minutes *
-    MINING_PER_MINUTE
+  const miningTime = Math.min(
+    Math.max(0, elapsed),
+    MAX_MINING_TIME
   );
+
+  const minutes = miningTime / 60000;
+
+  return minutes * MINING_PER_MINUTE;
 }
 
 
