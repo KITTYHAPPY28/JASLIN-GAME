@@ -1258,66 +1258,76 @@ app.post(
 
       const priceUsd =
         levelsToBuy * LEVEL_PRICE_USD;
+
+      // Ambil harga GRAM/USD
       const gramPriceResponse = await fetch(
-  "https://api.coingecko.com/api/v3/simple/price?names=Gram%20%28prev.%20Toncoin%29&vs_currencies=usd"
-);
+        "https://api.coingecko.com/api/v3/simple/price?names=Gram%20%28prev.%20Toncoin%29&vs_currencies=usd"
+      );
 
-if (!gramPriceResponse.ok) {
-  throw new Error("Gagal mengambil harga GRAM/USD");
-}
+      if (!gramPriceResponse.ok) {
+        throw new Error(
+          "Gagal mengambil harga GRAM/USD"
+        );
+      }
 
-const gramPriceData =
-  await gramPriceResponse.json();
+      const gramPriceData =
+        await gramPriceResponse.json();
 
-const gramPriceUsd =
-  Number(
-    gramPriceData?.["Gram (prev. Toncoin)"]?.usd || 0
-  );
+      const gramPriceUsd =
+        Number(
+          gramPriceData?.["Gram (prev. Toncoin)"]?.usd || 0
+        );
 
-const poolAddress = Address.parse(
-  "EQBtaODtADXS7R6KJClA_-uOQlFkXG8_GCjjVfk4vUbMImxb"
-);
+      if (gramPriceUsd <= 0) {
+        throw new Error(
+          "Harga GRAM/USD tidak valid"
+        );
+      }
 
-const poolData =
-  await tonClient.runMethod(
-    poolAddress,
-    "get_pool_data"
-  );
+      // Ambil reserve pool JASLIN/GRAM
+      const poolAddress = Address.parse(
+        "EQBtaODtADXS7R6KJClA_-uOQlFkXG8_GCjjVfk4vUbMImxb"
+      );
 
-const items =
-  poolData.stack.items;
+      const poolData =
+        await tonClient.runMethod(
+          poolAddress,
+          "get_pool_data"
+        );
 
-const gramReserve =
-  Number(BigInt(items[9].value)) / 1e9;
+      const items =
+        poolData.stack.items;
 
-const jaslinReserve =
-  Number(BigInt(items[10].value)) / 1e9;
+      const gramReserve =
+        Number(BigInt(items[9].value)) / 1e9;
 
-const priceGram =
-  gramReserve / jaslinReserve;
+      const jaslinReserve =
+        Number(BigInt(items[10].value)) / 1e9;
 
-const jaslinPriceUsd =
-  priceGram * gramPriceUsd;
- 
-const priceUsd =
-  levelsToBuy * LEVEL_PRICE_USD;
+      const priceGram =
+        gramReserve / jaslinReserve;
 
-const priceJaslin =
-  jaslinPriceUsd > 0
-    ? priceUsd / jaslinPriceUsd
-    : null;
+      const jaslinPriceUsd =
+        priceGram * gramPriceUsd;
+
+      const priceJaslin =
+        priceUsd / jaslinPriceUsd;
 
       res.json({
-  currentLevel,
-  targetLevel,
-  levelsToBuy,
-  priceUsd,
-  jaslinPriceUsd,
-  priceJaslin
-});
+        currentLevel,
+        targetLevel,
+        levelsToBuy,
+        priceUsd,
+        gramPriceUsd,
+        jaslinPriceUsd,
+        priceJaslin
+      });
 
     } catch (error) {
-      console.error(error);
+      console.error(
+        "Level quote error:",
+        error
+      );
 
       res.status(500).json({
         error: "Gagal menghitung harga level."
