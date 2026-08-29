@@ -1136,7 +1136,25 @@ app.post(
     }
 
   }
-);
+); /* =========================================
+   JASLIN MARKET PRICE
+========================================= */
+
+app.get("/api/jaslin-price", async (req, res) => {
+  try {
+    res.json({
+      ok: true,
+      symbol: "JASLIN",
+      priceUsd: 0,
+      source: "market_pending"
+    });
+  } catch (error) {
+    res.status(500).json({
+      ok: false,
+      error: "Gagal mengambil harga JASLIN."
+    });
+  }
+});
 
 /* =========================================
    LEVEL QUOTE
