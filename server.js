@@ -1166,7 +1166,7 @@ const reserveX = BigInt(items[9].value);
 const reserveY = BigInt(items[10].value);
 
 // Kedua token memakai 9 decimals.
-// Pool ini: X = JASLIN, Y = GRAM.
+// Pool ini: X = GRAM, Y = JASLIN.
 const gramReserve = Number(reserveX) / 1e9;
 const jaslinReserve = Number(reserveY) / 1e9;
 
