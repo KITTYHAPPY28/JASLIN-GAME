@@ -1144,17 +1144,33 @@ app.post(
 ========================================= */
 
 app.get("/api/jaslin-price", async (req, res) => {
+app.get("/api/jaslin-price", async (req, res) => {
   try {
+    const poolAddress = "EQBtaODtADXS7R6KJClA_-uOQlFkXG8_GCjjVfk4vUbMImxb";
+
+    const response = await fetch(
+      `https://api.dedust.io/v2/pools/${poolAddress}`
+    );
+
+    if (!response.ok) {
+      throw new Error(`DeDust API error: ${response.status}`);
+    }
+
+    const pool = await response.json();
+
     res.json({
       ok: true,
       symbol: "JASLIN",
-      priceUsd: 0,
-      source: "market_pending"
+      source: "dedust",
+      poolAddress,
+      pool
     });
   } catch (error) {
+    console.error("JASLIN price error:", error);
+
     res.status(500).json({
       ok: false,
-      error: "Gagal mengambil harga JASLIN."
+      error: "Failed to fetch JASLIN pool data"
     });
   }
 });
