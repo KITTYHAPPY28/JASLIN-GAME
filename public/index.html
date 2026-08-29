@@ -1,1015 +1,2773 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-
-  <title>JASLIN</title>
-
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-  <style>
-    * {
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    :root {
-      --bg: #050505;
-      --bg2: #0b0a07;
-      --card: rgba(20, 17, 10, 0.86);
-      --card2: rgba(12, 12, 12, 0.94);
-      --gold: #f6c453;
-      --gold2: #b67a16;
-      --gold3: #7a4b08;
-      --text: #fff6d5;
-      --muted: #9d937b;
-      --green: #65ff9a;
-      --red: #ff6b6b;
-      --border: rgba(246, 196, 83, 0.20);
-    }
-
-    html,
-    body {
-      margin: 0;
-      min-height: 100%;
-      background:
-        radial-gradient(circle at 50% -10%, rgba(188, 126, 24, .22), transparent 38%),
-        linear-gradient(180deg, #090704 0%, #030303 65%, #050505 100%);
-      color: var(--text);
-      font-family: Arial, Helvetica, sans-serif;
-    }
-
-    body {
-      padding-bottom: 95px;
-      overflow-x: hidden;
-    }
-
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      opacity: .17;
-      background-image:
-        linear-gradient(rgba(255, 196, 75, .07) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 196, 75, .07) 1px, transparent 1px);
-      background-size: 34px 34px;
-      mask-image: linear-gradient(to bottom, black, transparent 75%);
-    }
-
-    button,
-    input {
-      font: inherit;
-    }
-
-    button {
-      cursor: pointer;
-    }
-
-    .app {
-      max-width: 520px;
-      margin: 0 auto;
-      position: relative;
-      z-index: 2;
-    }
-
-    .header {
-      padding: 20px 18px 10px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 11px;
-    }
-
-    .logo {
-      width: 46px;
-      height: 46px;
-      border-radius: 15px;
-      display: grid;
-      place-items: center;
-      font-weight: 900;
-      font-size: 25px;
-      color: #090704;
-      background:
-        linear-gradient(145deg, #fff0a4, #f1bd47 43%, #8d5508);
-      box-shadow:
-        0 0 25px rgba(246, 196, 83, .22),
-        inset 0 0 0 2px rgba(255,255,255,.17);
-      transform: rotate(-4deg);
-    }
-
-    .brand-title {
-      font-weight: 900;
-      letter-spacing: 1px;
-      font-size: 16px;
-    }
-
-    .brand-sub {
-      color: var(--muted);
-      font-size: 11px;
-      margin-top: 3px;
-    }
-
-    .online {
-      border: 1px solid rgba(101, 255, 154, .24);
-      color: var(--green);
-      border-radius: 999px;
-      padding: 7px 10px;
-      font-size: 10px;
-      font-weight: 800;
-      background: rgba(101, 255, 154, .07);
-    }
-
-    .page {
-      display: none;
-      padding: 10px 15px 25px;
-    }
-
-    .page.active {
-      display: block;
-    }
-
-    .card {
-      background:
-        linear-gradient(145deg, rgba(30, 24, 11, .92), rgba(8, 8, 8, .94));
-      border: 1px solid var(--border);
-      border-radius: 22px;
-      padding: 18px;
-      margin-bottom: 14px;
-      box-shadow:
-        0 12px 35px rgba(0,0,0,.35),
-        inset 0 1px 0 rgba(255,255,255,.025);
-    }
-
-    .section-title {
-      font-size: 11px;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 1.4px;
-      margin-bottom: 8px;
-      font-weight: 800;
-    }
-
-    .balance {
-      font-size: clamp(32px, 9vw, 48px);
-      font-weight: 900;
-      letter-spacing: -1.5px;
-      color: #ffe49a;
-      text-shadow: 0 0 25px rgba(246,196,83,.17);
-    }
-
-    .token-label {
-      color: var(--gold);
-      font-size: 13px;
-      font-weight: 800;
-      letter-spacing: 1px;
-      margin-top: 3px;
-    }
-
-    .core-wrap {
-      margin: 23px auto 20px;
-      width: 210px;
-      height: 210px;
-      position: relative;
-      display: grid;
-      place-items: center;
-    }
-
-    .ring {
-      position: absolute;
-      inset: 0;
-      border-radius: 50%;
-      border: 1px solid rgba(246,196,83,.16);
-      box-shadow:
-        0 0 35px rgba(246,196,83,.07),
-        inset 0 0 35px rgba(246,196,83,.04);
-    }
-
-    .ring::before,
-    .ring::after {
-      content: "";
-      position: absolute;
-      border-radius: 50%;
-      border: 2px dashed rgba(246,196,83,.20);
-    }
-
-    .ring::before {
-      inset: 13px;
-      animation: spin 18s linear infinite;
-    }
-
-    .ring::after {
-      inset: 31px;
-      animation: spinBack 13s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    @keyframes spinBack {
-      to { transform: rotate(-360deg); }
-    }
-
-    .core {
-      width: 122px;
-      height: 122px;
-      border-radius: 31px;
-      position: relative;
-      display: grid;
-      place-items: center;
-      transform: rotate(45deg);
-      background:
-        linear-gradient(145deg, #241704, #090704 60%, #332009);
-      border: 1px solid rgba(255, 202, 84, .52);
-      box-shadow:
-        0 0 40px rgba(246,196,83,.16),
-        inset 0 0 23px rgba(246,196,83,.12);
-    }
-
-    .core::before {
-      content: "";
-      position: absolute;
-      inset: 11px;
-      border-radius: 23px;
-      border: 1px solid rgba(246,196,83,.19);
-    }
-
-    .core-j {
-      transform: rotate(-45deg);
-      font-size: 54px;
-      font-weight: 1000;
-      color: var(--gold);
-      text-shadow: 0 0 25px rgba(246,196,83,.38);
-    }
-
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 9px;
-      margin-top: 15px;
-    }
-
-    .stat {
-      border: 1px solid rgba(246,196,83,.11);
-      background: rgba(255,255,255,.018);
-      border-radius: 15px;
-      padding: 11px 8px;
-      text-align: center;
-    }
-
-    .stat-value {
-      font-size: 14px;
-      font-weight: 900;
-      color: #ffe098;
-    }
-
-    .stat-label {
-      color: var(--muted);
-      font-size: 9px;
-      margin-top: 5px;
-      text-transform: uppercase;
-    }
-
-    .progress {
-      height: 8px;
-      border-radius: 999px;
-      overflow: hidden;
-      background: #16130d;
-      margin-top: 9px;
-    }
-
-    .progress > div {
-      height: 100%;
-      width: 35%;
-      border-radius: inherit;
-      background: linear-gradient(90deg, #8f5709, #ffd66d);
-      box-shadow: 0 0 13px rgba(246,196,83,.35);
-    }
-
-    .btn {
-      border: 0;
-      border-radius: 15px;
-      width: 100%;
-      padding: 14px 16px;
-      font-weight: 900;
-      margin-top: 11px;
-      transition: transform .12s ease, opacity .12s ease;
-    }
-
-    .btn:active {
-      transform: scale(.98);
-    }
-
-    .btn-gold {
-      color: #130d03;
-      background: linear-gradient(90deg, #b77a16, #f7cf68, #d39a2a);
-      box-shadow: 0 8px 25px rgba(177,117,18,.18);
-    }
-
-    .btn-dark {
-      color: #f5ce72;
-      border: 1px solid rgba(246,196,83,.22);
-      background: #0c0a07;
-    }
-
-    .btn-danger {
-      color: #ffadad;
-      border: 1px solid rgba(255,107,107,.24);
-      background: rgba(255,107,107,.05);
-    }
-
-    .row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .gold {
-      color: var(--gold);
-    }
-
-    .muted {
-      color: var(--muted);
-    }
-
-    .small {
-      font-size: 11px;
-    }
-
-    .big {
-      font-size: 22px;
-      font-weight: 900;
-    }
-
-    .protocol {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 5px;
-      margin-top: 14px;
-    }
-
-    .day {
-      padding: 9px 3px;
-      min-width: 0;
-      border-radius: 12px;
-      text-align: center;
-      border: 1px solid rgba(246,196,83,.12);
-      background: rgba(255,255,255,.018);
-    }
-
-    .day-num {
-      font-size: 9px;
-      color: var(--muted);
-    }
-
-    .day-reward {
-      font-size: 9px;
-      color: #f3ca6e;
-      margin-top: 4px;
-      font-weight: 800;
-    }
-
-    .day.active {
-      border-color: rgba(246,196,83,.50);
-      background: rgba(246,196,83,.09);
-      box-shadow: 0 0 18px rgba(246,196,83,.08);
-    }
-
-    .task {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      padding: 14px 0;
-      border-bottom: 1px solid rgba(255,255,255,.045);
-    }
-
-    .task:last-child {
-      border-bottom: 0;
-    }
-
-    .task-icon {
-      width: 42px;
-      height: 42px;
-      flex: 0 0 42px;
-      border-radius: 13px;
-      display: grid;
-      place-items: center;
-      background: rgba(246,196,83,.07);
-      border: 1px solid rgba(246,196,83,.15);
-      font-size: 19px;
-    }
-
-    .task-info {
-      flex: 1;
-    }
-
-    .task-title {
-      font-weight: 800;
-      font-size: 13px;
-    }
-
-    .task-reward {
-      color: var(--gold);
-      font-size: 10px;
-      margin-top: 4px;
-    }
-
-    .mini-btn {
-      border: 1px solid rgba(246,196,83,.22);
-      color: var(--gold);
-      background: rgba(246,196,83,.05);
-      padding: 8px 10px;
-      border-radius: 11px;
-      font-size: 10px;
-      font-weight: 900;
-    }
-
-    .code-box {
-      border: 1px dashed rgba(246,196,83,.24);
-      border-radius: 14px;
-      background: #080705;
-      padding: 12px;
-      word-break: break-all;
-      font-size: 10px;
-      color: #c7b88d;
-      margin-top: 12px;
-    }
-
-    .rank {
-      display: flex;
-      align-items: center;
-      gap: 11px;
-      padding: 12px 0;
-      border-bottom: 1px solid rgba(255,255,255,.045);
-    }
-
-    .rank:last-child {
-      border-bottom: 0;
-    }
-
-    .rank-num {
-      width: 27px;
-      font-weight: 900;
-      color: var(--gold);
-    }
-
-    .rank-user {
-      flex: 1;
-      font-size: 12px;
-    }
-
-    .rank-bal {
-      font-size: 11px;
-      color: #e3c577;
-      font-weight: 800;
-    }
-
-    .wallet-input {
-      width: 100%;
-      padding: 14px;
-      border-radius: 13px;
-      margin-top: 10px;
-      outline: none;
-      border: 1px solid rgba(246,196,83,.18);
-      background: #080705;
-      color: white;
-    }
-
-    .wallet-input:focus {
-      border-color: rgba(246,196,83,.55);
-    }
-
-    .notice {
-      border-radius: 13px;
-      padding: 11px;
-      background: rgba(246,196,83,.05);
-      border: 1px solid rgba(246,196,83,.11);
-      color: #b4a481;
-      font-size: 10px;
-      line-height: 1.5;
-      margin-top: 11px;
-    }
-
-    .history {
-      padding: 12px 0;
-      border-bottom: 1px solid rgba(255,255,255,.045);
-    }
-
-    .history:last-child {
-      border-bottom: 0;
-    }
-
-    .history-title {
-      font-size: 12px;
-      font-weight: 800;
-    }
-
-    .history-time {
-      font-size: 9px;
-      color: var(--muted);
-      margin-top: 4px;
-    }
-
-    .bottom-nav {
-      position: fixed;
-      z-index: 99;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: min(520px, 100%);
-      padding:
-        9px 10px
-        calc(9px + env(safe-area-inset-bottom));
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      border-top: 1px solid rgba(246,196,83,.12);
-      background: rgba(5,5,5,.95);
-      backdrop-filter: blur(16px);
-    }
-
-    .nav-btn {
-      border: 0;
-      background: transparent;
-      color: #6f6757;
-      border-radius: 12px;
-      padding: 7px 3px;
-      font-size: 9px;
-      font-weight: 900;
-    }
-
-    .nav-icon {
-      font-size: 20px;
-      display: block;
-      margin-bottom: 4px;
-    }
-
-    .nav-btn.active {
-      color: var(--gold);
-      background: rgba(246,196,83,.045);
-    }
-
-    .toast {
-      position: fixed;
-      z-index: 200;
-      left: 50%;
-      bottom: 105px;
-      transform: translateX(-50%) translateY(20px);
-      width: calc(100% - 34px);
-      max-width: 480px;
-      color: #0b0802;
-      background: #f2c85f;
-      padding: 12px 15px;
-      border-radius: 14px;
-      font-size: 12px;
-      font-weight: 800;
-      opacity: 0;
-      pointer-events: none;
-      transition: .25s ease;
-    }
-
-    .toast.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
-
-    .loading {
-      opacity: .55;
-      pointer-events: none;
-    }
-
-    .hidden {
-      display: none !important;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+>
+
+<title>JASLIN</title>
+
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<style>
+*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
+
+:root{
+  --bg:#020202;
+  --card:#070604;
+  --gold:#f6c453;
+  --gold2:#d99616;
+  --text:#fff;
+  --muted:#99958d;
+  --green:#38ff5a;
+  --red:#ff3545;
+  --border:rgba(246,196,83,.26);
+}
+
+html,body{
+  margin:0;
+  min-height:100%;
+  background:
+    radial-gradient(circle at 50% 10%,rgba(162,105,12,.12),transparent 36%),
+    #020202;
+  color:var(--text);
+  font-family:Arial,Helvetica,sans-serif;
+}
+
+body{
+  padding-bottom:90px;
+}
+
+button,input{
+  font:inherit;
+}
+
+button{
+  cursor:pointer;
+}
+
+.app{
+  width:100%;
+  max-width:520px;
+  margin:auto;
+}
+
+/* HEADER */
+
+.header{
+  padding:18px 17px 12px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:11px;
+}
+
+.header-logo{
+  width:48px;
+  height:48px;
+  border-radius:13px;
+  display:grid;
+  place-items:center;
+  font-weight:900;
+  font-size:25px;
+  color:#080500;
+  background:linear-gradient(145deg,#ffe27a,#e5a52b,#8b580a);
+  box-shadow:0 0 20px rgba(246,196,83,.18);
+}
+
+.brand-title{
+  font-size:17px;
+  font-weight:900;
+}
+
+.online{
+  font-size:10px;
+  color:var(--green);
+  margin-top:4px;
+  font-weight:800;
+}
+
+.profile-btn{
+  max-width:155px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  color:#fff;
+  border:1px solid rgba(255,255,255,.13);
+  background:#050505;
+  border-radius:999px;
+  padding:10px 14px;
+  font-size:11px;
+  font-weight:800;
+}
+
+/* PAGE */
+
+.page{
+  display:none;
+  padding:8px 15px 24px;
+}
+
+.page.active{
+  display:block;
+}
+
+/* CARD */
+
+.card{
+  margin-bottom:14px;
+  padding:16px;
+  border-radius:20px;
+  border:1px solid var(--border);
+  background:
+    radial-gradient(circle at 50% 0%,rgba(130,82,8,.08),transparent 45%),
+    linear-gradient(145deg,#0a0804,#030303);
+  box-shadow:0 10px 30px rgba(0,0,0,.42);
+}
+
+.section-title{
+  color:#b1ada4;
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.8px;
+}
+
+.gold{color:var(--gold)}
+.green{color:var(--green)}
+.muted{color:var(--muted)}
+.small{font-size:10px}
+
+.row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+}
+
+/* TOP LEVEL */
+
+.level-top{
+  display:grid;
+  grid-template-columns:100px 1fr;
+  gap:14px;
+}
+
+.level-box{
+  border:1px solid rgba(246,196,83,.22);
+  border-radius:15px;
+  min-height:122px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+}
+
+.level-small{
+  font-size:9px;
+  color:#d4d0c8;
+}
+
+.hex{
+  width:58px;
+  height:58px;
+  margin:7px 0;
+  display:grid;
+  place-items:center;
+  font-size:30px;
+  font-weight:900;
+  clip-path:polygon(
+    25% 5%,
+    75% 5%,
+    100% 50%,
+    75% 95%,
+    25% 95%,
+    0 50%
+  );
+  color:white;
+  background:linear-gradient(145deg,#e4a522,#5c3504);
+  box-shadow:0 0 20px rgba(246,196,83,.25);
+}
+
+.next-title{
+  color:#aaa69d;
+  font-size:10px;
+}
+
+.next-price{
+  color:var(--gold);
+  font-size:21px;
+  font-weight:900;
+  margin-top:5px;
+}
+
+.usd{
+  display:inline-block;
+  margin-left:4px;
+  padding:4px 7px;
+  border:1px solid rgba(246,196,83,.25);
+  border-radius:8px;
+  color:#ffd35d;
+  font-size:10px;
+}
+
+.bonus{
+  font-size:19px;
+  font-weight:900;
+  color:var(--green);
+}
+
+.progress{
+  margin-top:13px;
+  height:8px;
+  border-radius:999px;
+  overflow:hidden;
+  background:#151515;
+}
+
+.progress-fill{
+  height:100%;
+  width:0%;
+  border-radius:inherit;
+  background:linear-gradient(90deg,#bd7b0c,#ffd965);
+  transition:.3s;
+}
+
+/* VAULT */
+
+.vault-head{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:flex-start;
+}
+
+.balance{
+  margin-top:8px;
+  font-size:40px;
+  line-height:1;
+  font-weight:900;
+  color:#ffc63b;
+}
+
+.balance-token{
+  margin-top:7px;
+  color:var(--gold);
+  font-size:13px;
+  font-weight:900;
+}
+
+.wallet-box{
+  min-width:205px;
+  padding:10px;
+  border:1px solid rgba(246,196,83,.17);
+  border-radius:13px;
+  font-size:10px;
+}
+
+.wallet-row{
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+  padding:4px 0;
+}
+
+/* CORE */
+
+.core-wrap{
+  width:250px;
+  height:250px;
+  margin:22px auto 7px;
+  display:grid;
+  place-items:center;
+  position:relative;
+}
+
+.ring{
+  position:absolute;
+  inset:0;
+  border-radius:50%;
+  border:1px solid rgba(246,196,83,.14);
+  box-shadow:0 0 40px rgba(246,196,83,.08);
+}
+
+.ring:before{
+  content:"";
+  position:absolute;
+  inset:13px;
+  border-radius:50%;
+  border:2px dotted rgba(246,196,83,.52);
+  animation:spin 18s linear infinite;
+}
+
+.ring:after{
+  content:"";
+  position:absolute;
+  inset:32px;
+  border-radius:50%;
+  border:1px solid rgba(246,196,83,.24);
+  animation:spinBack 13s linear infinite;
+}
+
+@keyframes spin{
+  to{transform:rotate(360deg)}
+}
+
+@keyframes spinBack{
+  to{transform:rotate(-360deg)}
+}
+
+.coin-logo{
+  position:relative;
+  z-index:2;
+  width:177px;
+  height:177px;
+  object-fit:cover;
+  border-radius:50%;
+  filter:drop-shadow(0 0 14px rgba(246,196,83,.28));
+}
+
+.output{
+  text-align:center;
+}
+
+.output-title{
+  color:#b9b5ad;
+  font-size:10px;
+}
+
+.output-number{
+  margin-top:5px;
+  color:var(--green);
+  font-size:36px;
+  font-weight:900;
+  text-shadow:0 0 15px rgba(56,255,90,.18);
+}
+
+.output-sub{
+  margin-top:4px;
+  font-size:11px;
+  color:#aaa59d;
+}
+
+/* BUTTON */
+
+.btn{
+  width:100%;
+  border-radius:14px;
+  padding:15px;
+  margin-top:14px;
+  font-weight:900;
+  border:0;
+}
+
+.btn:active{
+  transform:scale(.98);
+}
+
+.btn-gold{
+  font-size:16px;
+  color:#0b0701;
+  background:linear-gradient(90deg,#ca8614,#ffdb69,#dda122);
+}
+
+.btn-dark{
+  color:var(--gold);
+  background:#070604;
+  border:1px solid rgba(246,196,83,.34);
+}
+
+/* STATS */
+
+.stats{
+  margin-top:13px;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+}
+
+.stat{
+  min-height:82px;
+  border:1px solid rgba(246,196,83,.19);
+  border-radius:15px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  text-align:center;
+}
+
+.stat-value{
+  color:#ffd05c;
+  font-weight:900;
+  font-size:16px;
+}
+
+.stat-label{
+  margin-top:7px;
+  color:#aaa69c;
+  font-size:8px;
+}
+
+/* CORE PROGRESS */
+
+.progress-title{
+  color:var(--gold);
+  font-size:24px;
+  font-weight:900;
+  margin-top:8px;
+}
+
+.upgrade-price{
+  color:var(--gold);
+  font-size:19px;
+  font-weight:900;
+  margin-top:4px;
+}
+
+.progress-bottom{
+  display:flex;
+  justify-content:space-between;
+  margin-top:8px;
+  font-size:10px;
+}
+
+/* DAILY */
+
+.daily{
+  position:fixed;
+  right:max(18px,calc((100vw - 520px)/2 + 18px));
+  bottom:95px;
+  z-index:100;
+  width:80px;
+  height:80px;
+  border-radius:50%;
+  border:2px solid #e8ad27;
+  background:radial-gradient(circle,#271904,#040303 70%);
+  color:white;
+  box-shadow:0 0 20px rgba(246,196,83,.52);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  font-size:9px;
+  font-weight:900;
+}
+
+.daily-gift{
+  font-size:25px;
+}
+
+.daily-gold{
+  color:var(--gold);
+}
+
+.daily-dot{
+  position:absolute;
+  top:1px;
+  right:4px;
+  width:16px;
+  height:16px;
+  border-radius:50%;
+  background:var(--red);
+}
+
+/* TASK */
+
+.task{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:14px 0;
+  border-bottom:1px solid rgba(255,255,255,.05);
+}
+
+.task:last-child{
+  border-bottom:0;
+}
+
+.task-icon{
+  width:43px;
+  height:43px;
+  flex:0 0 43px;
+  border-radius:13px;
+  display:grid;
+  place-items:center;
+  border:1px solid rgba(246,196,83,.18);
+  background:rgba(246,196,83,.05);
+  font-size:19px;
+}
+
+.task-info{
+  flex:1;
+}
+
+.task-title{
+  font-size:13px;
+  font-weight:800;
+}
+
+.task-reward{
+  margin-top:4px;
+  color:var(--gold);
+  font-size:10px;
+}
+
+.mini-btn{
+  border-radius:10px;
+  padding:8px 10px;
+  color:var(--gold);
+  border:1px solid rgba(246,196,83,.25);
+  background:#080705;
+  font-size:9px;
+  font-weight:900;
+}
+
+/* PROFILE */
+
+.input{
+  width:100%;
+  padding:14px;
+  margin-top:10px;
+  border-radius:13px;
+  outline:0;
+  color:white;
+  background:#070604;
+  border:1px solid rgba(246,196,83,.2);
+}
+
+.notice{
+  margin-top:12px;
+  padding:11px;
+  border-radius:12px;
+  color:#aaa397;
+  border:1px solid rgba(246,196,83,.11);
+  background:rgba(246,196,83,.035);
+  line-height:1.5;
+  font-size:10px;
+}
+
+.referral{
+  margin-top:13px;
+  padding:12px;
+  border-radius:12px;
+  border:1px dashed rgba(246,196,83,.24);
+  color:#c5baa2;
+  font-size:10px;
+  word-break:break-all;
+}
+
+/* MODAL */
+
+.modal{
+  position:fixed;
+  inset:0;
+  z-index:500;
+  display:none;
+  justify-content:center;
+  align-items:center;
+  padding:18px;
+  background:rgba(0,0,0,.84);
+}
+
+.modal.show{
+  display:flex;
+}
+
+.modal-card{
+  width:100%;
+  max-width:460px;
+  padding:20px;
+  border-radius:20px;
+  background:#080705;
+  border:1px solid rgba(246,196,83,.32);
+}
+
+.days{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:5px;
+  margin-top:15px;
+}
+
+.day{
+  padding:9px 2px;
+  border-radius:9px;
+  text-align:center;
+  border:1px solid rgba(246,196,83,.14);
+}
+
+.day.active{
+  border-color:var(--gold);
+  background:rgba(246,196,83,.08);
+}
+
+.day-name{
+  font-size:8px;
+  color:#aaa;
+}
+
+.day-value{
+  margin-top:4px;
+  font-size:9px;
+  color:var(--gold);
+  font-weight:900;
+}
+
+/* BOTTOM NAV */
+
+.bottom-nav{
+  position:fixed;
+  bottom:0;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:90;
+  width:min(520px,100%);
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  padding:8px 5px calc(8px + env(safe-area-inset-bottom));
+  border-top:1px solid rgba(255,255,255,.07);
+  background:rgba(3,3,3,.97);
+}
+
+.nav-btn{
+  border:0;
+  background:transparent;
+  color:#77736d;
+  padding:5px 2px;
+  font-size:9px;
+  font-weight:700;
+}
+
+.nav-btn.active{
+  color:var(--gold);
+}
+
+.nav-icon{
+  display:block;
+  font-size:21px;
+  margin-bottom:4px;
+}
+
+/* TOAST */
+
+.toast{
+  position:fixed;
+  z-index:800;
+  left:50%;
+  bottom:110px;
+  transform:translateX(-50%) translateY(15px);
+  opacity:0;
+  width:calc(100% - 34px);
+  max-width:480px;
+  padding:12px 14px;
+  border-radius:13px;
+  background:var(--gold);
+  color:#0c0802;
+  font-size:11px;
+  font-weight:900;
+  transition:.2s;
+  pointer-events:none;
+}
+
+.toast.show{
+  opacity:1;
+  transform:translateX(-50%) translateY(0);
+}
+
+@media(max-width:390px){
+
+  .wallet-box{
+    min-width:170px;
+  }
+
+  .wallet-row{
+    font-size:8px;
+  }
+
+  .core-wrap{
+    width:225px;
+    height:225px;
+  }
+
+  .coin-logo{
+    width:160px;
+    height:160px;
+  }
+
+  .next-price{
+    font-size:18px;
+  }
+}
+</style>
 </head>
 
 <body>
+
 <div class="app">
 
-  <header class="header">
-    <div class="brand">
-      <div class="logo">J</div>
+<header class="header">
 
-      <div>
-        <div class="brand-title">JASLIN NETWORK</div>
-        <div class="brand-sub" id="helloUser">Initializing network...</div>
-      </div>
+  <div class="brand">
+
+    <div class="header-logo">
+      J
     </div>
 
-    <div class="online">● ONLINE</div>
-  </header>
+    <div>
 
-
-  <!-- ================= CORE ================= -->
-
-  <main id="page-core" class="page active">
-
-    <section class="card">
-      <div class="section-title">Digital Vault Balance</div>
-
-      <div class="balance" id="balance">0.00</div>
-      <div class="token-label">JASLIN</div>
-
-      <div class="core-wrap">
-        <div class="ring"></div>
-
-        <div class="core">
-          <div class="core-j">J</div>
-        </div>
+      <div class="brand-title">
+        JASLIN NETWORK
       </div>
 
-      <div style="text-align:center">
-        <div class="section-title">Jaslin Core Output</div>
-        <div class="big gold" id="pendingMining">0.000 JASLIN</div>
-        <div class="small muted" style="margin-top:5px">
-          Accumulated mining rewards
-        </div>
+      <div class="online">
+        ● ONLINE
       </div>
 
-      <button class="btn btn-gold" id="collectBtn" onclick="claimMining()">
-        COLLECT JASLIN
-      </button>
+    </div>
 
-      <div class="stats">
-        <div class="stat">
-          <div class="stat-value" id="coreLevel">1</div>
-          <div class="stat-label">Core Level</div>
-        </div>
+  </div>
 
-        <div class="stat">
-          <div class="stat-value" id="miningRate">0.045</div>
-          <div class="stat-label">JAS / Min</div>
-        </div>
+  <button
+    id="profileBtn"
+    class="profile-btn"
+    onclick="showPage('profile')"
+  >
+    User ▼
+  </button>
 
-        <div class="stat">
-          <div class="stat-value" id="energyText">100/100</div>
-          <div class="stat-label">Energy</div>
-        </div>
+</header>
+
+
+<!-- MINE -->
+
+<main id="page-mine" class="page active">
+
+  <!-- LEVEL TOP -->
+
+  <section class="card level-top">
+
+    <div class="level-box">
+
+      <div class="level-small">
+        LEVEL
       </div>
-    </section>
+
+      <div class="hex" id="topLevel">
+        1
+      </div>
+
+      <div class="level-small">
+        CORE LEVEL
+      </div>
+
+    </div>
 
 
-    <section class="card">
+    <div>
+
       <div class="row">
+
         <div>
-          <div class="section-title">Core Progress</div>
-          <div class="big">
-            LEVEL <span id="levelNumber">1</span>
+
+          <div class="next-title">
+            NEXT LEVEL
           </div>
+
+          <div>
+
+            <span
+              id="topLevelPrice"
+              class="next-price"
+            >
+              200 JASLIN
+            </span>
+
+            <span
+              id="topUsd"
+              class="usd"
+            >
+              ≈ $0.01
+            </span>
+
+          </div>
+
         </div>
+
 
         <div style="text-align:right">
-          <div class="small muted">Next upgrade</div>
-          <div class="gold" style="font-weight:900" id="upgradePrice">
-            200 JASLIN
+
+          <div class="bonus">
+            +5%
           </div>
+
+          <div class="small muted">
+            Output / Level
+          </div>
+
         </div>
+
       </div>
+
 
       <div class="progress">
-        <div id="xpBar"></div>
+        <div
+          id="topProgress"
+          class="progress-fill"
+        ></div>
       </div>
 
-      <div class="row small muted" style="margin-top:7px">
-        <span id="xpText">0 / 100 XP</span>
-        <span>+5% Output / Level</span>
+      <div
+        id="topProgressText"
+        class="small muted"
+        style="margin-top:8px"
+      >
+        0 / 200 JASLIN
       </div>
 
-      <button class="btn btn-dark" onclick="upgradeCore()">
-        ⚡ UPGRADE CORE
+    </div>
+
+  </section>
+
+
+  <!-- VAULT -->
+
+  <section class="card">
+
+    <div class="vault-head">
+
+      <div>
+
+        <div class="section-title">
+          DIGITAL VAULT BALANCE
+        </div>
+
+        <div
+          id="balance"
+          class="balance"
+        >
+          0.00
+        </div>
+
+        <div class="balance-token">
+          JASLIN
+        </div>
+
+      </div>
+
+
+      <div class="wallet-box">
+
+        <div class="wallet-row">
+
+          <span>
+            🔐 HOLDING WALLET:
+          </span>
+
+          <span>
+            <b id="holdingBalance">
+              0.00
+            </b>
+            <span class="gold">
+              JASLIN
+            </span>
+          </span>
+
+        </div>
+
+
+        <div class="wallet-row">
+
+          <span>
+            🪙 POOL WALLET:
+          </span>
+
+          <span>
+            <b id="poolBalance">
+              0.00
+            </b>
+            <span class="gold">
+              JASLIN
+            </span>
+          </span>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- LOGO TENGAH -->
+
+    <div class="core-wrap">
+
+      <div class="ring"></div>
+
+      <img
+        src="/jaslin-logo.png"
+        alt="JASLIN"
+        class="coin-logo"
+      >
+
+    </div>
+
+
+    <div class="output">
+
+      <div class="output-title">
+        JASLIN CORE OUTPUT
+      </div>
+
+      <div
+        id="pendingMining"
+        class="output-number"
+      >
+        0.000
+      </div>
+
+      <div class="output-sub">
+        Accumulated mining rewards
+      </div>
+
+    </div>
+
+
+    <button
+      id="collectBtn"
+      class="btn btn-gold"
+      onclick="claimMining()"
+    >
+      ❯ &nbsp; COLLECT
+    </button>
+
+
+    <div class="stats">
+
+      <div class="stat">
+
+        <div
+          id="coreLevel"
+          class="stat-value"
+        >
+          1
+        </div>
+
+        <div class="stat-label">
+          CORE LEVEL
+        </div>
+
+      </div>
+
+
+      <div class="stat">
+
+        <div
+          id="miningRate"
+          class="stat-value"
+        >
+          0.045
+        </div>
+
+        <div class="stat-label">
+          PER MINUTE
+        </div>
+
+      </div>
+
+
+      <div class="stat">
+
+        <div
+          id="miningTime"
+          class="stat-value"
+        >
+          00:00:00
+        </div>
+
+        <div class="stat-label">
+          MINING TIME
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- CORE PROGRESS -->
+
+  <section class="card">
+
+    <div class="row">
+
+      <div>
+
+        <div class="section-title">
+          CORE PROGRESS
+        </div>
+
+        <div class="progress-title">
+          LEVEL
+          <span id="bottomLevel">
+            1
+          </span>
+        </div>
+
+      </div>
+
+
+      <div style="text-align:right">
+
+        <div class="small muted">
+          Next Upgrade
+        </div>
+
+        <div
+          id="upgradePrice"
+          class="upgrade-price"
+        >
+          200 JASLIN
+        </div>
+
+        <div
+          id="upgradeUsd"
+          class="usd"
+        >
+          ≈ $0.01
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <div class="progress">
+
+      <div
+        id="bottomProgress"
+        class="progress-fill"
+      ></div>
+
+    </div>
+
+
+    <div class="progress-bottom">
+
+      <span id="bottomProgressText">
+        0 / 200 JASLIN
+      </span>
+
+      <span class="green">
+        +5% Output / Level
+      </span>
+
+    </div>
+
+
+    <button
+      class="btn btn-dark"
+      onclick="upgradeCore()"
+    >
+      ⚡ UPGRADE CORE
+    </button>
+
+  </section>
+
+</main>
+
+
+<!-- TASKS -->
+
+<main id="page-tasks" class="page">
+
+  <section class="card">
+
+    <div class="section-title">
+      JASLIN OPERATIONS
+    </div>
+
+    <h2>TASKS</h2>
+
+
+    <div class="task">
+
+      <div class="task-icon">
+        ✈️
+      </div>
+
+      <div class="task-info">
+
+        <div class="task-title">
+          Join JASLIN Telegram
+        </div>
+
+        <div class="task-reward">
+          +50 JASLIN
+        </div>
+
+      </div>
+
+      <button
+        class="mini-btn"
+        onclick="comingSoon()"
+      >
+        START
       </button>
 
-      <div class="notice">
-        Upgrade dimulai dari 200 JASLIN dan meningkat +200 JASLIN
-        setiap level.
-      </div>
-    </section>
+    </div>
 
 
-    <section class="card">
-      <div class="row">
-        <div>
-          <div class="section-title">Daily Protocol</div>
-          <div style="font-weight:900">07:00 WIB RESET</div>
-        </div>
+    <div class="task">
 
-        <div class="gold small" id="dailyStatus">Checking...</div>
+      <div class="task-icon">
+        𝕏
       </div>
 
-      <div class="protocol">
-        <div class="day active">
-          <div class="day-num">D1</div>
-          <div class="day-reward">25</div>
+      <div class="task-info">
+
+        <div class="task-title">
+          Follow JASLIN on X
         </div>
 
-        <div class="day">
-          <div class="day-num">D2</div>
-          <div class="day-reward">30</div>
+        <div class="task-reward">
+          +50 JASLIN
         </div>
 
-        <div class="day">
-          <div class="day-num">D3</div>
-          <div class="day-reward">40</div>
-        </div>
-
-        <div class="day">
-          <div class="day-num">D4</div>
-          <div class="day-reward">50</div>
-        </div>
-
-        <div class="day">
-          <div class="day-num">D5</div>
-          <div class="day-reward">65</div>
-        </div>
-
-        <div class="day">
-          <div class="day-num">D6</div>
-          <div class="day-reward">80</div>
-        </div>
-
-        <div class="day">
-          <div class="day-num">D7</div>
-          <div class="day-reward">100</div>
-        </div>
       </div>
 
-      <button class="btn btn-gold" id="dailyBtn" onclick="claimDaily()">
-        CLAIM DAILY PROTOCOL
-      </button>
-    </section>
-
-  </main>
-
-
-  <!-- ================= OPERATIONS ================= -->
-
-  <main id="page-operations" class="page">
-
-    <section class="card">
-      <div class="section-title">Network Operations</div>
-      <div class="big">MISSIONS</div>
-
-      <div class="notice">
-        Selesaikan misi untuk meningkatkan aktivitas JASLIN Network.
-      </div>
-
-      <div class="task">
-        <div class="task-icon">✈️</div>
-
-        <div class="task-info">
-          <div class="task-title">Join JASLIN Telegram</div>
-          <div class="task-reward">+50 JASLIN</div>
-        </div>
-
-        <button class="mini-btn" onclick="taskComingSoon()">
-          START
-        </button>
-      </div>
-
-
-      <div class="task">
-        <div class="task-icon">𝕏</div>
-
-        <div class="task-info">
-          <div class="task-title">Follow JASLIN on X</div>
-          <div class="task-reward">+50 JASLIN</div>
-        </div>
-
-        <button class="mini-btn" onclick="taskComingSoon()">
-          START
-        </button>
-      </div>
-
-
-      <div class="task">
-        <div class="task-icon">👥</div>
-
-        <div class="task-info">
-          <div class="task-title">Invite 1 Network Member</div>
-          <div class="task-reward">Referral Reward</div>
-        </div>
-
-        <button class="mini-btn" onclick="showPage('network')">
-          OPEN
-        </button>
-      </div>
-
-
-      <div class="task">
-        <div class="task-icon">⚡</div>
-
-        <div class="task-info">
-          <div class="task-title">Collect Core Output</div>
-          <div class="task-reward">Daily Activity</div>
-        </div>
-
-        <button class="mini-btn" onclick="showPage('core')">
-          MINE
-        </button>
-      </div>
-    </section>
-
-
-    <section class="card">
-      <div class="section-title">Operation Progress</div>
-
-      <div class="row">
-        <div class="big">0 / 4</div>
-        <div class="gold small">TODAY</div>
-      </div>
-
-      <div class="progress">
-        <div style="width:0%"></div>
-      </div>
-    </section>
-
-  </main>
-
-
-  <!-- ================= NETWORK ================= -->
-
-  <main id="page-network" class="page">
-
-    <section class="card">
-      <div class="section-title">Build Your Network</div>
-
-      <div class="big">
-        INVITE & EARN
-      </div>
-
-      <div class="notice">
-        Ajak teman bergabung ke JASLIN Network melalui link referral kamu.
-      </div>
-
-      <div class="stats">
-        <div class="stat">
-          <div class="stat-value" id="referralsCount">0</div>
-          <div class="stat-label">Members</div>
-        </div>
-
-        <div class="stat">
-          <div class="stat-value">10</div>
-          <div class="stat-label">Reward</div>
-        </div>
-
-        <div class="stat">
-          <div class="stat-value">Tier 1</div>
-          <div class="stat-label">Network</div>
-        </div>
-      </div>
-
-      <div class="code-box" id="referralLink">
-        Referral link loading...
-      </div>
-
-      <button class="btn btn-gold" onclick="shareReferral()">
-        INVITE NETWORK MEMBER
+      <button
+        class="mini-btn"
+        onclick="comingSoon()"
+      >
+        START
       </button>
 
-      <button class="btn btn-dark" onclick="copyReferral()">
-        COPY REFERRAL LINK
+    </div>
+
+
+    <div class="task">
+
+      <div class="task-icon">
+        👥
+      </div>
+
+      <div class="task-info">
+
+        <div class="task-title">
+          Invite Friend
+        </div>
+
+        <div class="task-reward">
+          Referral Reward
+        </div>
+
+      </div>
+
+      <button
+        class="mini-btn"
+        onclick="showPage('friends')"
+      >
+        OPEN
       </button>
-    </section>
+
+    </div>
+
+  </section>
+
+</main>
 
 
-    <section class="card">
-      <div class="section-title">Network Milestones</div>
+<!-- MINERS -->
 
-      <div class="task">
-        <div class="task-icon">1</div>
-        <div class="task-info">
-          <div class="task-title">First Member</div>
-          <div class="task-reward">Invite 1 friend</div>
+<main id="page-miners" class="page">
+
+  <section class="card">
+
+    <div class="section-title">
+      JASLIN CORE
+    </div>
+
+    <h2>MINER STATUS</h2>
+
+
+    <div class="stats">
+
+      <div class="stat">
+
+        <div
+          id="minerLevel"
+          class="stat-value"
+        >
+          1
         </div>
-        <div class="muted small">0 / 1</div>
+
+        <div class="stat-label">
+          LEVEL
+        </div>
+
       </div>
 
-      <div class="task">
-        <div class="task-icon">5</div>
-        <div class="task-info">
-          <div class="task-title">Small Network</div>
-          <div class="task-reward">Invite 5 friends</div>
+
+      <div class="stat">
+
+        <div
+          id="minerRate"
+          class="stat-value"
+        >
+          0.045
         </div>
-        <div class="muted small">0 / 5</div>
+
+        <div class="stat-label">
+          PER MINUTE
+        </div>
+
       </div>
 
-      <div class="task">
-        <div class="task-icon">10</div>
-        <div class="task-info">
-          <div class="task-title">Network Builder</div>
-          <div class="task-
 
-    showStatus(
+      <div class="stat">
+
+        <div
+          id="minerTime"
+          class="stat-value"
+        >
+          00:00:00
+        </div>
+
+        <div class="stat-label">
+          MINING TIME
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <button
+      class="btn btn-dark"
+      onclick="showPage('mine')"
+    >
+      ⚡ OPEN CORE
+    </button>
+
+  </section>
+
+</main>
+
+
+<!-- FRIENDS -->
+
+<main id="page-friends" class="page">
+
+  <section class="card">
+
+    <div class="section-title">
+      JASLIN NETWORK
+    </div>
+
+    <h2>FRIENDS</h2>
+
+
+    <div class="stats">
+
+      <div class="stat">
+
+        <div
+          id="friendCount"
+          class="stat-value"
+        >
+          0
+        </div>
+
+        <div class="stat-label">
+          FRIENDS
+        </div>
+
+      </div>
+
+
+      <div class="stat">
+
+        <div class="stat-value">
+          10
+        </div>
+
+        <div class="stat-label">
+          REWARD
+        </div>
+
+      </div>
+
+
+      <div class="stat">
+
+        <div class="stat-value">
+          TIER 1
+        </div>
+
+        <div class="stat-label">
+          NETWORK
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <div
+      id="referralLink"
+      class="referral"
+    >
+      Referral link loading...
+    </div>
+
+
+    <button
+      class="btn btn-gold"
+      onclick="shareReferral()"
+    >
+      INVITE FRIEND
+    </button>
+
+
+    <button
+      class="btn btn-dark"
+      onclick="copyReferral()"
+    >
+      COPY REFERRAL LINK
+    </button>
+
+  </section>
+
+</main>
+
+
+<!-- PROFILE -->
+
+<main id="page-profile" class="page">
+
+  <section class="card">
+
+    <div class="section-title">
+      ACCOUNT
+    </div>
+
+    <h2 id="profileName">
+      JASLIN USER
+    </h2>
+
+
+    <div class="stats">
+
+      <div class="stat">
+
+        <div
+          id="profileLevel"
+          class="stat-value"
+        >
+          1
+        </div>
+
+        <div class="stat-label">
+          LEVEL
+        </div>
+
+      </div>
+
+
+      <div class="stat">
+
+        <div
+          id="profileBalance"
+          class="stat-value"
+        >
+          0.00
+        </div>
+
+        <div class="stat-label">
+          JASLIN
+        </div>
+
+      </div>
+
+
+      <div class="stat">
+
+        <div class="stat-value">
+          SOL
+        </div>
+
+        <div class="stat-label">
+          NETWORK
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <section class="card">
+
+    <div class="section-title">
+      SOLANA WALLET
+    </div>
+
+
+    <input
+      id="walletInput"
+      class="input"
+      placeholder="Enter Solana wallet address"
+    >
+
+
+    <button
+      class="btn btn-dark"
+      onclick="saveWallet()"
+    >
+      SAVE WALLET
+    </button>
+
+
+    <div class="notice">
+      Masukkan hanya alamat wallet Solana.
+      Jangan pernah memasukkan private key atau seed phrase.
+    </div>
+
+  </section>
+
+
+  <section class="card">
+
+    <div class="section-title">
+      WITHDRAW
+    </div>
+
+    <h2>
+      MINIMUM 2,000 JASLIN
+    </h2>
+
+
+    <input
+      id="withdrawAmount"
+      class="input"
+      type="number"
+      min="2000"
+      placeholder="Amount JASLIN"
+    >
+
+
+    <button
+      class="btn btn-gold"
+      onclick="withdrawJaslin()"
+    >
+      WITHDRAW
+    </button>
+
+  </section>
+
+</main>
+
+</div>
+
+
+<!-- DAILY FLOAT -->
+
+<button
+  id="dailyFloat"
+  class="daily"
+  onclick="openDaily()"
+>
+
+  <span
+    id="dailyDot"
+    class="daily-dot"
+  ></span>
+
+  <span class="daily-gift">
+    🎁
+  </span>
+
+  <span>
+    CLAIM
+  </span>
+
+  <span class="daily-gold">
+    DAILY
+  </span>
+
+</button>
+
+
+<!-- DAILY MODAL -->
+
+<div
+  id="dailyModal"
+  class="modal"
+>
+
+  <div class="modal-card">
+
+    <div class="row">
+
+      <div>
+
+        <div class="section-title">
+          DAILY PROTOCOL
+        </div>
+
+        <h2>
+          07:00 WIB RESET
+        </h2>
+
+      </div>
+
+      <button
+        class="mini-btn"
+        onclick="closeDaily()"
+      >
+        ✕
+      </button>
+
+    </div>
+
+
+    <div class="days">
+
+      <div class="day active">
+        <div class="day-name">D1</div>
+        <div class="day-value">25</div>
+      </div>
+
+      <div class="day">
+        <div class="day-name">D2</div>
+        <div class="day-value">30</div>
+      </div>
+
+      <div class="day">
+        <div class="day-name">D3</div>
+        <div class="day-value">40</div>
+      </div>
+
+      <div class="day">
+        <div class="day-name">D4</div>
+        <div class="day-value">50</div>
+      </div>
+
+      <div class="day">
+        <div class="day-name">D5</div>
+        <div class="day-value">65</div>
+      </div>
+
+      <div class="day">
+        <div class="day-name">D6</div>
+        <div class="day-value">80</div>
+      </div>
+
+      <div class="day">
+        <div class="day-name">D7</div>
+        <div class="day-value">100</div>
+      </div>
+
+    </div>
+
+
+    <button
+      id="dailyBtn"
+      class="btn btn-gold"
+      onclick="claimDaily()"
+    >
+      CLAIM DAILY
+    </button>
+
+
+    <div
+      id="dailyStatus"
+      class="notice"
+    >
+      Checking daily reward...
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- NAV -->
+
+<nav class="bottom-nav">
+
+<button
+  id="nav-mine"
+  class="nav-btn active"
+  onclick="showPage('mine')"
+>
+  <span class="nav-icon">⛏</span>
+  Mine
+</button>
+
+
+<button
+  id="nav-tasks"
+  class="nav-btn"
+  onclick="showPage('tasks')"
+>
+  <span class="nav-icon">📋</span>
+  Tasks
+</button>
+
+
+<button
+  id="nav-miners"
+  class="nav-btn"
+  onclick="showPage('miners')"
+>
+  <span class="nav-icon">👥</span>
+  Miners
+</button>
+
+
+<button
+  id="nav-friends"
+  class="nav-btn"
+  onclick="showPage('friends')"
+>
+  <span class="nav-icon">👥</span>
+  Friends
+</button>
+
+
+<button
+  id="nav-profile"
+  class="nav-btn"
+  onclick="showPage('profile')"
+>
+  <span class="nav-icon">👤</span>
+  Profile
+</button>
+
+</nav>
+
+
+<div
+  id="toast"
+  class="toast"
+>
+</div>
+
+
+<script>
+
+const tg =
+  window.Telegram?.WebApp;
+
+if(tg){
+
+  tg.ready();
+  tg.expand();
+
+  try{
+    tg.setHeaderColor("#020202");
+    tg.setBackgroundColor("#020202");
+  }catch(e){}
+
+}
+
+
+let state = null;
+
+let level = 1;
+
+let miningStarted =
+  Date.now();
+
+
+function headers(){
+
+  return{
+    "Content-Type":"application/json",
+    "X-Telegram-Init-Data":
+      tg?.initData || ""
+  };
+
+}
+
+
+async function api(
+  url,
+  options={}
+){
+
+  const response =
+    await fetch(
+      url,
+      {
+        ...options,
+        headers:{
+          ...headers(),
+          ...(options.headers || {})
+        }
+      }
+    );
+
+
+  const result =
+    await response
+      .json()
+      .catch(()=>({}));
+
+
+  if(!response.ok){
+
+    throw new Error(
+      result.error ||
+      result.message ||
+      "Request failed"
+    );
+
+  }
+
+  return result;
+
+}
+
+
+function number(
+  value,
+  decimal=2
+){
+
+  return Number(
+    value || 0
+  ).toLocaleString(
+    "en-US",
+    {
+      minimumFractionDigits:decimal,
+      maximumFractionDigits:decimal
+    }
+  );
+
+}
+
+
+function toast(message){
+
+  const el =
+    document.getElementById(
+      "toast"
+    );
+
+  el.textContent =
+    message;
+
+  el.classList.add(
+    "show"
+  );
+
+  clearTimeout(
+    window.toastTimer
+  );
+
+  window.toastTimer =
+    setTimeout(
+      ()=>{
+        el.classList.remove(
+          "show"
+        );
+      },
+      2500
+    );
+
+}
+
+
+/* NAV */
+
+function showPage(name){
+
+  document
+    .querySelectorAll(
+      ".page"
+    )
+    .forEach(
+      page =>
+        page.classList.remove(
+          "active"
+        )
+    );
+
+
+  document
+    .querySelectorAll(
+      ".nav-btn"
+    )
+    .forEach(
+      btn =>
+        btn.classList.remove(
+          "active"
+        )
+    );
+
+
+  document
+    .getElementById(
+      "page-" + name
+    )
+    ?.classList.add(
+      "active"
+    );
+
+
+  document
+    .getElementById(
+      "nav-" + name
+    )
+    ?.classList.add(
+      "active"
+    );
+
+
+  /*
+    Daily hanya tampil
+    pada halaman Mine
+  */
+
+  document
+    .getElementById(
+      "dailyFloat"
+    )
+    .style.display =
+      name === "mine"
+        ? "flex"
+        : "none";
+
+
+  window.scrollTo(
+    0,
+    0
+  );
+
+}
+
+
+/* SESSION */
+
+async function start(){
+
+  try{
+
+    const startParam =
+      tg
+        ?.initDataUnsafe
+        ?.start_param ||
+      "";
+
+
+    await api(
+      "/api/session",
+      {
+        method:"POST",
+        body:JSON.stringify({
+          startParam
+        })
+      }
+    );
+
+
+    await loadState();
+
+  }
+
+  catch(error){
+
+    console.error(error);
+
+    toast(
+      "Buka JASLIN melalui Telegram."
+    );
+
+  }
+
+}
+
+
+async function loadState(){
+
+  try{
+
+    state =
+      await api(
+        "/api/state"
+      );
+
+    render();
+
+  }
+
+  catch(error){
+
+    console.error(error);
+
+  }
+
+}
+
+
+/* RENDER */
+
+function render(){
+
+  if(!state)
+    return;
+
+
+  const balance =
+    Number(
+      state.balance || 0
+    );
+
+
+  const pending =
+    Number(
+      state.mining ??
+      state.pendingMining ??
+      0
+    );
+
+
+  const rate =
+    Number(
+      state.miningPerMinute ??
+      0.045
+    );
+
+
+  level =
+    Number(
+      state.level || 1
+    );
+
+
+  const username =
+    state.user?.firstName ||
+    tg?.initDataUnsafe?.user
+      ?.first_name ||
+    "JASLIN User";
+
+
+  document
+    .getElementById(
+      "profileBtn"
+    )
+    .textContent =
+      username + " ▼";
+
+
+  document
+    .getElementById(
+      "profileName"
+    )
+    .textContent =
+      username;
+
+
+  document
+    .getElementById(
+      "balance"
+    )
+    .textContent =
+      number(
+        balance,
+        2
+      );
+
+
+  document
+    .getElementById(
+      "holdingBalance"
+    )
+    .textContent =
+      number(
+        balance,
+        2
+      );
+
+
+  document
+    .getElementById(
+      "profileBalance"
+    )
+    .textContent =
+      number(
+        balance,
+        2
+      );
+
+
+  document
+    .getElementById(
+      "pendingMining"
+    )
+    .textContent =
+      number(
+        pending,
+        3
+      );
+
+
+  document
+    .getElementById(
+      "miningRate"
+    )
+    .textContent =
+      number(
+        rate,
+        3
+      );
+
+
+  document
+    .getElementById(
+      "minerRate"
+    )
+    .textContent =
+      number(
+        rate,
+        3
+      );
+
+
+  document
+    .getElementById(
+      "topLevel"
+    )
+    .textContent =
+      level;
+
+
+  document
+    .getElementById(
+      "coreLevel"
+    )
+    .textContent =
+      level;
+
+
+  document
+    .getElementById(
+      "bottomLevel"
+    )
+    .textContent =
+      level;
+
+
+  document
+    .getElementById(
+      "minerLevel"
+    )
+    .textContent =
+      level;
+
+
+  document
+    .getElementById(
+      "profileLevel"
+    )
+    .textContent =
+      level;
+
+
+  renderUpgrade(
+    balance
+  );
+
+
+  const wallet =
+    state.user?.wallet || "";
+
+
+  if(wallet){
+
+    document
+      .getElementById(
+        "walletInput"
+      )
+      .value =
+        wallet;
+
+  }
+
+
+  document
+    .getElementById(
+      "referralLink"
+    )
+    .textContent =
+      state.referralLink ||
+      "Referral link unavailable";
+
+
+  const available =
+    state.dailySpinAvailable !==
+    false;
+
+
+  document
+    .getElementById(
+      "dailyStatus"
+    )
+    .textContent =
+      available
+      ? "Daily reward tersedia."
+      : "Daily reward sudah diambil.";
+
+
+  document
+    .getElementById(
+      "dailyBtn"
+    )
+    .disabled =
+      !available;
+
+
+  document
+    .getElementById(
+      "dailyBtn"
+    )
+    .style.opacity =
+      available
+        ? "1"
+        : ".4";
+
+
+  document
+    .getElementById(
+      "dailyDot"
+    )
+    .style.display =
+      available
+        ? "block"
+        : "none";
+
+}
+
+
+/* LEVEL */
+
+function upgradeCost(){
+
+  return level * 200;
+
+}
+
+
+function renderUpgrade(balance){
+
+  const cost =
+    upgradeCost();
+
+
+  const progress =
+    Math.min(
+      100,
+      balance / cost * 100
+    );
+
+
+  /*
+    Hanya estimasi UI.
+
+    Nanti harga realtime JASLIN
+    kita ambil dari backend/API.
+  */
+
+  const estimatedPrice =
+    0.00005;
+
+
+  const usd =
+    cost *
+    estimatedPrice;
+
+
+  const priceText =
+    number(
+      cost,
+      0
+    ) +
+    " JASLIN";
+
+
+  const usdText =
+    "≈ $" +
+    usd.toFixed(2);
+
+
+  document
+    .getElementById(
+      "topLevelPrice"
+    )
+    .textContent =
+      priceText;
+
+
+  document
+    .getElementById(
+      "upgradePrice"
+    )
+    .textContent =
+      priceText;
+
+
+  document
+    .getElementById(
+      "topUsd"
+    )
+    .textContent =
+      usdText;
+
+
+  document
+    .getElementById(
+      "upgradeUsd"
+    )
+    .textContent =
+      usdText;
+
+
+  document
+    .getElementById(
+      "topProgress"
+    )
+    .style.width =
+      progress + "%";
+
+
+  document
+    .getElementById(
+      "bottomProgress"
+    )
+    .style.width =
+      progress + "%";
+
+
+  const progressText =
+    number(
+      Math.min(
+        balance,
+        cost
+      ),
+      0
+    ) +
+    " / " +
+    number(
+      cost,
+      0
+    ) +
+    " JASLIN";
+
+
+  document
+    .getElementById(
+      "topProgressText"
+    )
+    .textContent =
+      progressText;
+
+
+  document
+    .getElementById(
+      "bottomProgressText"
+    )
+    .textContent =
+      progressText;
+
+}
+
+
+/* MINING TIMER */
+
+function updateTimer(){
+
+  const seconds =
+    Math.floor(
+      (
+        Date.now() -
+        miningStarted
+      ) /
+      1000
+    );
+
+
+  const h =
+    Math.floor(
+      seconds / 3600
+    );
+
+
+  const m =
+    Math.floor(
+      seconds % 3600 / 60
+    );
+
+
+  const s =
+    seconds % 60;
+
+
+  const text =
+    String(h).padStart(2,"0")
+    + ":" +
+    String(m).padStart(2,"0")
+    + ":" +
+    String(s).padStart(2,"0");
+
+
+  document
+    .getElementById(
+      "miningTime"
+    )
+    .textContent =
+      text;
+
+
+  document
+    .getElementById(
+      "minerTime"
+    )
+    .textContent =
+      text;
+
+}
+
+
+/* COLLECT */
+
+async function claimMining(){
+
+  const btn =
+    document.getElementById(
+      "collectBtn"
+    );
+
+
+  try{
+
+    btn.disabled =
+      true;
+
+    btn.textContent =
+      "COLLECTING...";
+
+
+    const result =
+      await api(
+        "/api/claim",
+        {
+          method:"POST"
+        }
+      );
+
+
+    const amount =
+      Number(
+        result.claimed ??
+        result.amount ??
+        state?.mining ??
+        0
+      );
+
+
+    miningStarted =
+      Date.now();
+
+
+    toast(
+      "+" +
+      number(
+        amount,
+        3
+      ) +
+      " JASLIN"
+    );
+
+
+    await loadState();
+
+  }
+
+  catch(error){
+
+    toast(
       error.message
     );
 
   }
 
-};
+  finally{
+
+    btn.disabled =
+      false;
+
+    btn.innerHTML =
+      "❯ &nbsp; COLLECT";
+
+  }
+
+}
 
 
-/*
-==================================================
-BUY JASLIN
-==================================================
-*/
+/* DAILY */
 
-$("buyBtn").onclick =
-() => {
+function openDaily(){
 
-  const mint =
-    "YOUR_JASLIN_MINT_ADDRESS";
+  document
+    .getElementById(
+      "dailyModal"
+    )
+    .classList.add(
+      "show"
+    );
+
+}
 
 
-  if (
-    mint ===
-    "YOUR_JASLIN_MINT_ADDRESS"
-  ) {
+function closeDaily(){
 
-    showStatus(
-      "Mint address JASLIN belum dipasang."
+  document
+    .getElementById(
+      "dailyModal"
+    )
+    .classList.remove(
+      "show"
+    );
+
+}
+
+
+async function claimDaily(){
+
+  try{
+
+    const result =
+      await api(
+        "/api/spin",
+        {
+          method:"POST"
+        }
+      );
+
+
+    const reward =
+      Number(
+        result.reward ??
+        result.amount ??
+        25
+      );
+
+
+    toast(
+      "+" +
+      number(
+        reward,
+        0
+      ) +
+      " JASLIN"
+    );
+
+
+    closeDaily();
+
+    await loadState();
+
+  }
+
+  catch(error){
+
+    toast(
+      error.message
+    );
+
+  }
+
+}
+
+
+/* WALLET */
+
+async function saveWallet(){
+
+  const wallet =
+    document
+      .getElementById(
+        "walletInput"
+      )
+      .value
+      .trim();
+
+
+  if(!wallet){
+
+    toast(
+      "Masukkan wallet Solana."
     );
 
     return;
+
   }
 
 
-  tg.openLink(
-    `https://jup.ag/swap/SOL-${mint}`
+  try{
+
+    await api(
+      "/api/wallet",
+      {
+
+        method:"POST",
+
+        body:JSON.stringify({
+          wallet
+        })
+
+      }
+    );
+
+
+    toast(
+      "Wallet berhasil disimpan."
+    );
+
+
+    await loadState();
+
+  }
+
+  catch(error){
+
+    toast(
+      error.message
+    );
+
+  }
+
+}
+
+
+/* UPGRADE */
+
+function upgradeCore(){
+
+  const balance =
+    Number(
+      state?.balance || 0
+    );
+
+
+  const cost =
+    upgradeCost();
+
+
+  if(balance < cost){
+
+    toast(
+      "Butuh " +
+      number(
+        cost,
+        0
+      ) +
+      " JASLIN."
+    );
+
+    return;
+
+  }
+
+
+  toast(
+    "Backend Upgrade Core belum diaktifkan."
   );
-};
+
+}
 
 
-/*
-==================================================
-TASK
-==================================================
-*/
+/* WITHDRAW */
 
-$("taskBtn").onclick =
-() => {
+function withdrawJaslin(){
 
-  showStatus(
-    "Task system belum diaktifkan."
+  const amount =
+    Number(
+      document
+        .getElementById(
+          "withdrawAmount"
+        )
+        .value
+    );
+
+
+  if(
+    !amount ||
+    amount < 2000
+  ){
+
+    toast(
+      "Minimum withdrawal 2,000 JASLIN."
+    );
+
+    return;
+
+  }
+
+
+  toast(
+    "Withdrawal blockchain belum diaktifkan."
   );
 
-};
+}
 
 
-/*
-==================================================
-AUTO REFRESH
-==================================================
-*/
+/* REFERRAL */
 
-setInterval(
-  async () => {
+function shareReferral(){
 
-    if (
-      !tg.initData ||
-      busy
-    ) return;
+  const link =
+    state?.referralLink;
 
 
-    try {
+  if(!link){
 
-      const data =
-        await api(
-          "/api/state"
-        );
+    toast(
+      "Referral link belum tersedia."
+    );
+
+    return;
+
+  }
 
 
-      render(data);
+  const url =
+    "https://t.me/share/url?url=" +
+    encodeURIComponent(
+      link
+    ) +
+    "&text=" +
+    encodeURIComponent(
+      "Join JASLIN Network ⚡"
+    );
 
-    }
 
-    catch {}
+  if(tg){
 
-  },
-  10000
+    tg.openTelegramLink(
+      url
+    );
+
+  }
+
+  else{
+
+    window.open(
+      url,
+      "_blank"
+    );
+
+  }
+
+}
+
+
+async function copyReferral(){
+
+  const link =
+    state?.referralLink;
+
+
+  if(!link){
+
+    toast(
+      "Referral link belum tersedia."
+    );
+
+    return;
+
+  }
+
+
+  try{
+
+    await navigator
+      .clipboard
+      .writeText(
+        link
+      );
+
+
+    toast(
+      "Referral link berhasil dicopy."
+    );
+
+  }
+
+  catch{
+
+    toast(
+      "Gagal copy referral."
+    );
+
+  }
+
+}
+
+
+function comingSoon(){
+
+  toast(
+    "Task segera tersedia."
+  );
+
+}
+
+
+/* START */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  ()=>{
+
+    start();
+
+    updateTimer();
+
+    setInterval(
+      updateTimer,
+      1000
+    );
+
+
+    setInterval(
+      ()=>{
+        if(state){
+          loadState();
+        }
+      },
+      30000
+    );
+
+  }
 );
-
-
-/*
-==================================================
-START
-==================================================
-*/
-
-init();
 
 </script>
 
 </body>
-
 </html>
-
-
