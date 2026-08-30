@@ -3028,8 +3028,6 @@ async function upgradeCore() {
 
     state = data;
 
-    updateUI();
-
     await renderUpgrade(
       Number(state?.balance || 0)
     );
