@@ -722,11 +722,11 @@ level:
     Math.max(1, Number(user.level || 1))
   ),
 
-    maxLevel:
-    maxLevel:
-    MAX_LEVEL
+maxLevel:
+  MAX_LEVEL
 
-};
+  };
+    }
 
 
 /* =========================================
