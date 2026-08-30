@@ -17,109 +17,92 @@ import {
 
 dotenv.config();
 
-
 /* =========================================
    BASIC SETUP
 ========================================= */
 
-const __filename =
-  fileURLToPath(import.meta.url);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-const __dirname =
-  path.dirname(__filename);
-
-const app =
-  express();
-
-const PORT =
-  Number(process.env.PORT || 3000);
-
+const app = express();
+const PORT = Number(process.env.PORT || 3000);
 
 /* =========================================
    ENVIRONMENT VARIABLES
 ========================================= */
 
-const BOT_TOKEN =
-  process.env.BOT_TOKEN || "";
+const BOT_TOKEN = process.env.BOT_TOKEN || "";
+const BOT_USERNAME = process.env.BOT_USERNAME || "JaslinEarnBot";
 
-const BOT_USERNAME =
-  process.env.BOT_USERNAME ||
-  "JaslinEarnBot";
-
-const SUPABASE_URL =
-  process.env.SUPABASE_URL || "";
-
-const SUPABASE_SECRET_KEY =
-  process.env.SUPABASE_SECRET_KEY || "";
+const SUPABASE_URL = process.env.SUPABASE_URL || "";
+const SUPABASE_SECRET_KEY = process.env.SUPABASE_SECRET_KEY || "";
 
 const MINING_PER_MINUTE =
-  Number(
-    process.env.MINING_PER_MINUTE ||
-    (100 / 480)
-  );
-
-const DAILY_SPIN_REWARD =
-  Number(
-    process.env.DAILY_SPIN_REWARD ||
-    25
-  );
+  Number(process.env.MINING_PER_MINUTE || (100 / 480));
 
 const REFERRAL_REWARD =
-  Number(
-    process.env.REFERRAL_REWARD ||
-    500
+  Number(process.env.REFERRAL_REWARD || 200);
+
+const REFERRAL_COMMISSION_RATE =
+  Math.min(
+    1,
+    Math.max(
+      0,
+      Number(process.env.REFERRAL_COMMISSION_RATE || 0.10)
+    )
   );
 
 const TON_TREASURY_MNEMONIC =
-  process.env.TON_TREASURY_MNEMONIC ||
-  "";
+  process.env.TON_TREASURY_MNEMONIC || "";
 
 const TON_TREASURY_ADDRESS =
-  process.env.TON_TREASURY_ADDRESS ||
-  "";
+  process.env.TON_TREASURY_ADDRESS || "";
 
 const TON_NETWORK =
-  process.env.TON_NETWORK ||
-  "mainnet";
+  process.env.TON_NETWORK || "mainnet";
 
 const TON_RPC_URL =
-  process.env.TON_RPC_URL || "https://toncenter.com/api/v2/jsonRPC";
+  process.env.TON_RPC_URL ||
+  "https://toncenter.com/api/v2/jsonRPC";
 
 const TONCENTER_API_KEY =
   process.env.TONCENTER_API_KEY;
 
+const TREASURY_ADMIN_KEY =
+  process.env.TREASURY_ADMIN_KEY || "";
+
 /* =========================================
-   JASLIN TOKEN
+   JASLIN
 ========================================= */
 
 const JASLIN_JETTON_MASTER =
   "EQAmDnasFQqqiEFBjHy4tI0iIw1r-OtFeOSa0J9CJ4fNhjjx";
+
+const JASLIN_DECIMALS = 9;
 
 const tonClient = new TonClient({
   endpoint: TON_RPC_URL,
   apiKey: TONCENTER_API_KEY
 });
 
-const JASLIN_DECIMALS = 9;
-
 const MIN_WITHDRAW_JASLIN = 2000;
 const WITHDRAW_FEE_JASLIN = 300;
+
 const WITHDRAWALS_ENABLED =
   String(process.env.WITHDRAWALS_ENABLED || "false")
     .toLowerCase() === "true";
 
 const MAX_LEVEL = 5000;
 
-// JASLIN Core Holding curve.
-// Lv2 starts at 200 JASLIN. Lv5000 is designed as an elite tier.
+/* =========================================
+   LEVEL SYSTEM
+========================================= */
+
 const LEVEL_HOLDING_BASE_JASLIN = 200;
 const LEVEL_HOLDING_EXPONENT = 1.73;
 
-// Core Pulse: up to 3 active taps, each valid for 10 minutes.
-const PULSE_DURATION_MS = 10 * 60 * 1000;
-const PULSE_MULTIPLIERS = [1, 1.03, 1.06, 1.10];
-
 function requiredHoldingJaslin(targetLevel) {
+
   const level = Math.min(
     MAX_LEVEL,
     Math.max(2, Number(targetLevel || 2))
@@ -134,18 +117,20 @@ function requiredHoldingJaslin(targetLevel) {
 }
 
 function levelSpeedMultiplier(levelValue) {
+
   const level = Math.min(
     MAX_LEVEL,
     Math.max(1, Number(levelValue || 1))
   );
 
-  // Lv1 = 1.00x, Lv5000 = 3.00x.
   return 1 +
     2 * ((level - 1) / (MAX_LEVEL - 1));
 }
 
 function coreRank(levelValue) {
+
   const level = Number(levelValue || 1);
+
   if (level >= 5000) return "GENESIS";
   if (level >= 4000) return "NOVA";
   if (level >= 3000) return "QUANTUM";
@@ -153,108 +138,100 @@ function coreRank(levelValue) {
   if (level >= 1000) return "APEX";
   if (level >= 500) return "PRIME";
   if (level >= 100) return "FORGE";
+
   return "SPARK";
 }
+
+/* =========================================
+   CORE PULSE
+
+   1 tap = 1 second / 1.03x
+   2 tap = 3 seconds / 1.06x
+   3 tap = 5 seconds / 1.10x
+========================================= */
+
+const PULSE_STAGE_DURATION_MS = [
+  0,
+  1000,
+  3000,
+  5000
+];
+
+const PULSE_MULTIPLIERS = [
+  1,
+  1.03,
+  1.06,
+  1.10
+];
+
+const PULSE_LOOKBACK_MS = 5000;
 
 /* =========================================
    SUPABASE
 ========================================= */
 
-const supabase =
-  createClient(
-    SUPABASE_URL,
-    SUPABASE_SECRET_KEY,
-    {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false
-      }
+const supabase = createClient(
+  SUPABASE_URL,
+  SUPABASE_SECRET_KEY,
+  {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false
     }
-  );
-
+  }
+);
 
 /* =========================================
    EXPRESS
 ========================================= */
 
-app.use(
-  express.json()
-);
+app.use(express.json());
 
 app.use(
   express.static(
-    path.join(
-      __dirname,
-      "public"
-    )
+    path.join(__dirname, "public")
   )
 );
-
 
 /* =========================================
    TELEGRAM AUTH
 ========================================= */
 
-function verifyTelegramInitData(
-  initData
-) {
+function verifyTelegramInitData(initData) {
 
-  if (
-    !BOT_TOKEN ||
-    !initData
-  ) {
+  if (!BOT_TOKEN || !initData) {
     return null;
   }
 
   const params =
-    new URLSearchParams(
-      initData
-    );
+    new URLSearchParams(initData);
 
   const hash =
     params.get("hash");
 
   const authDate =
-    Number(
-      params.get(
-        "auth_date"
-      )
-    );
+    Number(params.get("auth_date"));
 
-  if (
-    !hash ||
-    !authDate
-  ) {
+  if (!hash || !authDate) {
     return null;
   }
 
   const now =
-    Math.floor(
-      Date.now() /
-      1000
-    );
+    Math.floor(Date.now() / 1000);
 
-  if (
-    now -
-    authDate >
-    86400
-  ) {
+  if (now - authDate > 86400) {
     return null;
   }
 
-  params.delete(
-    "hash"
-  );
+  params.delete("hash");
 
   const dataCheckString =
     [...params.entries()]
-      .sort(
-        ([a], [b]) =>
-          a.localeCompare(b)
+      .sort(([a], [b]) =>
+        a.localeCompare(b)
       )
-      .map(
-        ([key, value]) =>
-          `${key}=${value}`
+      .map(([key, value]) =>
+        `${key}=${value}`
       )
       .join("\n");
 
@@ -264,9 +241,7 @@ function verifyTelegramInitData(
         "sha256",
         "WebAppData"
       )
-      .update(
-        BOT_TOKEN
-      )
+      .update(BOT_TOKEN)
       .digest();
 
   const calculatedHash =
@@ -275,12 +250,8 @@ function verifyTelegramInitData(
         "sha256",
         secretKey
       )
-      .update(
-        dataCheckString
-      )
-      .digest(
-        "hex"
-      );
+      .update(dataCheckString)
+      .digest("hex");
 
   try {
 
@@ -301,43 +272,24 @@ function verifyTelegramInitData(
     }
 
   } catch {
-
     return null;
-
   }
 
   const userData =
-    params.get(
-      "user"
-    );
+    params.get("user");
 
   if (!userData) {
     return null;
   }
 
   try {
-
-    return JSON.parse(
-      userData
-    );
-
+    return JSON.parse(userData);
   } catch {
-
     return null;
-
   }
 }
 
-
-/* =========================================
-   AUTH MIDDLEWARE
-========================================= */
-
-function auth(
-  req,
-  res,
-  next
-) {
+function auth(req, res, next) {
 
   const initData =
     req.headers[
@@ -357,23 +309,89 @@ function auth(
         error:
           "Telegram authentication gagal."
       });
-
   }
 
-  req.tgUser =
-    user;
+  req.tgUser = user;
 
   next();
 }
 
-
 /* =========================================
-   GET USER
+   TREASURY ADMIN AUTH
 ========================================= */
 
-async function getUser(
-  id
+function treasuryAdminAuth(
+  req,
+  res,
+  next
 ) {
+
+  if (!TREASURY_ADMIN_KEY) {
+
+    return res
+      .status(503)
+      .json({
+        ok: false,
+        error:
+          "Treasury diagnostics dinonaktifkan."
+      });
+  }
+
+  const provided =
+    String(
+      req.headers["x-admin-key"] ||
+      ""
+    );
+
+  try {
+
+    const expectedBuffer =
+      Buffer.from(
+        TREASURY_ADMIN_KEY
+      );
+
+    const providedBuffer =
+      Buffer.from(
+        provided
+      );
+
+    if (
+      expectedBuffer.length !==
+        providedBuffer.length ||
+      !crypto.timingSafeEqual(
+        expectedBuffer,
+        providedBuffer
+      )
+    ) {
+
+      return res
+        .status(403)
+        .json({
+          ok: false,
+          error:
+            "Akses treasury ditolak."
+        });
+    }
+
+  } catch {
+
+    return res
+      .status(403)
+      .json({
+        ok: false,
+        error:
+          "Akses treasury ditolak."
+      });
+  }
+
+  next();
+}
+
+/* =========================================
+   USER
+========================================= */
+
+async function getUser(id) {
 
   const {
     data,
@@ -395,9 +413,95 @@ async function getUser(
   return data;
 }
 
+/* =========================================
+   SAFE BALANCE UPDATE
+========================================= */
+
+async function applyBalanceDelta(
+  telegramId,
+  delta,
+  maxRetries = 5
+) {
+
+  const id =
+    String(telegramId);
+
+  const change =
+    Number(delta || 0);
+
+  if (!Number.isFinite(change)) {
+    throw new Error(
+      "Balance delta tidak valid."
+    );
+  }
+
+  for (
+    let attempt = 0;
+    attempt < maxRetries;
+    attempt += 1
+  ) {
+
+    const current =
+      await getUser(id);
+
+    if (!current) {
+      throw new Error(
+        "User balance target tidak ditemukan."
+      );
+    }
+
+    const oldBalance =
+      Number(
+        current.balance || 0
+      );
+
+    const newBalance =
+      oldBalance + change;
+
+    if (newBalance < 0) {
+      throw new Error(
+        "Saldo tidak mencukupi."
+      );
+    }
+
+    const {
+      data,
+      error
+    } =
+      await supabase
+        .from("users")
+        .update({
+          balance: newBalance
+        })
+        .eq(
+          "telegram_id",
+          id
+        )
+        .eq(
+          "balance",
+          current.balance
+        )
+        .select(
+          "telegram_id"
+        )
+        .maybeSingle();
+
+    if (error) {
+      throw error;
+    }
+
+    if (data) {
+      return newBalance;
+    }
+  }
+
+  throw new Error(
+    "Saldo sedang berubah. Coba lagi."
+  );
+}
 
 /* =========================================
-   SAVE TRANSACTION
+   TRANSACTIONS
 ========================================= */
 
 async function saveTransaction(
@@ -413,32 +517,23 @@ async function saveTransaction(
     error
   } =
     await supabase
-      .from(
-        "transactions"
-      )
+      .from("transactions")
       .insert({
 
         telegram_id:
-          String(
-            telegramId
-          ),
+          String(telegramId),
 
-        type:
-          type,
+        type,
 
         amount:
-          Number(
-            amount
-          ),
+          Number(amount),
 
-        status:
-          status,
+        status,
 
         tx_signature:
           txSignature,
 
-        note:
-          note,
+        note,
 
         created_at:
           Date.now()
@@ -451,127 +546,333 @@ async function saveTransaction(
       "Transaction error:",
       error.message
     );
-
   }
 }
 
-
 /* =========================================
-   MINING CALCULATION
+   PULSE EVENTS
 ========================================= */
 
-async function getPulseEvents(telegramId, startAt, endAt) {
-  const from = Math.max(0, startAt - PULSE_DURATION_MS);
+async function getPulseEvents(
+  telegramId,
+  startAt,
+  endAt
+) {
 
-  const { data, error } =
+  const from =
+    Math.max(
+      0,
+      startAt -
+      PULSE_LOOKBACK_MS
+    );
+
+  const {
+    data,
+    error
+  } =
     await supabase
       .from("transactions")
       .select("created_at")
-      .eq("telegram_id", String(telegramId))
-      .eq("type", "core_pulse")
-      .gte("created_at", from)
-      .lte("created_at", endAt)
-      .order("created_at", { ascending: true });
+      .eq(
+        "telegram_id",
+        String(telegramId)
+      )
+      .eq(
+        "type",
+        "core_pulse"
+      )
+      .gte(
+        "created_at",
+        from
+      )
+      .lte(
+        "created_at",
+        endAt
+      )
+      .order(
+        "created_at",
+        { ascending: true }
+      );
 
   if (error) {
-    console.error("Pulse history error:", error.message);
+
+    console.error(
+      "Pulse history error:",
+      error.message
+    );
+
     return [];
   }
 
   return (data || [])
-    .map((row) => Number(row.created_at))
+    .map(row =>
+      Number(row.created_at)
+    )
     .filter(Number.isFinite);
 }
 
-async function getPulseStatus(telegramId) {
-  const now = Date.now();
-  const events = await getPulseEvents(
-    telegramId,
-    now - PULSE_DURATION_MS,
-    now
-  );
+function calculatePulseAt(
+  events,
+  timestamp
+) {
 
-  const active = events
-    .filter((time) => time + PULSE_DURATION_MS > now)
-    .slice(-3);
+  const recent =
+    events
+      .filter(time =>
+        time <= timestamp &&
+        timestamp - time <=
+          PULSE_LOOKBACK_MS
+      )
+      .slice(-3);
 
-  const pulseLevel = Math.min(3, active.length);
-  const pulseMultiplier = PULSE_MULTIPLIERS[pulseLevel];
+  if (!recent.length) {
 
-  return {
-    pulseLevel,
-    pulseMultiplier,
-    pulseExpiresAt: active.length
-      ? Math.min(...active.map((time) => time + PULSE_DURATION_MS))
-      : 0
-  };
-}
+    return {
+      level: 0,
+      multiplier: 1
+    };
+  }
 
-async function calculateMining(user) {
-  const started = Number(user.mining_started_at || Date.now());
-  const now = Date.now();
+  for (
+    let stage = 3;
+    stage >= 1;
+    stage -= 1
+  ) {
 
-  // Maximum one mining cycle: 8 hours.
-  const MAX_MINING_TIME = 8 * 60 * 60 * 1000;
-  const endAt = Math.min(now, started + MAX_MINING_TIME);
-  const startAt = Math.min(started, endAt);
+    if (
+      recent.length >= stage
+    ) {
 
-  if (endAt <= startAt) return 0;
+      const stageStart =
+        recent[
+          recent.length - 1
+        ];
 
-  const levelMultiplier = levelSpeedMultiplier(user.level);
-  const basePerMs =
-    (MINING_PER_MINUTE * levelMultiplier) / 60000;
+      const duration =
+        PULSE_STAGE_DURATION_MS[
+          stage
+        ];
 
-  const pulseEvents = await getPulseEvents(
-    user.telegram_id,
-    startAt,
-    endAt
-  );
+      if (
+        timestamp <
+        stageStart + duration
+      ) {
 
-  const boundaries = new Set([startAt, endAt]);
-
-  for (const pulseAt of pulseEvents) {
-    const pulseStart = Math.max(startAt, pulseAt);
-    const pulseEnd = Math.min(
-      endAt,
-      pulseAt + PULSE_DURATION_MS
-    );
-
-    if (pulseStart < pulseEnd) {
-      boundaries.add(pulseStart);
-      boundaries.add(pulseEnd);
+        return {
+          level: stage,
+          multiplier:
+            PULSE_MULTIPLIERS[
+              stage
+            ]
+        };
+      }
     }
   }
 
-  const points = [...boundaries].sort((a, b) => a - b);
+  return {
+    level: 0,
+    multiplier: 1
+  };
+}
+
+async function getPulseStatus(
+  telegramId
+) {
+
+  const now =
+    Date.now();
+
+  const events =
+    await getPulseEvents(
+      telegramId,
+      now -
+        PULSE_LOOKBACK_MS,
+      now
+    );
+
+  const status =
+    calculatePulseAt(
+      events,
+      now
+    );
+
+  let expiresAt = 0;
+
+  if (
+    status.level > 0 &&
+    events.length
+  ) {
+
+    const last =
+      events[
+        events.length - 1
+      ];
+
+    expiresAt =
+      last +
+      PULSE_STAGE_DURATION_MS[
+        status.level
+      ];
+  }
+
+  return {
+
+    pulseLevel:
+      status.level,
+
+    pulseMultiplier:
+      status.multiplier,
+
+    pulseExpiresAt:
+      expiresAt
+  };
+}
+
+/* =========================================
+   MINING
+========================================= */
+
+async function calculateMining(
+  user
+) {
+
+  const started =
+    Number(
+      user.mining_started_at ||
+      Date.now()
+    );
+
+  const now =
+    Date.now();
+
+  const MAX_MINING_TIME =
+    8 *
+    60 *
+    60 *
+    1000;
+
+  const endAt =
+    Math.min(
+      now,
+      started +
+      MAX_MINING_TIME
+    );
+
+  const startAt =
+    Math.min(
+      started,
+      endAt
+    );
+
+  if (
+    endAt <= startAt
+  ) {
+    return 0;
+  }
+
+  const levelMultiplier =
+    levelSpeedMultiplier(
+      user.level
+    );
+
+  const basePerMs =
+    (
+      MINING_PER_MINUTE *
+      levelMultiplier
+    ) /
+    60000;
+
+  const pulseEvents =
+    await getPulseEvents(
+      user.telegram_id,
+      startAt,
+      endAt
+    );
+
+  const boundaries =
+    new Set([
+      startAt,
+      endAt
+    ]);
+
+  for (
+    const pulseAt
+    of pulseEvents
+  ) {
+
+    boundaries.add(
+      Math.max(
+        startAt,
+        pulseAt
+      )
+    );
+
+    for (
+      const duration
+      of [
+        1000,
+        3000,
+        5000
+      ]
+    ) {
+
+      const point =
+        pulseAt + duration;
+
+      if (
+        point > startAt &&
+        point < endAt
+      ) {
+
+        boundaries.add(
+          point
+        );
+      }
+    }
+  }
+
+  const points =
+    [...boundaries]
+      .sort(
+        (a, b) => a - b
+      );
+
   let reward = 0;
 
-  for (let i = 0; i < points.length - 1; i += 1) {
-    const a = points[i];
-    const b = points[i + 1];
-    const midpoint = a + (b - a) / 2;
+  for (
+    let i = 0;
+    i <
+      points.length - 1;
+    i += 1
+  ) {
 
-    const activePulseCount = Math.min(
-      3,
-      pulseEvents.filter(
-        (pulseAt) =>
-          pulseAt <= midpoint &&
-          pulseAt + PULSE_DURATION_MS > midpoint
-      ).length
-    );
+    const a =
+      points[i];
+
+    const b =
+      points[i + 1];
+
+    const midpoint =
+      a +
+      (b - a) / 2;
+
+    const pulse =
+      calculatePulseAt(
+        pulseEvents,
+        midpoint
+      );
 
     reward +=
       (b - a) *
       basePerMs *
-      PULSE_MULTIPLIERS[activePulseCount];
+      pulse.multiplier;
   }
 
   return reward;
 }
 
-
 /* =========================================
-   CREATE / UPDATE USER
+   CREATE USER + REFERRAL
 ========================================= */
 
 async function ensureUser(
@@ -588,9 +889,6 @@ async function ensureUser(
     await getUser(
       telegramId
     );
-
-
-  /* USER SUDAH ADA */
 
   if (user) {
 
@@ -624,16 +922,13 @@ async function ensureUser(
     );
   }
 
-
-  /* REFERRAL */
-
   let referredBy =
     null;
 
   if (
     referralCode &&
     referralCode !==
-    telegramId
+      telegramId
   ) {
 
     const referrer =
@@ -645,15 +940,10 @@ async function ensureUser(
       referredBy =
         referralCode;
     }
-
   }
-
 
   const createdAt =
     Date.now();
-
-
-  /* CREATE USER */
 
   const {
     error
@@ -679,6 +969,9 @@ async function ensureUser(
         balance:
           0,
 
+        level:
+          1,
+
         mining_started_at:
           createdAt,
 
@@ -697,54 +990,28 @@ async function ensureUser(
     throw error;
   }
 
+  /*
+    BONUS AWAL REFERRAL
 
-  /* REFERRAL BONUS */
+    Orang yang mengundang
+    mendapatkan 200 TOKEN
+    ketika user referral baru
+    berhasil dibuat.
+  */
 
   if (referredBy) {
 
-    const referrer =
-      await getUser(
-        referredBy
-      );
+    await applyBalanceDelta(
+      referredBy,
+      REFERRAL_REWARD
+    );
 
-    if (referrer) {
-
-      const newBalance =
-        Number(
-          referrer.balance
-        ) +
-        REFERRAL_REWARD;
-
-      const {
-        error:
-          referralError
-      } =
-        await supabase
-          .from("users")
-          .update({
-            balance:
-              newBalance
-          })
-          .eq(
-            "telegram_id",
-            referredBy
-          );
-
-      if (
-        referralError
-      ) {
-        throw referralError;
-      }
-
-      await saveTransaction(
-        referredBy,
-        "referral",
-        REFERRAL_REWARD,
-        `Referral dari ${telegramId}`
-      );
-
-    }
-
+    await saveTransaction(
+      referredBy,
+      "referral",
+      REFERRAL_REWARD,
+      `Referral baru ${telegramId}`
+    );
   }
 
   return await getUser(
@@ -752,84 +1019,200 @@ async function ensureUser(
   );
 }
 
-
 /* =========================================
    PUBLIC STATE
 ========================================= */
 
-async function publicState(user) {
-  const mining = await calculateMining(user);
+async function publicState(
+  user
+) {
 
-  const lastSpin = Number(user.last_spin_at || 0);
+  const mining =
+    await calculateMining(
+      user
+    );
+
+  const lastSpin =
+    Number(
+      user.last_spin_at || 0
+    );
+
   const spinAvailable =
     !lastSpin ||
-    (Date.now() - lastSpin) >= 86400000;
+    Date.now() -
+      lastSpin >=
+      86400000;
 
-  const level = Math.min(
-    MAX_LEVEL,
-    Math.max(1, Number(user.level || 1))
-  );
+  const level =
+    Math.min(
+      MAX_LEVEL,
+      Math.max(
+        1,
+        Number(
+          user.level || 1
+        )
+      )
+    );
 
-  const pulse = await getPulseStatus(user.telegram_id);
+  const pulse =
+    await getPulseStatus(
+      user.telegram_id
+    );
+
   const baseRate =
-    MINING_PER_MINUTE * levelSpeedMultiplier(level);
+    MINING_PER_MINUTE *
+    levelSpeedMultiplier(
+      level
+    );
+
   const effectiveRate =
-    baseRate * pulse.pulseMultiplier;
+    baseRate *
+    pulse.pulseMultiplier;
 
   let referralCount = 0;
+
   try {
-    const { count } = await supabase
-      .from("users")
-      .select("telegram_id", { count: "exact", head: true })
-      .eq("referred_by", String(user.telegram_id));
-    referralCount = Number(count || 0);
+
+    const {
+      count
+    } =
+      await supabase
+        .from("users")
+        .select(
+          "telegram_id",
+          {
+            count: "exact",
+            head: true
+          }
+        )
+        .eq(
+          "referred_by",
+          String(
+            user.telegram_id
+          )
+        );
+
+    referralCount =
+      Number(count || 0);
+
   } catch (error) {
-    console.error("Referral count error:", error);
+
+    console.error(
+      "Referral count error:",
+      error
+    );
   }
 
-  const miningStartedAt = Number(user.mining_started_at || Date.now());
-  const miningCapAt = miningStartedAt + 8 * 60 * 60 * 1000;
+  const miningStartedAt =
+    Number(
+      user.mining_started_at ||
+      Date.now()
+    );
+
+  const miningCapAt =
+    miningStartedAt +
+    8 *
+    60 *
+    60 *
+    1000;
 
   return {
+
     user: {
-      id: user.telegram_id,
-      username: user.username,
-      firstName: user.first_name,
-      wallet: user.wallet || ""
+
+      id:
+        user.telegram_id,
+
+      username:
+        user.username,
+
+      firstName:
+        user.first_name,
+
+      wallet:
+        user.wallet || ""
     },
 
-    balance: Number(Number(user.balance).toFixed(4)),
-    mining: Number(mining.toFixed(8)),
+    balance:
+      Number(
+        Number(
+          user.balance
+        ).toFixed(4)
+      ),
 
-    miningPerMinute: Number(effectiveRate.toFixed(8)),
-    baseMiningPerMinute: Number(baseRate.toFixed(8)),
-    eightHourOutput: Number((baseRate * 480).toFixed(4)),
+    mining:
+      Number(
+        mining.toFixed(8)
+      ),
+
+    miningPerMinute:
+      Number(
+        effectiveRate.toFixed(8)
+      ),
+
+    baseMiningPerMinute:
+      Number(
+        baseRate.toFixed(8)
+      ),
+
+    eightHourOutput:
+      Number(
+        (
+          baseRate *
+          480
+        ).toFixed(4)
+      ),
 
     miningStartedAt,
     miningCapAt,
 
-    pulseLevel: pulse.pulseLevel,
-    pulseMultiplier: pulse.pulseMultiplier,
-    pulseExpiresAt: pulse.pulseExpiresAt,
+    pulseLevel:
+      pulse.pulseLevel,
 
-    dailySpinAvailable: spinAvailable,
+    pulseMultiplier:
+      pulse.pulseMultiplier,
+
+    pulseExpiresAt:
+      pulse.pulseExpiresAt,
+
+    dailySpinAvailable:
+      spinAvailable,
+
     referralCount,
+
+    referralReward:
+      REFERRAL_REWARD,
+
+    referralCommissionRate:
+      REFERRAL_COMMISSION_RATE,
+
     referralLink:
       `https://t.me/${BOT_USERNAME}?startapp=ref_${user.telegram_id}`,
 
-    network: "TON",
-    jetton: JASLIN_JETTON_MASTER,
+    network:
+      "TON",
 
-    minimumWithdraw: MIN_WITHDRAW_JASLIN,
-    withdrawFee: WITHDRAW_FEE_JASLIN,
-    withdrawalsEnabled: WITHDRAWALS_ENABLED,
+    jetton:
+      JASLIN_JETTON_MASTER,
+
+    minimumWithdraw:
+      MIN_WITHDRAW_JASLIN,
+
+    withdrawFee:
+      WITHDRAW_FEE_JASLIN,
+
+    withdrawalsEnabled:
+      WITHDRAWALS_ENABLED,
 
     level,
-    maxLevel: MAX_LEVEL,
-    coreRank: coreRank(level)
+
+    maxLevel:
+      MAX_LEVEL,
+
+    coreRank:
+      coreRank(level)
   };
 }
-
 
 /* =========================================
    SESSION
@@ -865,7 +1248,6 @@ app.post(
           startParam.substring(
             4
           );
-
       }
 
       const user =
@@ -880,13 +1262,9 @@ app.post(
         )
       );
 
-    } catch (
-      error
-    ) {
+    } catch (error) {
 
-      console.error(
-        error
-      );
+      console.error(error);
 
       res
         .status(500)
@@ -894,12 +1272,9 @@ app.post(
           error:
             "Gagal membuat session."
         });
-
     }
-
   }
 );
-
 
 /* =========================================
    STATE
@@ -928,7 +1303,6 @@ app.get(
             error:
               "User belum terdaftar."
           });
-
       }
 
       res.json(
@@ -937,13 +1311,9 @@ app.get(
         )
       );
 
-    } catch (
-      error
-    ) {
+    } catch (error) {
 
-      console.error(
-        error
-      );
+      console.error(error);
 
       res
         .status(500)
@@ -951,12 +1321,9 @@ app.get(
           error:
             "Gagal mengambil data."
         });
-
     }
-
   }
 );
-
 
 /* =========================================
    CLAIM MINING
@@ -985,17 +1352,18 @@ app.post(
             error:
               "User tidak ditemukan."
           });
-
       }
 
       const claimed =
         Number(
-          (await calculateMining(user)).toFixed(8)
+          (
+            await calculateMining(
+              user
+            )
+          ).toFixed(8)
         );
 
-      if (
-        claimed <= 0
-      ) {
+      if (claimed <= 0) {
 
         return res
           .status(400)
@@ -1003,19 +1371,29 @@ app.post(
             error:
               "Belum ada mining."
           });
-
       }
-
-      const newBalance =
-        Number(
-          user.balance
-        ) +
-        claimed;
 
       const now =
         Date.now();
 
+      /*
+        CLAIM LOCK
+
+        mining_started_at lama
+        harus masih sama.
+
+        Ini mencegah dua request
+        claim bersamaan.
+      */
+
+      const newBalance =
+        Number(
+          user.balance || 0
+        ) +
+        claimed;
+
       const {
+        data: claimedUser,
         error
       } =
         await supabase
@@ -1034,10 +1412,32 @@ app.post(
             String(
               req.tgUser.id
             )
-          );
+          )
+          .eq(
+            "mining_started_at",
+            user.mining_started_at
+          )
+          .eq(
+            "balance",
+            user.balance
+          )
+          .select(
+            "telegram_id"
+          )
+          .maybeSingle();
 
       if (error) {
         throw error;
+      }
+
+      if (!claimedUser) {
+
+        return res
+          .status(409)
+          .json({
+            error:
+              "Claim sedang diproses. Refresh game."
+          });
       }
 
       await saveTransaction(
@@ -1046,38 +1446,60 @@ app.post(
         claimed,
         "Mining claim"
       );
-      if (user.referred_by) {
-  const referrer = await getUser(user.referred_by);
 
-  if (referrer) {
-    const referralCommission = claimed * 0.10;
+      /*
+        REFERRAL MINING COMMISSION
 
-    const referrerNewBalance =
-      Number(referrer.balance) + referralCommission;
+        Teman tetap menerima
+        100% hasil mining.
 
-    const {
-      error: commissionError
-    } = await supabase
-      .from("users")
-      .update({
-        balance: referrerNewBalance
-      })
-      .eq(
-        "telegram_id",
-        String(user.referred_by)
-      );
+        Inviter mendapatkan
+        tambahan 10%.
 
-    if (commissionError) {
-      throw commissionError;
-    }
+        Contoh:
+        teman claim 200
+        inviter +20 TOKEN.
+      */
 
-    await saveTransaction(
-      user.referred_by,
-      "referral_commission",
-      referralCommission,
-      `10% mining commission dari ${req.tgUser.id}`
-    );
-  }
+      if (
+        user.referred_by &&
+        REFERRAL_COMMISSION_RATE >
+          0
+      ) {
+
+        const referralCommission =
+          claimed *
+          REFERRAL_COMMISSION_RATE;
+
+        try {
+
+          await applyBalanceDelta(
+            user.referred_by,
+            referralCommission
+          );
+
+          await saveTransaction(
+            user.referred_by,
+            "referral_commission",
+            referralCommission,
+            `${REFERRAL_COMMISSION_RATE * 100}% mining commission dari ${req.tgUser.id}`
+          );
+
+        } catch (
+          commissionError
+        ) {
+
+          /*
+            Claim user jangan gagal
+            hanya karena bonus referrer
+            mengalami masalah.
+          */
+
+          console.error(
+            "Referral commission error:",
+            commissionError
+          );
+        }
       }
 
       const updated =
@@ -1093,18 +1515,14 @@ app.post(
 
         claimed:
           Number(
-            claimed.toFixed(
-              4
-            )
+            claimed.toFixed(4)
           )
-
       });
 
-    } catch (
-      error
-    ) {
+    } catch (error) {
 
       console.error(
+        "Claim error:",
         error
       );
 
@@ -1114,15 +1532,12 @@ app.post(
           error:
             "Claim mining gagal."
         });
-
     }
-
   }
 );
 
-
 /* =========================================
-   DAILY SPIN
+   DAILY CORE DROP
 ========================================= */
 
 app.post(
@@ -1148,19 +1563,18 @@ app.post(
             error:
               "User tidak ditemukan."
           });
-
       }
 
       const lastSpin =
         Number(
-          user.last_spin_at
+          user.last_spin_at || 0
         );
 
       if (
         lastSpin &&
         Date.now() -
-        lastSpin <
-        86400000
+          lastSpin <
+          86400000
       ) {
 
         return res
@@ -1169,39 +1583,52 @@ app.post(
             error:
               "Daily Spin sudah digunakan."
           });
-
       }
 
-      // Daily Core Drop: controlled weighted reward.
-      const roll = Math.random() * 100;
+      const roll =
+        Math.random() * 100;
 
       let reward = 10;
       let rarity = "COMMON";
 
       if (roll < 2) {
+
         reward = 100;
         rarity = "LEGENDARY";
-      } else if (roll < 8) {
+
+      } else if (
+        roll < 8
+      ) {
+
         reward = 50;
         rarity = "EPIC";
-      } else if (roll < 20) {
+
+      } else if (
+        roll < 20
+      ) {
+
         reward = 30;
         rarity = "RARE";
-      } else if (roll < 45) {
+
+      } else if (
+        roll < 45
+      ) {
+
         reward = 20;
         rarity = "UNCOMMON";
       }
 
-      const newBalance =
-        Number(
-          user.balance
-        ) +
-        reward;
-
       const now =
         Date.now();
 
+      const newBalance =
+        Number(
+          user.balance || 0
+        ) +
+        reward;
+
       const {
+        data: spinUser,
         error
       } =
         await supabase
@@ -1220,17 +1647,39 @@ app.post(
             String(
               req.tgUser.id
             )
-          );
+          )
+          .eq(
+            "last_spin_at",
+            user.last_spin_at
+          )
+          .eq(
+            "balance",
+            user.balance
+          )
+          .select(
+            "telegram_id"
+          )
+          .maybeSingle();
 
       if (error) {
         throw error;
+      }
+
+      if (!spinUser) {
+
+        return res
+          .status(409)
+          .json({
+            error:
+              "Daily Core Drop sedang diproses."
+          });
       }
 
       await saveTransaction(
         req.tgUser.id,
         "daily_spin",
         reward,
-        "Daily Spin"
+        "Daily Core Drop"
       );
 
       const updated =
@@ -1246,14 +1695,12 @@ app.post(
 
         reward,
         rarity
-
       });
 
-    } catch (
-      error
-    ) {
+    } catch (error) {
 
       console.error(
+        "Daily Spin error:",
         error
       );
 
@@ -1263,113 +1710,236 @@ app.post(
           error:
             "Daily Spin gagal."
         });
-
     }
-
   }
-); 
-
-/* =========================================
-   JASLIN MARKET PRICE - DEDUST CPMM V2
-========================================= */
-
-app.get("/api/jaslin-price", async (req, res) => {
-  try {
-    const poolAddress = Address.parse(
-      "EQBtaODtADXS7R6KJClA_-uOQlFkXG8_GCjjVfk4vUbMImxb"
-    );
-
-    const result = await tonClient.runMethod(
-      poolAddress,
-      "get_pool_data"
-    );
-
-    const items = result.stack.items;
-
-// Reserve CPMM v2 dari output pool kita
-const reserveX = BigInt(items[9].value);
-const reserveY = BigInt(items[10].value);
-
-// Kedua token memakai 9 decimals.
-// Pool ini: X = GRAM, Y = JASLIN.
-const gramReserve = Number(reserveX) / 1e9;
-const jaslinReserve = Number(reserveY) / 1e9;
-
-const priceGram =
-  gramReserve / jaslinReserve;
-
-const jaslinPerGram =
-  jaslinReserve / gramReserve;
-const gramPriceResponse = await fetch(
-  "https://api.coingecko.com/api/v3/simple/price?names=Gram%20%28prev.%20Toncoin%29&vs_currencies=usd"
 );
 
-if (!gramPriceResponse.ok) {
-  throw new Error("Gagal mengambil harga GRAM/USD");
-}
+/* =========================================
+   JASLIN PRICE
+========================================= */
 
-const gramPriceData =
-  await gramPriceResponse.json();
+app.get(
+  "/api/jaslin-price",
+  async (
+    req,
+    res
+  ) => {
 
-const gramPriceUsd =
-  Number(
-    gramPriceData?.["Gram (prev. Toncoin)"]?.usd || 0
-  );
+    try {
 
-const priceUsd =
-  priceGram * gramPriceUsd;
-    
-res.json({
-  ok: true,
-  symbol: "JASLIN",
-  pair: "JASLIN/GRAM",
-  source: "dedust_onchain",
+      const poolAddress =
+        Address.parse(
+          "EQBtaODtADXS7R6KJClA_-uOQlFkXG8_GCjjVfk4vUbMImxb"
+        );
 
-  jaslinReserve,
-  gramReserve,
+      const result =
+        await tonClient
+          .runMethod(
+            poolAddress,
+            "get_pool_data"
+          );
 
-  priceGram,
-  jaslinPerGram,
+      const items =
+        result.stack.items;
 
-  gramPriceUsd,
-  priceUsd,
+      const reserveX =
+        BigInt(
+          items[9].value
+        );
 
-  updatedAt: Date.now()
-});
+      const reserveY =
+        BigInt(
+          items[10].value
+        );
+
+      const gramReserve =
+        Number(reserveX) /
+        1e9;
+
+      const jaslinReserve =
+        Number(reserveY) /
+        1e9;
+
+      const priceGram =
+        gramReserve /
+        jaslinReserve;
+
+      const jaslinPerGram =
+        jaslinReserve /
+        gramReserve;
+
+      const gramPriceResponse =
+        await fetch(
+          "https://api.coingecko.com/api/v3/simple/price?names=Gram%20%28prev.%20Toncoin%29&vs_currencies=usd"
+        );
+
+      if (
+        !gramPriceResponse.ok
+      ) {
+
+        throw new Error(
+          "Gagal mengambil harga GRAM/USD"
+        );
+      }
+
+      const gramPriceData =
+        await gramPriceResponse
+          .json();
+
+      const gramPriceUsd =
+        Number(
+          gramPriceData
+            ?.["Gram (prev. Toncoin)"]
+            ?.usd ||
+          0
+        );
+
+      const priceUsd =
+        priceGram *
+        gramPriceUsd;
+
+      res.json({
+
+        ok: true,
+
+        symbol:
+          "JASLIN",
+
+        pair:
+          "JASLIN/GRAM",
+
+        source:
+          "dedust_onchain",
+
+        jaslinReserve,
+        gramReserve,
+
+        priceGram,
+        jaslinPerGram,
+
+        gramPriceUsd,
+        priceUsd,
+
+        updatedAt:
+          Date.now()
+      });
+
+    } catch (error) {
+
+      console.error(
+        "JASLIN pool error:",
+        error
+      );
+
+      res
+        .status(500)
+        .json({
+
+          ok: false,
+
+          error:
+            error?.message ||
+            String(error)
+        });
+    }
+  }
+);
+
+/* =========================================
+   READ WALLET JASLIN
+========================================= */
+
+async function getWalletJaslinBalance(
+  wallet
+) {
+
+  if (!wallet) {
+    return 0;
+  }
+
+  try {
+
+    const ownerAddress =
+      Address.parse(
+        wallet
+      );
+
+    const master =
+      tonClient.open(
+        JettonMaster.create(
+          Address.parse(
+            JASLIN_JETTON_MASTER
+          )
+        )
+      );
+
+    const jettonWalletAddress =
+      await master
+        .getWalletAddress(
+          ownerAddress
+        );
+
+    const walletData =
+      await tonClient
+        .runMethod(
+          jettonWalletAddress,
+          "get_wallet_data"
+        );
+
+    const rawBalance =
+      BigInt(
+        walletData
+          .stack
+          .items[0]
+          .value
+      );
+
+    return (
+      Number(rawBalance) /
+      (
+        10 **
+        JASLIN_DECIMALS
+      )
+    );
 
   } catch (error) {
-    console.error("JASLIN pool error:", error);
 
-    res.status(500).json({
-      ok: false,
-      error: error?.message || String(error)
-    });
+    console.error(
+      "Wallet JASLIN error:",
+      error
+    );
+
+    return 0;
   }
-});
+}
 
 /* =========================================
    LEVEL QUOTE
 ========================================= */
 
-
-/* =========================================
-   LEVEL QUOTE - HOLDING POWER
-========================================= */
-
 app.post(
   "/api/level-quote",
   auth,
-  async (req, res) => {
+  async (
+    req,
+    res
+  ) => {
+
     try {
+
       const user =
         await getUser(
           req.tgUser.id
         );
 
       if (!user) {
-        return res.status(404).json({
-          error: "User tidak ditemukan."
-        });
+
+        return res
+          .status(404)
+          .json({
+            error:
+              "User tidak ditemukan."
+          });
       }
 
       const currentLevel =
@@ -1377,125 +1947,66 @@ app.post(
           MAX_LEVEL,
           Math.max(
             1,
-            Number(user.level || 1)
+            Number(
+              user.level || 1
+            )
           )
         );
 
       const targetLevel =
         Math.floor(
-          Number(req.body?.targetLevel)
+          Number(
+            req.body
+              ?.targetLevel
+          )
         );
 
       if (
-        !Number.isFinite(targetLevel) ||
-        targetLevel <= currentLevel ||
-        targetLevel > MAX_LEVEL
+        !Number.isFinite(
+          targetLevel
+        ) ||
+        targetLevel <=
+          currentLevel ||
+        targetLevel >
+          MAX_LEVEL
       ) {
-        return res.status(400).json({
-          error: "Target level tidak valid."
-        });
+
+        return res
+          .status(400)
+          .json({
+            error:
+              "Target level tidak valid."
+          });
       }
 
       const gameBalance =
-        Number(user.balance || 0);
+        Number(
+          user.balance || 0
+        );
 
-      let walletBalance = 0;
-
-      if (user.wallet) {
-        try {
-          const ownerAddress =
-            Address.parse(user.wallet);
-
-          const master =
-            tonClient.open(
-              JettonMaster.create(
-                Address.parse(
-                  JASLIN_JETTON_MASTER
-                )
-              )
-            );
-
-          const jettonWalletAddress =
-            await master.getWalletAddress(
-              ownerAddress
-            );
-
-          const walletData =
-            await tonClient.runMethod(
-              jettonWalletAddress,
-              "get_wallet_data"
-            );
-
-          const rawBalance =
-            BigInt(
-              walletData.stack.items[0].value
-            );
-
-          walletBalance =
-            Number(rawBalance) /
-            (10 ** JASLIN_DECIMALS);
-
-        } catch (error) {
-          console.error(
-            "Level quote wallet error:",
-            error
-          );
-
-          walletBalance = 0;
-        }
-      }
+      const walletBalance =
+        await getWalletJaslinBalance(
+          user.wallet
+        );
 
       const totalHoldingJaslin =
-        gameBalance + walletBalance;
-
-      const poolAddress =
-        Address.parse(
-          "EQBtaODtADXS7R6KJClA_-uOQlFkXG8_GCjjVfk4vUbMImxb"
-        );
-
-      const poolResult =
-        await tonClient.runMethod(
-          poolAddress,
-          "get_pool_data"
-        );
-
-      const items =
-        poolResult.stack.items;
-
-      const reserveX =
-        BigInt(items[9].value);
-
-      const reserveY =
-        BigInt(items[10].value);
-
-      const gramReserve =
-        Number(reserveX) / 1e9;
-
-      const jaslinReserve =
-        Number(reserveY) / 1e9;
-
-      const priceGram =
-        gramReserve / jaslinReserve;
-
-      const holdingPowerGram =
-        totalHoldingJaslin * priceGram;
+        gameBalance +
+        walletBalance;
 
       const requiredJaslin =
-        requiredHoldingJaslin(targetLevel);
-
-      const requiredGram =
-        requiredJaslin * priceGram;
+        requiredHoldingJaslin(
+          targetLevel
+        );
 
       const missingJaslin =
         Math.max(
           0,
-          requiredJaslin - totalHoldingJaslin
+          requiredJaslin -
+          totalHoldingJaslin
         );
 
-      const missingGram =
-        missingJaslin * priceGram;
-
       res.json({
+
         ok: true,
 
         currentLevel,
@@ -1503,15 +2014,10 @@ app.post(
 
         gameBalance,
         walletBalance,
+
         totalHoldingJaslin,
 
-        priceGram,
-
-        holdingPowerGram,
-        requiredGram,
-
         requiredJaslin,
-        missingGram,
         missingJaslin,
 
         eligible:
@@ -1520,188 +2026,174 @@ app.post(
       });
 
     } catch (error) {
+
       console.error(
         "Level quote error:",
         error
       );
 
-      res.status(500).json({
-        error:
-          "Gagal menghitung Holding Power."
-      });
+      res
+        .status(500)
+        .json({
+          error:
+            "Gagal menghitung Holding Power."
+        });
     }
   }
 );
 
-
 /* =========================================
-   UPGRADE CORE - HOLDING POWER
+   UPGRADE CORE
 ========================================= */
 
 app.post(
   "/api/upgrade-core",
   auth,
-  async (req, res) => {
+  async (
+    req,
+    res
+  ) => {
+
     try {
-      const user = await getUser(req.tgUser.id);
+
+      const user =
+        await getUser(
+          req.tgUser.id
+        );
 
       if (!user) {
-        return res.status(404).json({
-          error: "User tidak ditemukan."
-        });
+
+        return res
+          .status(404)
+          .json({
+            error:
+              "User tidak ditemukan."
+          });
       }
 
-      const currentLevel = Math.min(
-        MAX_LEVEL,
-        Math.max(1, Number(user.level || 1))
-      );
+      const currentLevel =
+        Math.min(
+          MAX_LEVEL,
+          Math.max(
+            1,
+            Number(
+              user.level || 1
+            )
+          )
+        );
 
-      if (currentLevel >= MAX_LEVEL) {
-        return res.status(400).json({
-          error: "Level maksimum sudah tercapai."
-        });
+      if (
+        currentLevel >=
+        MAX_LEVEL
+      ) {
+
+        return res
+          .status(400)
+          .json({
+            error:
+              "Level maksimum sudah tercapai."
+          });
       }
 
-      const targetLevel = currentLevel + 1;
-
-      /* SALDO GAME */
+      const targetLevel =
+        currentLevel + 1;
 
       const gameBalance =
-        Number(user.balance || 0);
+        Number(
+          user.balance || 0
+        );
 
-      /* SALDO JASLIN WALLET */
-
-      let walletBalance = 0;
-
-      if (user.wallet) {
-        try {
-          const ownerAddress =
-            Address.parse(user.wallet);
-
-          const master =
-            tonClient.open(
-              JettonMaster.create(
-                Address.parse(
-                  JASLIN_JETTON_MASTER
-                )
-              )
-            );
-
-          const jettonWalletAddress =
-            await master.getWalletAddress(
-              ownerAddress
-            );
-
-          const walletData =
-            await tonClient.runMethod(
-              jettonWalletAddress,
-              "get_wallet_data"
-            );
-
-          const rawBalance =
-            BigInt(
-              walletData.stack.items[0].value
-            );
-
-          walletBalance =
-            Number(rawBalance) /
-            (10 ** JASLIN_DECIMALS);
-
-        } catch (error) {
-          console.error(
-            "JASLIN wallet balance error:",
-            error
-          );
-
-          walletBalance = 0;
-        }
-      }
-
-      /* TOTAL HOLDING */
+      const walletBalance =
+        await getWalletJaslinBalance(
+          user.wallet
+        );
 
       const totalHoldingJaslin =
-        gameBalance + walletBalance;
-
-      /* RATE JASLIN / GRAM DARI POOL */
-
-      const poolAddress =
-        Address.parse(
-          "EQBtaODtADXS7R6KJClA_-uOQlFkXG8_GCjjVfk4vUbMImxb"
-        );
-
-      const poolResult =
-        await tonClient.runMethod(
-          poolAddress,
-          "get_pool_data"
-        );
-
-      const items =
-        poolResult.stack.items;
-
-      const reserveX =
-        BigInt(items[9].value);
-
-      const reserveY =
-        BigInt(items[10].value);
-
-      // X = GRAM, Y = JASLIN
-      const gramReserve =
-        Number(reserveX) / 1e9;
-
-      const jaslinReserve =
-        Number(reserveY) / 1e9;
-
-      const priceGram =
-        gramReserve / jaslinReserve;
-
-      /* HOLDING POWER */
-
-      const holdingPowerGram =
-        totalHoldingJaslin * priceGram;
+        gameBalance +
+        walletBalance;
 
       const requiredJaslin =
-        requiredHoldingJaslin(targetLevel);
-
-      const requiredGram =
-        requiredJaslin * priceGram;
+        requiredHoldingJaslin(
+          targetLevel
+        );
 
       const missingJaslin =
-        Math.max(0, requiredJaslin - totalHoldingJaslin);
+        Math.max(
+          0,
+          requiredJaslin -
+          totalHoldingJaslin
+        );
 
-      const missingGram =
-        missingJaslin * priceGram;
+      if (
+        totalHoldingJaslin <
+        requiredJaslin
+      ) {
 
-      if (totalHoldingJaslin < requiredJaslin) {
-        return res.status(400).json({
-          error: "Holding Power belum cukup.",
-          currentLevel,
-          targetLevel,
-          gameBalance,
-          walletBalance,
-          totalHoldingJaslin,
-          holdingPowerGram,
-          requiredJaslin,
-          requiredGram,
-          missingJaslin,
-          missingGram
-        });
+        return res
+          .status(400)
+          .json({
+
+            error:
+              "Holding Power belum cukup.",
+
+            currentLevel,
+            targetLevel,
+
+            gameBalance,
+            walletBalance,
+
+            totalHoldingJaslin,
+
+            requiredJaslin,
+            missingJaslin
+          });
       }
 
-      /* NAIK LEVEL TANPA POTONG SALDO */
+      /*
+        LEVEL LOCK
 
-      const { error } =
+        hanya update kalau level
+        masih sama seperti ketika
+        request dimulai.
+      */
+
+      const {
+        data: upgradedUser,
+        error
+      } =
         await supabase
           .from("users")
           .update({
-            level: targetLevel
+            level:
+              targetLevel
           })
           .eq(
             "telegram_id",
-            String(req.tgUser.id)
-          );
+            String(
+              req.tgUser.id
+            )
+          )
+          .eq(
+            "level",
+            user.level
+          )
+          .select(
+            "telegram_id"
+          )
+          .maybeSingle();
 
       if (error) {
         throw error;
+      }
+
+      if (!upgradedUser) {
+
+        return res
+          .status(409)
+          .json({
+            error:
+              "Level sudah berubah. Refresh game."
+          });
       }
 
       await saveTransaction(
@@ -1712,38 +2204,49 @@ app.post(
       );
 
       const updated =
-        await getUser(req.tgUser.id);
+        await getUser(
+          req.tgUser.id
+        );
 
       res.json({
-        ...await publicState(updated),
 
-        upgraded: true,
-        previousLevel: currentLevel,
-        newLevel: targetLevel,
+        ...await publicState(
+          updated
+        ),
+
+        upgraded:
+          true,
+
+        previousLevel:
+          currentLevel,
+
+        newLevel:
+          targetLevel,
 
         gameBalance,
         walletBalance,
+
         totalHoldingJaslin,
 
-        priceGram,
-        holdingPowerGram,
-        requiredJaslin,
-        requiredGram
+        requiredJaslin
       });
 
     } catch (error) {
+
       console.error(
         "Upgrade Core error:",
         error
       );
 
-      res.status(500).json({
-        error: "Upgrade Core gagal."
-      });
+      res
+        .status(500)
+        .json({
+          error:
+            "Upgrade Core gagal."
+        });
     }
   }
 );
-
 
 /* =========================================
    CORE PULSE
@@ -1752,56 +2255,109 @@ app.post(
 app.post(
   "/api/core-pulse",
   auth,
-  async (req, res) => {
+  async (
+    req,
+    res
+  ) => {
+
     try {
-      const user = await getUser(req.tgUser.id);
+
+      const user =
+        await getUser(
+          req.tgUser.id
+        );
 
       if (!user) {
-        return res.status(404).json({
-          error: "User tidak ditemukan."
-        });
+
+        return res
+          .status(404)
+          .json({
+            error:
+              "User tidak ditemukan."
+          });
       }
 
-      const status = await getPulseStatus(user.telegram_id);
+      const now =
+        Date.now();
 
-      if (status.pulseLevel >= 3) {
-        return res.status(400).json({
-          error: "Core Pulse sudah maksimum 3/3.",
-          ...status
-        });
+      const events =
+        await getPulseEvents(
+          user.telegram_id,
+          now -
+            PULSE_LOOKBACK_MS,
+          now
+        );
+
+      const recent =
+        events.filter(
+          time =>
+            now - time <=
+            PULSE_LOOKBACK_MS
+        );
+
+      const pulseCount =
+        Math.min(
+          3,
+          recent.length
+        );
+
+      if (
+        pulseCount >= 3
+      ) {
+
+        return res
+          .status(400)
+          .json({
+            error:
+              "Core Pulse sudah maksimum 3/3."
+          });
       }
 
       await saveTransaction(
         user.telegram_id,
         "core_pulse",
         0,
-        `Core Pulse ${status.pulseLevel + 1}/3`
+        `Core Pulse ${pulseCount + 1}/3`
       );
 
       const updatedStatus =
-        await getPulseStatus(user.telegram_id);
+        await getPulseStatus(
+          user.telegram_id
+        );
 
       const updatedState =
-        await publicState(user);
+        await publicState(
+          user
+        );
 
       res.json({
+
         ...updatedState,
         ...updatedStatus,
-        activated: true
+
+        activated:
+          true
       });
 
     } catch (error) {
-      console.error("Core Pulse error:", error);
-      res.status(500).json({
-        error: "Core Pulse gagal diaktifkan."
-      });
+
+      console.error(
+        "Core Pulse error:",
+        error
+      );
+
+      res
+        .status(500)
+        .json({
+          error:
+            "Core Pulse gagal diaktifkan."
+        });
     }
   }
 );
 
-
 /* =========================================
-   TON WALLET
+   SAVE TON WALLET
 ========================================= */
 
 app.post(
@@ -1816,7 +2372,8 @@ app.post(
 
       const wallet =
         String(
-          req.body?.wallet ||
+          req.body
+            ?.wallet ||
           ""
         ).trim();
 
@@ -1836,9 +2393,7 @@ app.post(
               error:
                 "Alamat wallet TON tidak valid."
             });
-
         }
-
       }
 
       const {
@@ -1847,8 +2402,7 @@ app.post(
         await supabase
           .from("users")
           .update({
-            wallet:
-              wallet
+            wallet
           })
           .eq(
             "telegram_id",
@@ -1862,17 +2416,17 @@ app.post(
       }
 
       res.json({
-        wallet:
-          wallet,
+
+        wallet,
+
         network:
           "TON"
       });
 
-    } catch (
-      error
-    ) {
+    } catch (error) {
 
       console.error(
+        "Wallet error:",
         error
       );
 
@@ -1882,183 +2436,425 @@ app.post(
           error:
             "Gagal menyimpan wallet TON."
         });
-
     }
-
   }
 );
 
-
 /* =========================================
-   WITHDRAW JASLIN
-   Default OFF. Set WITHDRAWALS_ENABLED=true
-   only after treasury testing.
+   JETTON UNITS
 ========================================= */
 
-function toJettonUnits(value) {
-  const fixed = Number(value).toFixed(JASLIN_DECIMALS);
-  const [whole, fraction = ""] = fixed.split(".");
-  const padded = fraction.padEnd(JASLIN_DECIMALS, "0");
-  return BigInt(whole) * (10n ** BigInt(JASLIN_DECIMALS)) +
-    BigInt(padded || "0");
+function toJettonUnits(
+  value
+) {
+
+  const fixed =
+    Number(value)
+      .toFixed(
+        JASLIN_DECIMALS
+      );
+
+  const [
+    whole,
+    fraction = ""
+  ] =
+    fixed.split(".");
+
+  const padded =
+    fraction.padEnd(
+      JASLIN_DECIMALS,
+      "0"
+    );
+
+  return (
+    BigInt(whole) *
+      (
+        10n **
+        BigInt(
+          JASLIN_DECIMALS
+        )
+      )
+    +
+    BigInt(
+      padded || "0"
+    )
+  );
 }
 
-async function sendJaslinFromTreasury(destinationAddress, amount) {
-  if (!TON_TREASURY_MNEMONIC || !TON_TREASURY_ADDRESS) {
-    throw new Error("Treasury environment belum lengkap.");
+/* =========================================
+   TREASURY SEND
+========================================= */
+
+async function sendJaslinFromTreasury(
+  destinationAddress,
+  amount
+) {
+
+  if (
+    !TON_TREASURY_MNEMONIC ||
+    !TON_TREASURY_ADDRESS
+  ) {
+
+    throw new Error(
+      "Treasury environment belum lengkap."
+    );
   }
 
   const mnemonic =
-    TON_TREASURY_MNEMONIC.trim().split(/\s+/);
+    TON_TREASURY_MNEMONIC
+      .trim()
+      .split(/\s+/);
 
   const keyPair =
-    await mnemonicToPrivateKey(mnemonic);
+    await mnemonicToPrivateKey(
+      mnemonic
+    );
 
   const expected =
-    Address.parse(TON_TREASURY_ADDRESS);
+    Address.parse(
+      TON_TREASURY_ADDRESS
+    );
 
-  const walletV4 = WalletContractV4.create({
-    workchain: 0,
-    publicKey: keyPair.publicKey
-  });
+  const walletV4 =
+    WalletContractV4.create({
 
-  const walletV5 = WalletContractV5R1.create({
-    workchain: 0,
-    publicKey: keyPair.publicKey,
-    walletId: { networkGlobalId: -239 }
-  });
+      workchain: 0,
 
-  const expectedRaw = expected.toRawString();
+      publicKey:
+        keyPair.publicKey
+    });
+
+  const walletV5 =
+    WalletContractV5R1.create({
+
+      workchain: 0,
+
+      publicKey:
+        keyPair.publicKey,
+
+      walletId: {
+        networkGlobalId:
+          -239
+      }
+    });
+
+  const expectedRaw =
+    expected.toRawString();
+
   let walletContract;
 
-  if (walletV4.address.toRawString() === expectedRaw) {
-    walletContract = walletV4;
-  } else if (walletV5.address.toRawString() === expectedRaw) {
-    walletContract = walletV5;
+  if (
+    walletV4.address
+      .toRawString() ===
+    expectedRaw
+  ) {
+
+    walletContract =
+      walletV4;
+
+  } else if (
+    walletV5.address
+      .toRawString() ===
+    expectedRaw
+  ) {
+
+    walletContract =
+      walletV5;
+
   } else {
-    throw new Error("Recovery phrase tidak cocok dengan treasury.");
+
+    throw new Error(
+      "Recovery phrase tidak cocok dengan treasury."
+    );
   }
 
-  const openedWallet = tonClient.open(walletContract);
+  const openedWallet =
+    tonClient.open(
+      walletContract
+    );
 
-  const jettonMaster = tonClient.open(
-    JettonMaster.create(Address.parse(JASLIN_JETTON_MASTER))
-  );
+  const jettonMaster =
+    tonClient.open(
+      JettonMaster.create(
+        Address.parse(
+          JASLIN_JETTON_MASTER
+        )
+      )
+    );
 
   const treasuryJettonWallet =
-    await jettonMaster.getWalletAddress(expected);
+    await jettonMaster
+      .getWalletAddress(
+        expected
+      );
 
-  const destination = Address.parse(destinationAddress);
-  const queryId = BigInt(Date.now());
+  const destination =
+    Address.parse(
+      destinationAddress
+    );
 
-  const transferBody = beginCell()
-    .storeUint(0xf8a7ea5, 32)
-    .storeUint(queryId, 64)
-    .storeCoins(toJettonUnits(amount))
-    .storeAddress(destination)
-    .storeAddress(expected)
-    .storeBit(0)
-    .storeCoins(toNano("0.02"))
-    .storeBit(0)
-    .endCell();
+  const queryId =
+    BigInt(
+      Date.now()
+    );
 
-  const seqnoBefore = await openedWallet.getSeqno();
-  const sender = openedWallet.sender(keyPair.secretKey);
+  const transferBody =
+    beginCell()
+      .storeUint(
+        0xf8a7ea5,
+        32
+      )
+      .storeUint(
+        queryId,
+        64
+      )
+      .storeCoins(
+        toJettonUnits(
+          amount
+        )
+      )
+      .storeAddress(
+        destination
+      )
+      .storeAddress(
+        expected
+      )
+      .storeBit(0)
+      .storeCoins(
+        toNano("0.02")
+      )
+      .storeBit(0)
+      .endCell();
+
+  const seqnoBefore =
+    await openedWallet
+      .getSeqno();
+
+  const sender =
+    openedWallet.sender(
+      keyPair.secretKey
+    );
 
   await sender.send({
-    to: treasuryJettonWallet,
-    value: toNano("0.08"),
-    body: transferBody
+
+    to:
+      treasuryJettonWallet,
+
+    value:
+      toNano("0.08"),
+
+    body:
+      transferBody
   });
 
-  // Wait briefly for wallet seqno to advance.
-  for (let i = 0; i < 12; i += 1) {
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    const seqnoNow = await openedWallet.getSeqno();
-    if (seqnoNow > seqnoBefore) break;
+  for (
+    let i = 0;
+    i < 12;
+    i += 1
+  ) {
+
+    await new Promise(
+      resolve =>
+        setTimeout(
+          resolve,
+          1500
+        )
+    );
+
+    const seqnoNow =
+      await openedWallet
+        .getSeqno();
+
+    if (
+      seqnoNow >
+      seqnoBefore
+    ) {
+      break;
+    }
   }
 
   return {
-    queryId: queryId.toString(),
-    destination: destination.toString({ bounceable: false, urlSafe: true })
+
+    queryId:
+      queryId.toString(),
+
+    destination:
+      destination.toString({
+
+        bounceable:
+          false,
+
+        urlSafe:
+          true
+      })
   };
 }
+
+/* =========================================
+   WITHDRAW
+========================================= */
 
 app.post(
   "/api/withdraw",
   auth,
-  async (req, res) => {
+  async (
+    req,
+    res
+  ) => {
+
     let reserved = false;
     let reservedAmount = 0;
 
     try {
-      if (!WITHDRAWALS_ENABLED) {
-        return res.status(503).json({
-          error: "Withdrawal sedang dinonaktifkan untuk pengujian treasury."
-        });
+
+      if (
+        !WITHDRAWALS_ENABLED
+      ) {
+
+        return res
+          .status(503)
+          .json({
+            error:
+              "Withdrawal sedang dinonaktifkan untuk pengujian treasury."
+          });
       }
 
-      const user = await getUser(req.tgUser.id);
+      const user =
+        await getUser(
+          req.tgUser.id
+        );
 
       if (!user) {
-        return res.status(404).json({
-          error: "User tidak ditemukan."
-        });
+
+        return res
+          .status(404)
+          .json({
+            error:
+              "User tidak ditemukan."
+          });
       }
 
-      const amount = Math.floor(Number(req.body?.amount || 0));
+      const amount =
+        Math.floor(
+          Number(
+            req.body
+              ?.amount ||
+            0
+          )
+        );
 
-      if (!Number.isFinite(amount) || amount < MIN_WITHDRAW_JASLIN) {
-        return res.status(400).json({
-          error: `Minimum withdrawal ${MIN_WITHDRAW_JASLIN.toLocaleString()} JASLIN.`
-        });
+      if (
+        !Number.isFinite(
+          amount
+        ) ||
+        amount <
+          MIN_WITHDRAW_JASLIN
+      ) {
+
+        return res
+          .status(400)
+          .json({
+            error:
+              `Minimum withdrawal ${MIN_WITHDRAW_JASLIN.toLocaleString()} JASLIN.`
+          });
       }
 
       if (!user.wallet) {
-        return res.status(400).json({
-          error: "Connect TON Wallet terlebih dahulu."
-        });
+
+        return res
+          .status(400)
+          .json({
+            error:
+              "Connect TON Wallet terlebih dahulu."
+          });
       }
 
-      Address.parse(user.wallet);
+      Address.parse(
+        user.wallet
+      );
 
-      const currentBalance = Number(user.balance || 0);
+      const currentBalance =
+        Number(
+          user.balance || 0
+        );
 
-      if (amount > currentBalance) {
-        return res.status(400).json({
-          error: "Saldo game JASLIN tidak cukup."
-        });
+      if (
+        amount >
+        currentBalance
+      ) {
+
+        return res
+          .status(400)
+          .json({
+            error:
+              "Saldo game JASLIN tidak cukup."
+          });
       }
 
-      const receiveAmount = amount - WITHDRAW_FEE_JASLIN;
+      const receiveAmount =
+        amount -
+        WITHDRAW_FEE_JASLIN;
 
-      if (receiveAmount <= 0) {
-        return res.status(400).json({
-          error: "Jumlah withdrawal terlalu kecil setelah fee."
-        });
+      if (
+        receiveAmount <= 0
+      ) {
+
+        return res
+          .status(400)
+          .json({
+            error:
+              "Jumlah withdrawal terlalu kecil setelah fee."
+          });
       }
 
-      const newBalance = currentBalance - amount;
+      const newBalance =
+        currentBalance -
+        amount;
 
-      const { data: reservedUser, error: reserveError } =
+      const {
+        data:
+          reservedUser,
+        error:
+          reserveError
+      } =
         await supabase
           .from("users")
-          .update({ balance: newBalance })
-          .eq("telegram_id", String(user.telegram_id))
-          .eq("balance", user.balance)
-          .select("telegram_id")
+          .update({
+            balance:
+              newBalance
+          })
+          .eq(
+            "telegram_id",
+            String(
+              user.telegram_id
+            )
+          )
+          .eq(
+            "balance",
+            user.balance
+          )
+          .select(
+            "telegram_id"
+          )
           .maybeSingle();
 
-      if (reserveError) throw reserveError;
+      if (reserveError) {
+        throw reserveError;
+      }
 
       if (!reservedUser) {
-        return res.status(409).json({
-          error: "Saldo berubah. Coba withdrawal kembali."
-        });
+
+        return res
+          .status(409)
+          .json({
+            error:
+              "Saldo berubah. Coba withdrawal kembali."
+          });
       }
 
       reserved = true;
-      reservedAmount = amount;
+      reservedAmount =
+        amount;
 
       await saveTransaction(
         user.telegram_id,
@@ -2069,10 +2865,11 @@ app.post(
         "pending"
       );
 
-      const chain = await sendJaslinFromTreasury(
-        user.wallet,
-        receiveAmount
-      );
+      const chain =
+        await sendJaslinFromTreasury(
+          user.wallet,
+          receiveAmount
+        );
 
       await saveTransaction(
         user.telegram_id,
@@ -2083,30 +2880,48 @@ app.post(
         "completed"
       );
 
-      const updated = await getUser(user.telegram_id);
+      const updated =
+        await getUser(
+          user.telegram_id
+        );
 
       res.json({
-        ...await publicState(updated),
-        withdrawn: amount,
-        fee: WITHDRAW_FEE_JASLIN,
-        received: receiveAmount,
-        destination: chain.destination,
-        queryId: chain.queryId
+
+        ...await publicState(
+          updated
+        ),
+
+        withdrawn:
+          amount,
+
+        fee:
+          WITHDRAW_FEE_JASLIN,
+
+        received:
+          receiveAmount,
+
+        destination:
+          chain.destination,
+
+        queryId:
+          chain.queryId
       });
 
     } catch (error) {
-      console.error("Withdrawal error:", error);
+
+      console.error(
+        "Withdrawal error:",
+        error
+      );
 
       if (reserved) {
-        try {
-          const latest = await getUser(req.tgUser.id);
-          const refundBalance =
-            Number(latest?.balance || 0) + reservedAmount;
 
-          await supabase
-            .from("users")
-            .update({ balance: refundBalance })
-            .eq("telegram_id", String(req.tgUser.id));
+        try {
+
+          await applyBalanceDelta(
+            req.tgUser.id,
+            reservedAmount
+          );
 
           await saveTransaction(
             req.tgUser.id,
@@ -2116,26 +2931,36 @@ app.post(
             null,
             "refunded"
           );
-        } catch (refundError) {
-          console.error("Withdrawal refund error:", refundError);
+
+        } catch (
+          refundError
+        ) {
+
+          console.error(
+            "Withdrawal refund error:",
+            refundError
+          );
         }
       }
 
-      res.status(500).json({
-        error: error?.message || "Withdrawal gagal."
-      });
+      res
+        .status(500)
+        .json({
+          error:
+            error?.message ||
+            "Withdrawal gagal."
+        });
     }
   }
 );
 
-
 /* =========================================
-   TREASURY CHECK
-   TIDAK MENGIRIM TRANSAKSI
+   TREASURY CHECK - PRIVATE
 ========================================= */
 
 app.get(
   "/api/treasury-check",
+  treasuryAdminAuth,
   async (
     req,
     res
@@ -2150,12 +2975,10 @@ app.get(
         return res
           .status(500)
           .json({
-            ok:
-              false,
+            ok: false,
             error:
               "TON_TREASURY_MNEMONIC belum tersedia."
           });
-
       }
 
       if (
@@ -2165,16 +2988,11 @@ app.get(
         return res
           .status(500)
           .json({
-            ok:
-              false,
+            ok: false,
             error:
               "TON_TREASURY_ADDRESS belum tersedia."
           });
-
       }
-
-
-      /* VALIDATE EXPECTED ADDRESS */
 
       const expected =
         Address.parse(
@@ -2186,7 +3004,6 @@ app.get(
           .trim()
           .split(/\s+/);
 
-
       if (
         mnemonic.length !== 12 &&
         mnemonic.length !== 24
@@ -2195,109 +3012,59 @@ app.get(
         return res
           .status(500)
           .json({
-            ok:
-              false,
+            ok: false,
             error:
               "Recovery phrase harus 12 atau 24 kata."
           });
-
       }
-
-
-      /* DERIVE KEY */
 
       const keyPair =
         await mnemonicToPrivateKey(
           mnemonic
         );
 
-
-      /* WALLET V4 */
-
       const walletV4 =
         WalletContractV4.create({
-          workchain:
-            0,
+
+          workchain: 0,
+
           publicKey:
             keyPair.publicKey
         });
 
-
-      /* WALLET V5 MAINNET */
-
       const walletV5 =
         WalletContractV5R1.create({
-          workchain:
-            0,
+
+          workchain: 0,
+
           publicKey:
             keyPair.publicKey,
+
           walletId: {
             networkGlobalId:
               -239
           }
         });
 
-
       const expectedRaw =
         expected.toRawString();
 
-      const v4Raw =
+      const v4Match =
+        expectedRaw ===
         walletV4.address
           .toRawString();
 
-      const v5Raw =
+      const v5Match =
+        expectedRaw ===
         walletV5.address
           .toRawString();
 
-
-      const v4Match =
-        expectedRaw ===
-        v4Raw;
-
-      const v5Match =
-        expectedRaw ===
-        v5Raw;
-
-
       res.json({
 
-        ok:
-          true,
+        ok: true,
 
         network:
           TON_NETWORK,
-
-        expectedAddress:
-          expected.toString({
-            bounceable:
-              false,
-            urlSafe:
-              true
-          }),
-
-        walletV4:
-          walletV4.address
-            .toString({
-              bounceable:
-                false,
-              urlSafe:
-                true
-            }),
-
-        walletV5:
-          walletV5.address
-            .toString({
-              bounceable:
-                false,
-              urlSafe:
-                true
-            }),
-
-        v4Match:
-          v4Match,
-
-        v5Match:
-          v5Match,
 
         matched:
           v4Match ||
@@ -2315,12 +3082,9 @@ app.get(
           v5Match
             ? "Treasury cocok dengan recovery phrase."
             : "Alamat treasury belum cocok dengan V4/V5."
-
       });
 
-    } catch (
-      error
-    ) {
+    } catch (error) {
 
       console.error(
         "Treasury check error:",
@@ -2330,22 +3094,122 @@ app.get(
       res
         .status(500)
         .json({
-          ok:
-            false,
+
+          ok: false,
+
           error:
-            "Treasury check gagal.",
-          detail:
-            error.message
+            "Treasury check gagal."
         });
-
     }
-
   }
 );
 
+/* =========================================
+   TREASURY BALANCE - PRIVATE
+========================================= */
+
+app.get(
+  "/api/treasury-balance",
+  treasuryAdminAuth,
+  async (
+    req,
+    res
+  ) => {
+
+    try {
+
+      const treasuryAddress =
+        Address.parse(
+          TON_TREASURY_ADDRESS
+        );
+
+      const jettonMaster =
+        tonClient.open(
+          JettonMaster.create(
+            Address.parse(
+              JASLIN_JETTON_MASTER
+            )
+          )
+        );
+
+      const jettonWalletAddress =
+        await jettonMaster
+          .getWalletAddress(
+            treasuryAddress
+          );
+
+      const tonBalance =
+        await tonClient
+          .getBalance(
+            treasuryAddress
+          );
+
+      let jaslinBalance = 0;
+
+      try {
+
+        const walletData =
+          await tonClient
+            .runMethod(
+              jettonWalletAddress,
+              "get_wallet_data"
+            );
+
+        const rawBalance =
+          BigInt(
+            walletData
+              .stack
+              .items[0]
+              .value
+          );
+
+        jaslinBalance =
+          Number(rawBalance) /
+          (
+            10 **
+            JASLIN_DECIMALS
+          );
+
+      } catch (error) {
+
+        console.error(
+          "Treasury JASLIN balance error:",
+          error
+        );
+      }
+
+      res.json({
+
+        ok: true,
+
+        tonBalanceNano:
+          tonBalance.toString(),
+
+        jaslinBalance
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Treasury balance error:",
+        error
+      );
+
+      res
+        .status(500)
+        .json({
+
+          ok: false,
+
+          error:
+            "Gagal membaca treasury."
+        });
+    }
+  }
+);
 
 /* =========================================
-   HEALTH CHECK
+   HEALTH
 ========================================= */
 
 app.get(
@@ -2373,52 +3237,39 @@ app.get(
         JASLIN_JETTON_MASTER,
 
       decimals:
-        JASLIN_DECIMALS
+        JASLIN_DECIMALS,
 
+      referralReward:
+        REFERRAL_REWARD,
+
+      referralCommissionRate:
+        REFERRAL_COMMISSION_RATE,
+
+      pulseDurationsMs:
+        PULSE_STAGE_DURATION_MS
     });
-
   }
 );
 
-
 /* =========================================
-   START
+   START SERVER
 ========================================= */
-app.get("/api/treasury-balance", async (req, res) => {
-  try {
-    const treasuryAddress = Address.parse(TON_TREASURY_ADDRESS);
-    const jettonMasterAddress = Address.parse(JASLIN_JETTON_MASTER);
-
-    const jettonMaster = tonClient.open(
-      JettonMaster.create(jettonMasterAddress)
-    );
-
-    const jettonWalletAddress =
-      await jettonMaster.getWalletAddress(treasuryAddress);
-
-    const tonBalance = await tonClient.getBalance(treasuryAddress);
-
-    res.json({
-      ok: true,
-      treasuryAddress: treasuryAddress.toString(),
-      treasuryJettonWallet: jettonWalletAddress.toString(),
-      tonBalanceNano: tonBalance.toString()
-    });
-  } catch (err) {
-    res.status(500).json({
-      ok: false,
-      error: err?.message || "Gagal membaca treasury"
-    });
-  }
-});
 
 app.listen(
   PORT,
   () => {
 
+    if (
+      !TREASURY_ADMIN_KEY
+    ) {
+
+      console.warn(
+        "TREASURY_ADMIN_KEY belum diset; endpoint treasury diagnostics terkunci."
+      );
+    }
+
     console.log(
-      `JASLIN server running on port
-${PORT}`
+      `JASLIN server running on port ${PORT}`
     );
   }
 );
