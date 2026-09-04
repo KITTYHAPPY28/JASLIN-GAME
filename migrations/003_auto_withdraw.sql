@@ -1,0 +1,17 @@
+-- JASLIN MIGRATION 003 — AUTO WITHDRAW
+-- STATUS: DOCUMENTATION PLACEHOLDER — DO NOT RUN
+--
+-- The current production Auto WD schema was built through earlier Parts and
+-- compatibility patches, including the destination/wallet fix.
+--
+-- Exact historical DDL must be reconstructed from the live production schema
+-- before this becomes an executable fresh-install migration.
+--
+-- Expected historical scope:
+--   withdrawals
+--   jaslin_hot_wallet_lock
+--   reserve/refund/lock RPCs
+--   cooldown/daily-cap supporting fields and indexes
+--
+-- Production rule:
+--   DO NOT RUN THIS FILE.

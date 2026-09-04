@@ -1,0 +1,15 @@
+-- JASLIN MIGRATION 002 — X TASKS
+-- STATUS: DOCUMENTATION PLACEHOLDER — DO NOT RUN
+--
+-- Exact historical X-task DDL must be reconstructed from the live production
+-- schema before this becomes an executable migration.
+--
+-- Expected historical scope:
+--   jaslin_social_task_progress
+--   jaslin_x_accounts
+--   jaslin_x_oauth_states
+--   jaslin_x_verification_logs
+--   claim_x_social_reward and related indexes/constraints
+--
+-- Production rule:
+--   DO NOT RUN THIS FILE.
