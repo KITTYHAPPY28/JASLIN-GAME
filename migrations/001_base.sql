@@ -1,1 +1,44 @@
 
+-- ============================================================
+-- JASLIN MIGRATION 001
+-- BASE DATABASE SCHEMA
+-- ============================================================
+--
+-- STATUS:
+-- DOCUMENTATION PLACEHOLDER — DO NOT RUN
+--
+-- Database JASLIN production dibuat sebelum sistem migration
+-- GitHub ini dirapikan dan sudah melewati beberapa SQL Part
+-- serta patch.
+--
+-- Karena itu, schema lama TIDAK boleh direkonstruksi dengan
+-- tebakan. File ini akan diganti dengan baseline schema yang
+-- sebenarnya setelah schema production berhasil diekspor.
+--
+-- Historical scope:
+--
+--   • users
+--   • transactions
+--   • mining
+--   • referral
+--   • base indexes
+--   • base constraints
+--   • base RPC/functions
+--
+-- ============================================================
+-- IMPORTANT
+-- ============================================================
+--
+-- JANGAN jalankan file ini pada Supabase Production.
+--
+-- Production database sudah memiliki schema tersebut.
+--
+-- Migration aktif berikutnya:
+--
+--   002_x_tasks.sql
+--   003_auto_withdraw.sql
+--   004_security_hardening.sql
+--
+-- ============================================================
+-- END OF MIGRATION 001 PLACEHOLDER
+-- ============================================================
