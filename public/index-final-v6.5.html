@@ -1,0 +1,6663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  />
+
+  <title>JASLIN</title>
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="preload" as="image" href="/jaslin-logo.png">
+  
+  <style>
+
+  html, body {
+    background: #070707 !important;
+  }
+
+  * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      --bg: #020202;
+      --card: #080705;
+      --gold: #f6c453;
+      --gold2: #d99717;
+      --text: #fff8e7;
+      --muted: #918b80;
+      --green: #39ff58;
+      --red: #ff3e45;
+      --border: rgba(246, 196, 83, 0.28);
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(
+          circle at 50% 5%,
+          rgba(196, 126, 15, 0.13),
+          transparent 33%
+        ),
+        #020202;
+
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      padding-bottom: 90px;
+      overflow-x: hidden;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 520px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 18px 10px;
+      gap: 10px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-logo {
+      width: 50px;
+      height: 50px;
+      border-radius: 13px;
+      display: grid;
+      place-items: center;
+      font-size: 26px;
+      font-weight: 900;
+      color: #090704;
+
+      background:
+        linear-gradient(
+          145deg,
+          #ffe582,
+          #d99b20 60%,
+          #835008
+        );
+
+      box-shadow:
+        0 0 20px rgba(246,196,83,.18),
+        inset 0 1px 2px rgba(255,255,255,.4);
+    }
+
+    .brand-title {
+      font-size: 17px;
+      font-weight: 900;
+      letter-spacing: .4px;
+    }
+
+    .status {
+      margin-top: 4px;
+      font-size: 10px;
+      color: var(--green);
+      font-weight: 800;
+    }
+
+    .profile-mini {
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(5,5,5,.85);
+      color: white;
+      padding: 9px 12px;
+      border-radius: 999px;
+      max-width: 155px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .page {
+      display: none;
+      padding: 8px 15px 26px;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 17px;
+      margin-bottom: 14px;
+
+      background:
+        radial-gradient(
+          circle at 50% 0%,
+          rgba(153,96,10,.10),
+          transparent 40%
+        ),
+        linear-gradient(
+          145deg,
+          rgba(15,12,6,.98),
+          rgba(4,4,4,.98)
+        );
+
+      box-shadow:
+        0 12px 35px rgba(0,0,0,.42),
+        inset 0 1px 0 rgba(255,255,255,.025);
+    }
+
+    .section-title {
+      color: #b4afa4;
+      font-size: 10px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .green {
+      color: var(--green);
+    }
+
+    .gold {
+      color: var(--gold);
+    }
+
+    .small {
+      font-size: 10px;
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .level-card {
+      display: grid;
+      grid-template-columns: 95px 1fr;
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .level-badge {
+      border: 1px solid rgba(246,196,83,.25);
+      border-radius: 16px;
+      min-height: 112px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,.32);
+    }
+
+    .level-label {
+      font-size: 9px;
+      color: #ddd7cb;
+    }
+
+    .level-hex {
+      width: 54px;
+      height: 54px;
+      margin: 7px 0;
+      display: grid;
+      place-items: center;
+      color: white;
+      font-size: 28px;
+      font-weight: 900;
+
+      clip-path:
+        polygon(
+          25% 6%,
+          75% 6%,
+          100% 50%,
+          75% 94%,
+          25% 94%,
+          0% 50%
+        );
+
+      background:
+        linear-gradient(
+          145deg,
+          #d7920e,
+          #5d3705
+        );
+    }
+
+    .next-level-title {
+      color: #b5b0a4;
+      font-size: 10px;
+      margin-top: 4px;
+    }
+
+    .next-level-price {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--gold);
+      margin-top: 5px;
+    }
+
+    .usd-badge {
+      display: inline-block;
+      color: #ffd45d;
+      border: 1px solid rgba(246,196,83,.25);
+      padding: 4px 7px;
+      border-radius: 8px;
+      font-size: 10px;
+      margin-left: 4px;
+    }
+
+    .boost-text {
+      color: var(--green);
+      font-weight: 900;
+      font-size: 18px;
+      text-align: right;
+    }
+
+    .progress {
+      width: 100%;
+      height: 7px;
+      border-radius: 999px;
+      margin-top: 13px;
+      overflow: hidden;
+      background: #151515;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: inherit;
+
+      background:
+        linear-gradient(
+          90deg,
+          #a86608,
+          #ffd75c
+        );
+
+      transition: width .3s ease;
+    }
+
+    .vault-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .balance {
+      margin-top: 8px;
+      font-size: 38px;
+      font-weight: 900;
+      color: #ffc83d;
+      letter-spacing: -1px;
+    }
+
+    .balance-label {
+      color: var(--gold);
+      font-size: 13px;
+      font-weight: 900;
+      margin-top: 3px;
+    }
+
+    .wallet-mini {
+      min-width: 205px;
+      padding: 10px;
+      border: 1px solid rgba(246,196,83,.18);
+      border-radius: 13px;
+      background: rgba(0,0,0,.34);
+      font-size: 10px;
+    }
+
+    .wallet-mini-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 4px 0;
+    }
+
+    .core-wrap {
+      width: 245px;
+      height: 245px;
+      margin: 25px auto 12px;
+      position: relative;
+      display: grid;
+      place-items: center;
+    }
+
+    .core-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 1px solid rgba(246,196,83,.15);
+      box-shadow: 0 0 40px rgba(246,196,83,.09);
+    }
+
+    .core-ring::before {
+      content: "";
+      position: absolute;
+      inset: 13px;
+      border-radius: 50%;
+      border: 2px dotted rgba(246,196,83,.5);
+      animation: spin 20s linear infinite;
+    }
+
+    .core-ring::after {
+      content: "";
+      position: absolute;
+      inset: 31px;
+      border-radius: 50%;
+      border: 1px solid rgba(246,196,83,.25);
+      animation: spinBack 14s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes spinBack {
+      to {
+        transform: rotate(-360deg);
+      }
+    }
+
+    .jaslin-coin {
+      position: relative;
+      z-index: 2;
+      width: 175px;
+      height: 175px;
+      border-radius: 50%;
+      object-fit: cover;
+
+      box-shadow:
+        0 0 25px rgba(246,196,83,.32),
+        0 0 60px rgba(246,196,83,.08);
+    }
+
+    .core-output {
+      text-align: center;
+    }
+
+    .core-output-title {
+      color: #b9b5ac;
+      font-size: 10px;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+
+    #pendingMining {
+      color: var(--green);
+      font-size: 34px;
+      font-weight: 900;
+
+      text-shadow:
+        0 0 15px rgba(57,255,88,.20);
+    }
+
+    .output-sub {
+      color: #9c978d;
+      font-size: 11px;
+      margin-top: 4px;
+    }
+
+    .btn {
+      width: 100%;
+      border: 0;
+      border-radius: 15px;
+      padding: 14px 16px;
+      margin-top: 14px;
+      font-weight: 900;
+    }
+
+    .btn:active {
+      transform: scale(.98);
+    }
+
+    .btn-gold {
+      color: #130d02;
+      font-size: 16px;
+
+      background:
+        linear-gradient(
+          90deg,
+          #c58313,
+          #ffd966,
+          #dda522
+        );
+    }
+
+    .btn-dark {
+      color: #f5c95a;
+      border: 1px solid rgba(246,196,83,.35);
+      background: #070604;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 13px;
+    }
+
+    .stat {
+      min-height: 82px;
+      border: 1px solid rgba(246,196,83,.20);
+      border-radius: 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,.25);
+      text-align: center;
+    }
+
+    .stat-value {
+      color: #ffd05d;
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    .stat-label {
+      margin-top: 7px;
+      color: #aaa398;
+      font-size: 8px;
+      text-transform: uppercase;
+    }
+
+    .core-progress-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .core-level-big {
+      font-size: 24px;
+      color: var(--gold);
+      font-weight: 900;
+      margin-top: 9px;
+    }
+
+    .upgrade-info {
+      text-align: right;
+    }
+
+    .upgrade-price {
+      margin-top: 5px;
+      color: var(--gold);
+      font-size: 19px;
+      font-weight: 900;
+    }
+
+    .progress-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 7px;
+      font-size: 10px;
+    }
+
+    .daily-float {
+      position: fixed;
+
+      right:
+        max(
+          18px,
+          calc((100vw - 520px) / 2 + 18px)
+        );
+
+      bottom: 94px;
+      z-index: 100;
+      width: 78px;
+      height: 78px;
+      border-radius: 50%;
+      border: 2px solid #e8ae28;
+
+      background:
+        radial-gradient(
+          circle,
+          #241704,
+          #050403 68%
+        );
+
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+
+      box-shadow:
+        0 0 18px rgba(246,196,83,.5);
+
+      font-size: 9px;
+      font-weight: 900;
+    }
+
+    .daily-icon {
+      font-size: 25px;
+      margin-bottom: 2px;
+    }
+
+    .daily-small {
+      color: var(--gold);
+      font-size: 9px;
+    }
+
+    .daily-dot {
+      position: absolute;
+      top: 2px;
+      right: 4px;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: var(--red);
+    }
+
+    .task {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(255,255,255,.05);
+    }
+
+    .task:last-child {
+      border-bottom: 0;
+    }
+
+    .task-icon {
+      width: 43px;
+      height: 43px;
+      flex: 0 0 43px;
+      border-radius: 13px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(246,196,83,.18);
+      background: rgba(246,196,83,.05);
+      font-size: 19px;
+    }
+
+    .task-info {
+      flex: 1;
+    }
+
+    .task-title {
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .task-reward {
+      margin-top: 4px;
+      color: var(--gold);
+      font-size: 10px;
+    }
+
+    .mini-btn {
+      border-radius: 10px;
+      padding: 8px 10px;
+      color: var(--gold);
+      border: 1px solid rgba(246,196,83,.25);
+      background: #080705;
+      font-size: 9px;
+      font-weight: 900;
+    }
+
+    .input {
+      width: 100%;
+      padding: 14px;
+      margin-top: 10px;
+      border-radius: 13px;
+      outline: 0;
+      color: white;
+      background: #070604;
+      border: 1px solid rgba(246,196,83,.2);
+    }
+
+    .notice {
+      margin-top: 12px;
+      padding: 11px;
+      border-radius: 12px;
+      color: #aaa397;
+      border: 1px solid rgba(246,196,83,.11);
+      background: rgba(246,196,83,.035);
+      line-height: 1.5;
+      font-size: 10px;
+      word-break: break-word;
+    }
+
+    .referral {
+      margin-top: 13px;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px dashed rgba(246,196,83,.24);
+      color: #c5baa2;
+      font-size: 10px;
+      word-break: break-all;
+    }
+
+    #ton-connect {
+      margin-top: 16px;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 500;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      padding: 18px;
+      background: rgba(0,0,0,.84);
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-card {
+      width: 100%;
+      max-width: 460px;
+      padding: 20px;
+      border-radius: 20px;
+      background: #080705;
+      border: 1px solid rgba(246,196,83,.32);
+    }
+
+    .days {
+      display: grid;
+      grid-template-columns: repeat(7,1fr);
+      gap: 5px;
+      margin-top: 15px;
+    }
+
+    .day {
+      padding: 9px 2px;
+      border-radius: 9px;
+      text-align: center;
+      border: 1px solid rgba(246,196,83,.14);
+    }
+
+    .day.active {
+      border-color: var(--gold);
+      background: rgba(246,196,83,.08);
+    }
+
+    .day-name {
+      font-size: 8px;
+      color: #aaa;
+    }
+
+    .day-value {
+      margin-top: 4px;
+      font-size: 9px;
+      color: var(--gold);
+      font-weight: 900;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 90;
+      width: min(520px,100%);
+
+      display: grid;
+      grid-template-columns: repeat(5,1fr);
+
+      padding:
+        8px 5px
+        calc(8px + env(safe-area-inset-bottom));
+
+      border-top: 1px solid rgba(255,255,255,.07);
+      background: rgba(3,3,3,.97);
+    }
+
+    .nav-btn {
+      border: 0;
+      background: transparent;
+      color: #77736d;
+      padding: 5px 2px;
+      font-size: 9px;
+      font-weight: 700;
+    }
+
+    .nav-btn.active {
+      color: var(--gold);
+    }
+
+    .nav-icon {
+      display: block;
+      font-size: 21px;
+      margin-bottom: 4px;
+    }
+
+    .toast {
+      position: fixed;
+      z-index: 800;
+      left: 50%;
+      bottom: 110px;
+      transform: translateX(-50%) translateY(15px);
+      opacity: 0;
+
+      width: calc(100% - 34px);
+      max-width: 480px;
+
+      padding: 12px 14px;
+      border-radius: 13px;
+
+      background: var(--gold);
+      color: #0c0802;
+
+      font-size: 11px;
+      font-weight: 900;
+
+      transition: .2s;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+
+    .level-requirement {
+      margin-top: 10px;
+      padding: 10px 11px;
+      border-radius: 12px;
+      border: 1px solid rgba(246,196,83,.16);
+      background: rgba(246,196,83,.045);
+    }
+
+    .requirement-main {
+      color: var(--gold);
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .requirement-sub {
+      margin-top: 4px;
+      color: #9d978b;
+      font-size: 9px;
+    }
+
+    .upgrade-status {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 24px;
+      margin-top: 7px;
+      padding: 5px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(246,196,83,.22);
+      color: var(--gold);
+      background: rgba(246,196,83,.05);
+      font-size: 9px;
+      font-weight: 900;
+    }
+
+    .upgrade-status.ready {
+      color: var(--green);
+      border-color: rgba(57,255,88,.22);
+      background: rgba(57,255,88,.05);
+    }
+
+    .withdraw-summary {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 13px;
+      border: 1px solid rgba(246,196,83,.14);
+      background: rgba(246,196,83,.035);
+    }
+
+    .withdraw-summary-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 5px 0;
+      font-size: 10px;
+      color: #aaa397;
+    }
+
+    .withdraw-summary-row strong {
+      color: #f7d36d;
+    }
+
+    .withdraw-summary-row.net {
+      margin-top: 4px;
+      padding-top: 9px;
+      border-top: 1px solid rgba(255,255,255,.06);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .withdraw-summary-row.net strong {
+      color: var(--green);
+    }
+
+
+    .core-wrap {
+      cursor: pointer;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .core-wrap.pulse-hit .jaslin-coin {
+      animation: corePulseHit .36s ease;
+    }
+
+    @keyframes corePulseHit {
+      0% { transform: scale(1); filter: brightness(1); }
+      45% { transform: scale(1.055); filter: brightness(1.35); }
+      100% { transform: scale(1); filter: brightness(1); }
+    }
+
+    .pulse-panel {
+      margin: 2px 0 14px;
+      padding: 12px;
+      border-radius: 16px;
+      border: 1px solid rgba(246,196,83,.18);
+      background: linear-gradient(145deg, rgba(246,196,83,.06), rgba(0,0,0,.28));
+    }
+
+    .pulse-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .pulse-name {
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .7px;
+      color: #fff;
+    }
+
+    .pulse-level {
+      font-size: 12px;
+      font-weight: 900;
+      color: var(--gold);
+    }
+
+    .pulse-bars {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-top: 9px;
+    }
+
+    .pulse-bar {
+      height: 5px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.08);
+      overflow: hidden;
+    }
+
+    .pulse-bar.on {
+      background: linear-gradient(90deg, #d7920e, #ffe58d);
+      box-shadow: 0 0 14px rgba(246,196,83,.22);
+    }
+
+    .pulse-help {
+      margin-top: 8px;
+      color: #938d82;
+      font-size: 9px;
+      line-height: 1.45;
+    }
+
+    .profile-hero {
+      display: grid;
+      grid-template-columns: 54px 1fr auto;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .profile-avatar {
+      width: 54px;
+      height: 54px;
+      border-radius: 17px;
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+      font-weight: 950;
+      color: #111;
+      background: linear-gradient(145deg, #fff0a8, #d7920e);
+      box-shadow: 0 8px 26px rgba(215,146,14,.18);
+    }
+
+    .rank-chip {
+      display: inline-flex;
+      margin-top: 5px;
+      padding: 5px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(246,196,83,.2);
+      color: var(--gold);
+      background: rgba(246,196,83,.05);
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: .7px;
+    }
+
+    .profile-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 9px;
+      margin-top: 14px;
+    }
+
+    .profile-box {
+      padding: 11px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.07);
+      background: rgba(0,0,0,.24);
+    }
+
+    .profile-box-label {
+      color: #8f897d;
+      font-size: 8px;
+      letter-spacing: .7px;
+      text-transform: uppercase;
+    }
+
+    .profile-box-value {
+      margin-top: 5px;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 900;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .sound-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .sound-toggle {
+      border: 1px solid rgba(255,255,255,.09);
+      background: rgba(0,0,0,.32);
+      color: #d7d1c5;
+      border-radius: 13px;
+      min-height: 42px;
+      font-size: 10px;
+      font-weight: 900;
+    }
+
+    .sound-toggle.on {
+      color: var(--gold);
+      border-color: rgba(246,196,83,.25);
+      background: rgba(246,196,83,.05);
+    }
+
+    .drop-orb {
+      width: 84px;
+      height: 84px;
+      margin: 12px auto 16px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 34px;
+      background:
+        radial-gradient(circle at 35% 30%, #fff3a7, #e1a11b 35%, #4b2b04 72%);
+      box-shadow:
+        0 0 0 7px rgba(246,196,83,.045),
+        0 0 36px rgba(246,196,83,.18);
+    }
+
+    .drop-result {
+      min-height: 52px;
+      margin: 10px 0;
+      padding: 11px;
+      border-radius: 13px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      color: #aaa397;
+      background: rgba(0,0,0,.28);
+      border: 1px solid rgba(255,255,255,.06);
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .live-unit {
+      font-size: 10px;
+      color: #8d877c;
+      margin-top: 2px;
+    }
+
+    @media(max-width:390px) {
+
+      .wallet-mini {
+        min-width: 170px;
+      }
+
+      .wallet-mini-row {
+        font-size: 8px;
+      }
+
+      .core-wrap {
+        width: 225px;
+        height: 225px;
+      }
+
+      .jaslin-coin {
+        width: 160px;
+        height: 160px;
+      }
+
+      .next-level-price {
+        font-size: 18px;
+      }
+    }
+  
+    /* ===== JASLIN 2.0 VISUAL REFRESH ===== */
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+    :root {
+      --bg:#05040a; --card:rgba(13,11,22,.9); --gold:#ffd166; --gold2:#ff9f1c;
+      --cyan:#22d3ee; --violet:#8b5cf6; --pink:#ec4899; --text:#f8fafc;
+      --muted:#a2a4b2; --green:#35f58a; --red:#ff5a67; --border:rgba(255,209,102,.22);
+    }
+
+    html,body{
+      background:
+        radial-gradient(circle at 12% 8%,rgba(139,92,246,.18),transparent 27%),
+        radial-gradient(circle at 88% 14%,rgba(34,211,238,.12),transparent 30%),
+        radial-gradient(circle at 50% 42%,rgba(255,159,28,.08),transparent 36%),
+        linear-gradient(180deg,#05040a 0%,#090710 50%,#030306 100%)!important;
+      color:var(--text);
+      font-family:"Space Grotesk",Arial,Helvetica,sans-serif;
+    }
+
+    body::before,body::after{
+      content:"";position:fixed;pointer-events:none;z-index:-1;border-radius:50%;
+      filter:blur(75px);opacity:.34;
+    }
+    body::before{width:230px;height:230px;left:-85px;top:18%;background:rgba(139,92,246,.38);animation:jaslinFloat 10s ease-in-out infinite alternate}
+    body::after{width:250px;height:250px;right:-95px;top:48%;background:rgba(34,211,238,.24);animation:jaslinFloat 12s ease-in-out infinite alternate-reverse}
+    @keyframes jaslinFloat{to{transform:translate3d(20px,-26px,0) scale(1.08)}}
+
+    .brand-title,h2,.next-level-price,.balance,.core-level-big,.upgrade-price,.stat-value,#pendingMining,.profile-box-value{
+      font-family:"Orbitron","Space Grotesk",sans-serif;
+    }
+
+    .brand-title{
+      font-size:18px;letter-spacing:1.5px;
+      background:linear-gradient(90deg,#fff4c2,#ffd166 45%,#22d3ee);
+      -webkit-background-clip:text;background-clip:text;color:transparent;
+    }
+
+    .header-logo{
+      background:linear-gradient(145deg,#fff5c7 0%,#ffd166 34%,#ff9f1c 63%,#8b5cf6 100%);
+      box-shadow:0 0 18px rgba(255,209,102,.25),0 0 30px rgba(139,92,246,.15);
+      animation:logoGlow 3s ease-in-out infinite alternate;
+    }
+    @keyframes logoGlow{to{transform:translateY(-2px);filter:brightness(1.08) saturate(1.15)}}
+
+    .card{
+      position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.085);
+      background:linear-gradient(145deg,rgba(18,15,31,.96),rgba(7,7,12,.94));
+      box-shadow:0 16px 46px rgba(0,0,0,.40),inset 0 1px 0 rgba(255,255,255,.025);
+      backdrop-filter:blur(16px);
+    }
+    .card::before{content:"";position:absolute;inset:0 0 auto 0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,209,102,.75),rgba(34,211,238,.48),transparent)}
+    .section-title{color:#b9bac7;letter-spacing:1.55px}
+
+    .level-badge,.wallet-mini,.stat,.profile-box,.pulse-panel,.level-requirement,.notice,.referral,.modal-card{
+      border-color:rgba(255,255,255,.08);
+      background:linear-gradient(145deg,rgba(255,255,255,.036),rgba(255,255,255,.012));
+    }
+
+    .level-hex{
+      background:linear-gradient(145deg,#ffd166,#ff9f1c 53%,#8b5cf6);
+      box-shadow:0 0 24px rgba(255,159,28,.25),0 0 36px rgba(139,92,246,.14);
+    }
+
+    .progress{background:rgba(255,255,255,.06)}
+    .progress-fill{background:linear-gradient(90deg,#8b5cf6,#22d3ee 52%,#ffd166);box-shadow:0 0 16px rgba(34,211,238,.25)}
+
+    .core-wrap::before{
+      content:"";position:absolute;inset:18px;border-radius:50%;
+      background:conic-gradient(from 0deg,rgba(139,92,246,.07),rgba(34,211,238,.36),rgba(255,209,102,.2),rgba(236,72,153,.2),rgba(139,92,246,.07));
+      filter:blur(12px);animation:auraSpin 8s linear infinite;
+    }
+    .core-wrap::after{
+      content:"";position:absolute;z-index:3;width:10px;height:10px;top:15px;left:calc(50% - 5px);
+      border-radius:50%;background:#22d3ee;box-shadow:0 0 10px #22d3ee,0 0 22px rgba(34,211,238,.85);
+      transform-origin:5px 108px;animation:orbitDot 6s linear infinite;pointer-events:none;
+    }
+    @keyframes auraSpin{to{transform:rotate(360deg)}} @keyframes orbitDot{to{transform:rotate(360deg)}}
+
+    .core-ring{border-color:rgba(34,211,238,.18);box-shadow:0 0 48px rgba(34,211,238,.08),inset 0 0 45px rgba(139,92,246,.04)}
+    .core-ring::before{border-color:rgba(255,209,102,.58)}
+    .core-ring::after{border-color:rgba(139,92,246,.42)}
+
+    .jaslin-coin{
+      box-shadow:0 0 24px rgba(255,209,102,.31),0 0 52px rgba(139,92,246,.16),0 0 78px rgba(34,211,238,.08);
+      animation:coinBreath 3.2s ease-in-out infinite;
+    }
+    @keyframes coinBreath{0%,100%{transform:scale(1);filter:brightness(1)}50%{transform:scale(1.018);filter:brightness(1.1)}}
+
+    #pendingMining{
+      background:linear-gradient(90deg,#35f58a,#22d3ee,#ffd166);
+      -webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none;
+    }
+
+    .btn{transition:transform .18s ease,filter .18s ease,box-shadow .18s ease}
+    .btn:hover{filter:brightness(1.07)}
+    .btn-gold{color:#08070d;background:linear-gradient(90deg,#ffd166,#ff9f1c 48%,#ec4899);box-shadow:0 10px 25px rgba(255,159,28,.14),0 0 22px rgba(236,72,153,.08)}
+    .btn-dark{color:#dff5ff;border:1px solid rgba(34,211,238,.2);background:linear-gradient(145deg,rgba(34,211,238,.06),rgba(139,92,246,.05))}
+
+    .bottom-nav{background:rgba(5,4,10,.93);backdrop-filter:blur(18px);box-shadow:0 -10px 30px rgba(0,0,0,.25)}
+    .nav-btn.active{color:#fff;text-shadow:0 0 13px rgba(34,211,238,.42)}
+    .daily-float{
+      background:radial-gradient(circle at 35% 30%,rgba(255,209,102,.25),rgba(139,92,246,.14) 52%,rgba(6,6,10,.96) 73%);
+      box-shadow:0 0 18px rgba(255,209,102,.34),0 0 34px rgba(139,92,246,.17);
+      animation:dailyHover 2.8s ease-in-out infinite;
+    }
+    @keyframes dailyHover{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-5px) scale(1.025)}}
+    .toast{background:linear-gradient(90deg,#ffd166,#22d3ee);color:#06060b}
+    .status{text-shadow:0 0 12px rgba(53,245,138,.32)}
+
+
+
+    /* ===== FRIENDS / REFERRAL NETWORK ===== */
+    #page-friends .card{padding:20px 18px 22px;border-radius:24px}
+    #page-friends h2{margin:8px 0 18px;font-size:28px;line-height:1;letter-spacing:1.4px}
+    .friends-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0 0 14px}
+    .friends-stat{min-width:0;padding:15px 8px 13px;border:1px solid rgba(255,255,255,.08);border-radius:18px;text-align:center;background:linear-gradient(145deg,rgba(255,255,255,.045),rgba(255,255,255,.012))}
+    .friends-stat-value{min-height:28px;display:flex;align-items:center;justify-content:center;color:#ffd166;font-family:"Orbitron","Space Grotesk",sans-serif;font-size:19px;font-weight:800;letter-spacing:.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .friends-stat-label{margin-top:7px;color:#9194a5;font-size:9px;font-weight:800;letter-spacing:1.15px}
+    .referral-link-box{margin-top:8px;padding:13px 14px;border:1px solid rgba(34,211,238,.13);border-radius:15px;background:rgba(5,7,15,.58);color:#aeb2c2;font-size:11px;line-height:1.5;word-break:break-all}
+    .friends-actions{display:grid;gap:10px;margin-top:12px}.friends-actions .btn{margin:0;min-height:54px;border-radius:17px;font-size:13px;letter-spacing:.5px}
+    .referral-network{margin-top:18px;padding-top:18px;border-top:1px solid rgba(255,255,255,.07)}
+    .referral-network-head,.commission-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+    .referral-network-title,.commission-title{color:#f7f7fb;font-size:13px;font-weight:800;letter-spacing:.3px}
+    .referral-network-sub,.commission-sub{margin-top:4px;color:#7f8292;font-size:10px;line-height:1.4}
+    .referral-network-count{flex:0 0 auto;color:#22d3ee;font-family:"Orbitron","Space Grotesk",sans-serif;font-size:11px;font-weight:800}
+    .referral-list{display:grid;gap:9px;margin-top:12px}
+    .referral-user{display:flex;align-items:center;gap:11px;padding:11px 12px;border:1px solid rgba(255,255,255,.07);border-radius:16px;background:linear-gradient(145deg,rgba(255,255,255,.035),rgba(255,255,255,.012))}
+    .referral-avatar{width:38px;height:38px;flex:0 0 38px;display:grid;place-items:center;border-radius:13px;background:linear-gradient(145deg,rgba(255,209,102,.18),rgba(139,92,246,.18));color:#ffd166;font-family:"Orbitron","Space Grotesk",sans-serif;font-size:13px;font-weight:800}
+    .referral-user-main{min-width:0;flex:1}.referral-user-name{color:#f4f5f8;font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.referral-user-handle{margin-top:3px;color:#777b8b;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .presence{flex:0 0 auto;display:inline-flex;align-items:center;gap:5px;padding:6px 8px;border-radius:999px;font-size:8px;font-weight:900;letter-spacing:.65px}.presence::before{content:"";width:6px;height:6px;border-radius:50%}.presence.online{color:#52f39a;background:rgba(53,245,138,.07);border:1px solid rgba(53,245,138,.16)}.presence.online::before{background:#35f58a;box-shadow:0 0 9px rgba(53,245,138,.65)}.presence.offline{color:#9093a0;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07)}.presence.offline::before{background:#6f7280}
+    .referral-empty{padding:18px 12px;border:1px dashed rgba(255,255,255,.08);border-radius:16px;text-align:center;color:#777b89;font-size:10px;line-height:1.5}
+    .commission-card{margin-top:14px;padding:15px;border:1px solid rgba(255,209,102,.12);border-radius:18px;background:radial-gradient(circle at 90% 0%,rgba(255,209,102,.08),transparent 34%),linear-gradient(145deg,rgba(255,159,28,.045),rgba(139,92,246,.025))}
+    .commission-value{margin-top:13px;color:#ffd166;font-family:"Orbitron","Space Grotesk",sans-serif;font-size:22px;font-weight:800;letter-spacing:.35px}.commission-unit{margin-left:5px;color:#a4a7b5;font-family:"Space Grotesk",sans-serif;font-size:10px;font-weight:700;letter-spacing:.5px}.commission-card .btn{margin-top:13px;min-height:48px;border-radius:15px;font-size:12px}.commission-card .btn:disabled{cursor:not-allowed;opacity:.45;filter:saturate(.45)}.referral-note{margin-top:11px;color:#707483;font-size:9px;line-height:1.55}
+    @media(max-width:360px){.friends-stats{gap:7px}.friends-stat{padding:13px 5px 12px}.friends-stat-value{font-size:16px}.presence{padding:5px 6px;font-size:7px}}
+
+    /* ===== TELEGRAM USER HEADER ===== */
+    .telegram-profile-head{min-width:0;flex:1;gap:10px}
+    .header-avatar{overflow:hidden;flex:0 0 50px;border-radius:16px}
+    .header-avatar img{width:100%;height:100%;display:block;object-fit:cover}
+    .header-user-copy{min-width:0;flex:1}
+    #headerUserName{max-width:none;white-space:nowrap;overflow:visible;text-overflow:clip;font-size:17px}
+    .header-user-meta{margin-top:5px;display:flex;align-items:center;gap:5px;min-width:0;color:#a9a7b5;font-size:9px;font-weight:700}
+    #headerUsername{max-width:105px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--cyan,#22d3ee)}
+    #headerLevelRank{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#c7c4ce}
+    .header-dot{color:rgba(255,255,255,.28)}
+    @media(max-width:390px){
+      #headerUserName{max-width:none;font-size:14px;overflow:visible;text-overflow:clip}
+      #headerUsername{max-width:75px}
+      .header-user-meta{font-size:8px}
+      .profile-mini{max-width:92px;padding:8px 10px}
+    }
+
+
+
+
+    /* ===== HEADER PLAYER + WALLET ===== */
+    .player-online-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex: 0 0 7px;
+      background: var(--green);
+      box-shadow: 0 0 10px rgba(53,245,138,.7);
+    }
+
+    .player-online-text {
+      color: var(--green);
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .header-wallet-btn {
+      flex: 0 0 auto;
+      min-width: 96px;
+      height: 44px;
+      padding: 0 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(34,211,238,.22);
+      background:
+        linear-gradient(145deg, rgba(34,211,238,.09), rgba(139,92,246,.08));
+      color: #f4fbff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .4px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+    }
+
+    .header-wallet-btn.connected {
+      border-color: rgba(53,245,138,.25);
+      color: var(--green);
+      background: rgba(53,245,138,.055);
+    }
+
+    .header-wallet-icon {
+      font-size: 18px;
+      line-height: 1;
+      color: var(--cyan);
+    }
+
+    .profile-overview {
+      padding-bottom: 4px;
+    }
+
+    .profile-overview-top {
+      display: grid;
+      grid-template-columns: 58px 1fr auto;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .profile-overview-copy {
+      min-width: 0;
+    }
+
+    .profile-player-status {
+      margin-top: 7px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--green);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .5px;
+    }
+
+    .profile-level-box {
+      min-width: 68px;
+      text-align: center;
+      padding: 10px 8px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,209,102,.14);
+      background: rgba(255,209,102,.035);
+    }
+
+    .profile-level-number {
+      margin-top: 3px;
+      font-family: "Orbitron","Space Grotesk",sans-serif;
+      font-size: 25px;
+      font-weight: 900;
+      color: var(--gold);
+    }
+
+    .profile-mini-summary {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .profile-mini-summary > div {
+      padding: 10px 12px;
+      border-radius: 13px;
+      border: 1px solid rgba(255,255,255,.06);
+      background: rgba(255,255,255,.02);
+      min-width: 0;
+    }
+
+    .profile-mini-summary span {
+      display: block;
+      color: #858793;
+      font-size: 8px;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+    }
+
+    .profile-mini-summary strong {
+      display: block;
+      margin-top: 4px;
+      color: #f4f6fb;
+      font-size: 11px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    @media(max-width:390px) {
+      .header-wallet-btn {
+        min-width: 84px;
+        padding: 0 10px;
+      }
+
+      .header-wallet-btn #headerWalletText {
+        font-size: 9px;
+      }
+    }
+
+
+    /* ===== MINERS PROGRESSION HUB ===== */
+    .ton-connect-hidden {
+      position: absolute !important;
+      width: 1px !important;
+      height: 1px !important;
+      overflow: hidden !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+      left: -9999px !important;
+    }
+
+    .miner-progress-card {
+      background:
+        radial-gradient(circle at 100% 0%, rgba(34,211,238,.07), transparent 35%),
+        linear-gradient(145deg, rgba(18,15,31,.96), rgba(7,7,12,.94));
+    }
+
+    .miner-card-head {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    .miner-card-title {
+      margin:7px 0 0;
+      font-size:20px;
+      color:#f7f4ff;
+      letter-spacing:.5px;
+    }
+
+    .milestone-orb {
+      width:48px;
+      height:48px;
+      border-radius:50%;
+      display:grid;
+      place-items:center;
+      color:#090812;
+      font-size:22px;
+      background:linear-gradient(145deg,#ffd166,#22d3ee 60%,#8b5cf6);
+      box-shadow:0 0 24px rgba(34,211,238,.16);
+      animation:milestonePulse 2.8s ease-in-out infinite;
+    }
+
+    @keyframes milestonePulse {
+      50% { transform:scale(1.06); box-shadow:0 0 30px rgba(139,92,246,.22); }
+    }
+
+    .rank-current-line {
+      margin-top:17px;
+      display:grid;
+      grid-template-columns:1fr auto 1fr;
+      align-items:center;
+      gap:8px;
+      font-family:"Orbitron","Space Grotesk",sans-serif;
+      font-size:11px;
+      font-weight:800;
+    }
+
+    .rank-current-line span:first-child { color:var(--gold); }
+    .rank-current-line span:last-child { color:var(--cyan); text-align:right; }
+    .rank-arrow { color:#666b79; }
+
+    .milestone-copy {
+      margin-top:13px;
+      padding:11px 12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.06);
+      background:rgba(255,255,255,.018);
+      color:#9fa1ad;
+      font-size:10px;
+      line-height:1.55;
+    }
+
+    .miner-performance-grid {
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:9px;
+      margin-top:14px;
+    }
+
+    .miner-metric {
+      min-height:96px;
+      padding:13px;
+      border-radius:15px;
+      border:1px solid rgba(255,255,255,.07);
+      background:
+        linear-gradient(145deg,rgba(34,211,238,.035),rgba(139,92,246,.025));
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+    }
+
+    .miner-metric span {
+      color:#858995;
+      font-size:8px;
+      letter-spacing:.8px;
+    }
+
+    .miner-metric strong {
+      margin-top:7px;
+      color:#fff2bc;
+      font-family:"Orbitron","Space Grotesk",sans-serif;
+      font-size:18px;
+    }
+
+    .miner-metric small {
+      margin-top:5px;
+      color:#797c87;
+      font-size:7px;
+      letter-spacing:.55px;
+    }
+
+    .rank-signal {
+      padding:6px 9px;
+      border-radius:999px;
+      border:1px solid rgba(53,245,138,.18);
+      color:var(--green);
+      background:rgba(53,245,138,.04);
+      font-size:8px;
+      font-weight:900;
+      letter-spacing:1px;
+    }
+
+    .rank-path {
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:7px;
+      margin-top:15px;
+    }
+
+    .rank-node {
+      padding:11px;
+      border-radius:13px;
+      border:1px solid rgba(255,255,255,.06);
+      background:rgba(255,255,255,.018);
+      display:flex;
+      align-items:center;
+      gap:9px;
+      color:#70737e;
+      transition:.2s ease;
+    }
+
+    .rank-node span {
+      width:27px;
+      height:27px;
+      border-radius:8px;
+      display:grid;
+      place-items:center;
+      background:rgba(255,255,255,.035);
+      font-size:8px;
+      font-weight:900;
+    }
+
+    .rank-node b {
+      font-family:"Orbitron","Space Grotesk",sans-serif;
+      font-size:9px;
+      letter-spacing:.35px;
+    }
+
+    .rank-node.reached {
+      color:#c9c8d0;
+      border-color:rgba(139,92,246,.13);
+    }
+
+    .rank-node.active {
+      color:#fff4c2;
+      border-color:rgba(255,209,102,.28);
+      background:linear-gradient(90deg,rgba(255,209,102,.08),rgba(34,211,238,.035));
+      box-shadow:0 0 18px rgba(255,209,102,.055);
+    }
+
+    .rank-node.active span {
+      color:#08070d;
+      background:linear-gradient(145deg,#ffd166,#22d3ee);
+    }
+
+    .holding-power-main {
+      margin-top:14px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:13px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.07);
+      background:rgba(255,255,255,.02);
+    }
+
+    .holding-power-main span,
+    .holding-detail-grid span {
+      display:block;
+      color:#858995;
+      font-size:8px;
+      text-transform:uppercase;
+      letter-spacing:.7px;
+    }
+
+    .holding-power-main strong {
+      display:block;
+      margin-top:6px;
+      color:#fff;
+      font-family:"Orbitron","Space Grotesk",sans-serif;
+      font-size:14px;
+    }
+
+    .holding-status-badge {
+      flex:0 0 auto;
+      padding:7px 9px;
+      border-radius:999px;
+      border:1px solid rgba(255,209,102,.18);
+      color:var(--gold);
+      font-size:8px;
+      font-weight:900;
+    }
+
+    .holding-status-badge.ready {
+      color:var(--green);
+      border-color:rgba(53,245,138,.22);
+      background:rgba(53,245,138,.04);
+    }
+
+    .holding-detail-grid {
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+      margin-top:8px;
+    }
+
+    .holding-detail-grid > div {
+      padding:11px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.055);
+      background:rgba(0,0,0,.13);
+    }
+
+    .holding-detail-grid strong {
+      display:block;
+      margin-top:5px;
+      color:#e9e7ef;
+      font-size:11px;
+    }
+
+    .core-benefit-card {
+      background:
+        radial-gradient(circle at 90% 15%,rgba(236,72,153,.09),transparent 30%),
+        radial-gradient(circle at 10% 80%,rgba(34,211,238,.07),transparent 32%),
+        linear-gradient(145deg,rgba(18,15,31,.96),rgba(7,7,12,.94));
+    }
+
+    .benefit-title {
+      margin-top:9px;
+      color:#fff2bc;
+      font-family:"Orbitron","Space Grotesk",sans-serif;
+      font-size:18px;
+      font-weight:900;
+    }
+
+    .benefit-copy {
+      margin-top:9px;
+      color:#9699a5;
+      font-size:10px;
+      line-height:1.55;
+    }
+
+    .benefit-strip {
+      margin-top:14px;
+      display:flex;
+      align-items:center;
+      gap:9px;
+      color:#8e919c;
+      font-size:8px;
+      font-weight:900;
+    }
+
+    .benefit-strip strong {
+      color:var(--cyan);
+      white-space:nowrap;
+      font-size:9px;
+    }
+
+    .benefit-line {
+      flex:1;
+      height:3px;
+      border-radius:999px;
+      background:linear-gradient(90deg,#8b5cf6,#22d3ee,#ffd166);
+      box-shadow:0 0 12px rgba(34,211,238,.15);
+    }
+
+
+    /* ===== QUICK TON WALLET MODAL ===== */
+    .wallet-quick-modal{
+      position:fixed;
+      inset:0;
+      z-index:99999;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:22px;
+      background:rgba(0,0,0,.68);
+      backdrop-filter:blur(8px);
+    }
+
+    .wallet-quick-modal.show{
+      display:flex;
+    }
+
+    .wallet-quick-card{
+      position:relative;
+      width:min(360px,100%);
+      padding:24px 20px 20px;
+      border-radius:22px;
+      border:1px solid rgba(34,211,238,.18);
+      background:
+        radial-gradient(circle at 85% 10%,rgba(34,211,238,.08),transparent 30%),
+        linear-gradient(145deg,#11101b,#08080e);
+      box-shadow:0 20px 60px rgba(0,0,0,.5);
+      text-align:center;
+    }
+
+    .wallet-quick-close{
+      position:absolute;
+      top:10px;
+      right:12px;
+      width:34px;
+      height:34px;
+      border:0;
+      border-radius:50%;
+      background:transparent;
+      color:#8f929c;
+      font-size:25px;
+    }
+
+    .wallet-quick-icon{
+      width:58px;
+      height:58px;
+      margin:4px auto 14px;
+      border-radius:18px;
+      display:grid;
+      place-items:center;
+      color:var(--cyan);
+      border:1px solid rgba(34,211,238,.18);
+      background:rgba(34,211,238,.055);
+    }
+
+    .wallet-quick-title{
+      font-family:"Orbitron","Space Grotesk",sans-serif;
+      font-size:18px;
+      font-weight:900;
+      color:#f4f6fb;
+      letter-spacing:.5px;
+    }
+
+    .wallet-quick-sub{
+      margin-top:8px;
+      color:#9497a3;
+      font-size:10px;
+      line-height:1.55;
+    }
+
+    .wallet-quick-connect{
+      width:100%;
+      margin-top:18px;
+      height:48px;
+      border-radius:15px;
+      border:1px solid rgba(34,211,238,.24);
+      background:linear-gradient(90deg,rgba(34,211,238,.10),rgba(139,92,246,.10));
+      color:#eefaff;
+      font-weight:900;
+      letter-spacing:.5px;
+    }
+
+    .wallet-quick-address{
+      margin-top:16px;
+      padding:12px;
+      border-radius:13px;
+      border:1px solid rgba(255,255,255,.06);
+      background:rgba(255,255,255,.025);
+      color:#d8dbe3;
+      font-size:11px;
+      word-break:break-all;
+    }
+
+    .wallet-quick-disconnect{
+      margin-top:10px;
+      border:0;
+      background:transparent;
+      color:#ff5d67;
+      font-size:10px;
+      font-weight:800;
+      text-decoration:underline;
+      text-underline-offset:3px;
+    }
+
+    @media(max-width:390px){
+      #headerUserName{max-width:none !important;font-size:14px !important;overflow:visible !important;text-overflow:clip !important;}
+
+      .header-wallet-btn{
+        min-width:82px;
+        height:42px;
+        padding:0 10px;
+      }
+
+      .header-wallet-btn #headerWalletText{
+        font-size:8px;
+      }
+
+      .header-user-meta{
+        gap:4px;
+        font-size:7px;
+      }
+    }
+
+
+    /* ===== TOKEN VAULT + GRAM ESTIMATE ===== */
+    .gram-estimate{
+      color:#35c8ff !important;
+      font-weight:700;
+      text-shadow:0 0 10px rgba(53,200,255,.16);
+    }
+
+    #vaultBalance{
+      letter-spacing:.5px;
+      font-variant-numeric:tabular-nums;
+    }
+
+
+    .header-wallet-btn.connected .header-wallet-icon,
+    .header-wallet-btn.connected .header-wallet-icon svg {
+      color:#22d3ee !important;
+      stroke:#22d3ee !important;
+    }
+
+
+    #topUsd,
+    #topRequirementGram,
+    #upgradeUsd,
+    .gram-estimate {
+      color:#22b8ff !important;
+      border-color:rgba(34,184,255,.34) !important;
+      text-shadow:0 0 10px rgba(34,184,255,.16);
+    }
+
+
+    /* ===== MINE: FLOATING CORE PULSE + LIVE CLAIM PANEL ===== */
+    .mine-vault-card{
+      position:relative;
+      overflow:visible;
+    }
+
+    .mining-claim-panel{
+      margin:10px 0 15px;
+      padding:16px 14px 14px;
+      border-radius:18px;
+      border:1px solid rgba(34,211,238,.14);
+      background:
+        radial-gradient(circle at 50% 0%,rgba(34,211,238,.055),transparent 55%),
+        linear-gradient(145deg,rgba(11,10,20,.88),rgba(3,3,7,.78));
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.025),
+        0 14px 30px rgba(0,0,0,.16);
+    }
+
+    .mining-claim-panel .core-output{
+      text-align:center;
+    }
+
+    .mining-claim-panel #pendingMining{
+      margin-top:5px;
+      color:#2de4c5;
+      font-size:34px;
+      font-weight:900;
+      letter-spacing:.5px;
+      font-variant-numeric:tabular-nums;
+      text-shadow:0 0 18px rgba(45,228,197,.18);
+    }
+
+    .mining-claim-panel .core-output-title{
+      color:#b9bac3;
+      font-size:9px;
+      letter-spacing:.8px;
+    }
+
+    .mining-claim-panel .live-unit{
+      margin-top:5px;
+      color:#787b86;
+      font-size:8px;
+      letter-spacing:.75px;
+    }
+
+    .mining-claim-panel .output-sub{
+      margin-top:5px;
+      color:#777a85;
+      font-size:9px;
+    }
+
+    .mining-claim-btn{
+      margin-top:13px !important;
+      min-height:49px;
+      font-size:14px;
+      letter-spacing:.6px;
+    }
+
+    /* ===== CORE PULSE INDICATOR ===== */
+    .core-pulse-indicator{
+      width:min(300px,88%);
+      margin:-2px auto 14px;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(34,211,238,.14);
+      background:linear-gradient(145deg,rgba(34,211,238,.035),rgba(139,92,246,.025));
+      text-align:center;
+    }
+    .core-pulse-indicator-head{
+      display:flex;align-items:center;justify-content:center;gap:9px;
+      font-size:9px;font-weight:900;letter-spacing:.8px;color:#aeb3c0;
+    }
+    .core-pulse-indicator-head strong{color:#ffd166;font-family:"Orbitron","Space Grotesk",sans-serif;font-size:10px}
+    .core-pulse-dots{display:flex;justify-content:center;gap:7px;margin-top:7px}
+    .core-pulse-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.10);box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+    .core-pulse-dot.on{background:#22d3ee;box-shadow:0 0 10px rgba(34,211,238,.65)}
+    .core-pulse-indicator.max{border-color:rgba(53,245,138,.25);background:rgba(53,245,138,.04)}
+    .core-pulse-indicator.max .core-pulse-indicator-head strong{color:var(--green)}
+    .core-pulse-help{margin-top:6px;color:#777b87;font-size:8px}
+
+
+    #topVaultBalance{color:var(--gold);white-space:nowrap}
+    .vault-holding-title{min-width:120px}
+
+
+    /* ===== JASLIN SYSTEM STATUS / HISTORY ===== */
+    .system-banner{
+      display:none;
+      margin:10px 16px 0;
+      padding:12px 14px;
+      border-radius:14px;
+      border:1px solid rgba(34,211,238,.16);
+      background:linear-gradient(135deg,rgba(10,18,28,.94),rgba(16,10,27,.94));
+      box-shadow:0 12px 30px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.035);
+    }
+    .system-banner.show{display:block}
+    .system-banner.maintenance{
+      border-color:rgba(255,190,73,.34);
+      background:linear-gradient(135deg,rgba(42,28,7,.96),rgba(21,13,5,.96));
+    }
+    .system-banner-title{
+      color:#f6f7fb;font-size:11px;font-weight:900;letter-spacing:.85px;text-transform:uppercase;
+    }
+    .system-banner-message{
+      margin-top:4px;color:#9da3af;font-size:10px;line-height:1.55;
+    }
+    .system-banner.maintenance .system-banner-title{color:#ffc957}
+
+    .history-section{margin-top:14px}
+    .history-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:10px}
+    .history-title{color:#f5f7fb;font-size:13px;font-weight:900;letter-spacing:.25px}
+    .history-sub{margin-top:3px;color:#767c89;font-size:9px;line-height:1.45}
+    .history-refresh{
+      border:1px solid rgba(34,211,238,.18);background:rgba(34,211,238,.055);color:#aeeffc;
+      border-radius:10px;padding:7px 10px;font-size:8px;font-weight:900;letter-spacing:.5px;
+    }
+    .history-list{display:grid;gap:8px}
+    .history-item{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 12px;
+      border-radius:13px;border:1px solid rgba(255,255,255,.055);background:rgba(255,255,255,.022);
+    }
+    .history-main{min-width:0}
+    .history-name{color:#e7e9ef;font-size:10px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .history-note{margin-top:3px;color:#707684;font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
+    .history-time{margin-top:3px;color:#555c68;font-size:7.5px}
+    .history-side{text-align:right;flex:0 0 auto}
+    .history-amount{font-size:10px;font-weight:900;color:#ffd166}
+    .history-amount.negative{color:#ff7a88}
+    .history-status{
+      display:inline-flex;margin-top:4px;padding:3px 7px;border-radius:999px;font-size:7px;font-weight:900;
+      letter-spacing:.55px;text-transform:uppercase;border:1px solid rgba(255,255,255,.07);color:#8f96a3;
+    }
+    .history-status.sent,.history-status.completed{color:#59e6c1;border-color:rgba(89,230,193,.20);background:rgba(89,230,193,.055)}
+    .history-status.pending,.history-status.reserved{color:#ffc95c;border-color:rgba(255,201,92,.20);background:rgba(255,201,92,.055)}
+    .history-status.failed,.history-status.refunded{color:#ff8791;border-color:rgba(255,135,145,.20);background:rgba(255,135,145,.055)}
+    .history-empty{padding:14px;border:1px dashed rgba(255,255,255,.07);border-radius:12px;color:#666d78;text-align:center;font-size:9px}
+    .withdraw-status-note{margin-top:10px;padding:10px 12px;border-radius:12px;font-size:9px;line-height:1.5;border:1px solid rgba(255,255,255,.06);color:#858b97;background:rgba(255,255,255,.02)}
+    .withdraw-status-note.enabled{color:#63e6be;border-color:rgba(99,230,190,.17);background:rgba(99,230,190,.04)}
+    .withdraw-status-note.disabled{color:#ffcc66;border-color:rgba(255,204,102,.16);background:rgba(255,204,102,.04)}
+
+    /* ===== PERFORMANCE PACK ===== */
+    #coreTapArea{
+      touch-action:manipulation;
+      contain:layout style;
+    }
+
+    .core-wrap,
+    .jaslin-coin,
+    .core-ring::before,
+    .core-ring::after{
+      will-change:transform;
+      transform:translateZ(0);
+      backface-visibility:hidden;
+    }
+
+    @keyframes corePulseHit{
+      0%{transform:translateZ(0) scale(1)}
+      45%{transform:translateZ(0) scale(1.045)}
+      100%{transform:translateZ(0) scale(1)}
+    }
+
+    @keyframes coinBreath{
+      0%,100%{transform:translateZ(0) scale(1)}
+      50%{transform:translateZ(0) scale(1.015)}
+    }
+
+    @keyframes logoGlow{
+      to{transform:translate3d(0,-2px,0)}
+    }
+
+
+    /* Telegram Mini App scroll container
+       Keep the WebView itself fixed and scroll inside .app.
+       This avoids Telegram's outer swipe gesture stealing normal page scrolling. */
+    html, body{
+      width:100%;
+      height:100%;
+      min-height:100%;
+      margin:0;
+      overflow:hidden !important;
+      overscroll-behavior:none;
+    }
+
+    body{
+      position:relative;
+      touch-action:none;
+    }
+
+    .app{
+      position:relative;
+      width:100%;
+      height:100dvh;
+      height:100svh;
+      overflow-x:hidden !important;
+      overflow-y:auto !important;
+      -webkit-overflow-scrolling:touch;
+      overscroll-behavior-y:contain;
+      touch-action:pan-y;
+      scrollbar-width:none;
+    }
+
+    .app::-webkit-scrollbar{
+      width:0;
+      height:0;
+      display:none;
+    }
+
+    /* Wallet + Withdraw quick actions on the top-right */
+    .header-actions{
+      flex:0 0 auto;
+      display:flex;
+      flex-direction:column;
+      align-items:stretch;
+      gap:7px;
+    }
+
+    .header-withdraw-btn{
+      min-width:96px;
+      height:36px;
+      padding:0 12px;
+      border-radius:13px;
+      border:1px solid rgba(246,196,83,.28);
+      background:linear-gradient(145deg,rgba(246,196,83,.10),rgba(139,92,246,.07));
+      color:#ffd166;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+      font-size:9px;
+      font-weight:900;
+      letter-spacing:.45px;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+    }
+
+    .header-withdraw-btn:active{
+      transform:translateY(1px);
+    }
+
+    @media(max-width:390px){
+      .header-actions{gap:6px}
+      .header-withdraw-btn{
+        min-width:84px;
+        height:34px;
+        padding:0 9px;
+        font-size:8px;
+      }
+    }
+
+
+    /* V6 accessibility: user-selectable reduced motion */
+    html.reduce-motion *,
+    html.reduce-motion *::before,
+    html.reduce-motion *::after{
+      animation-duration:.001ms !important;
+      animation-iteration-count:1 !important;
+      transition-duration:.001ms !important;
+      scroll-behavior:auto !important;
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      html:not(.force-motion) *,
+      html:not(.force-motion) *::before,
+      html:not(.force-motion) *::after{
+        animation-duration:.001ms !important;
+        animation-iteration-count:1 !important;
+        transition-duration:.001ms !important;
+      }
+    }
+
+    /* V6.5 History Center */
+    .ledger-launch-grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:12px;
+      margin-top:18px;
+    }
+
+    .ledger-launch-card{
+      width:100%;
+      min-height:86px;
+      display:grid;
+      grid-template-columns:48px 1fr auto;
+      align-items:center;
+      gap:14px;
+      padding:16px;
+      border-radius:20px;
+      border:1px solid rgba(255,214,102,.16);
+      background:
+        linear-gradient(145deg,rgba(255,255,255,.035),rgba(139,92,246,.035));
+      color:#fff;
+      text-align:left;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.035);
+    }
+
+    .ledger-launch-card:active{
+      transform:translateY(1px);
+    }
+
+    .ledger-launch-icon{
+      width:46px;
+      height:46px;
+      border-radius:15px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:23px;
+      color:#ffd166;
+      border:1px solid rgba(255,209,102,.20);
+      background:rgba(255,209,102,.055);
+    }
+
+    .ledger-launch-copy{
+      display:flex;
+      flex-direction:column;
+      gap:5px;
+      min-width:0;
+    }
+
+    .ledger-launch-copy strong{
+      font-size:15px;
+      font-weight:900;
+      letter-spacing:.15px;
+    }
+
+    .ledger-launch-copy small{
+      color:rgba(255,255,255,.52);
+      font-size:11px;
+      line-height:1.35;
+    }
+
+    .ledger-launch-arrow{
+      font-size:28px;
+      color:rgba(255,255,255,.34);
+      line-height:1;
+    }
+
+    .history-modal{
+      position:fixed;
+      inset:0;
+      z-index:10000;
+      display:none;
+      align-items:flex-end;
+      justify-content:center;
+    }
+
+    .history-modal.show{
+      display:flex;
+    }
+
+    .history-modal-backdrop{
+      position:absolute;
+      inset:0;
+      background:rgba(0,0,0,.72);
+      backdrop-filter:blur(8px);
+      -webkit-backdrop-filter:blur(8px);
+    }
+
+    .history-modal-panel{
+      position:relative;
+      z-index:1;
+      width:min(100%,680px);
+      height:min(86dvh,760px);
+      display:flex;
+      flex-direction:column;
+      border-radius:26px 26px 0 0;
+      border:1px solid rgba(255,255,255,.10);
+      border-bottom:0;
+      background:
+        radial-gradient(circle at 90% 0%,rgba(34,211,238,.08),transparent 30%),
+        radial-gradient(circle at 10% 0%,rgba(168,85,247,.09),transparent 34%),
+        #080811;
+      box-shadow:0 -20px 60px rgba(0,0,0,.45);
+      overflow:hidden;
+    }
+
+    .history-modal-header{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      padding:20px 18px 12px;
+      border-bottom:1px solid rgba(255,255,255,.07);
+    }
+
+    .history-modal-header h2{
+      margin:6px 0 7px;
+      font-size:24px;
+    }
+
+    .history-modal-close{
+      flex:0 0 auto;
+      width:40px;
+      height:40px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.04);
+      color:#fff;
+      font-size:17px;
+    }
+
+    .history-modal-toolbar{
+      display:flex;
+      justify-content:flex-end;
+      padding:10px 16px 0;
+    }
+
+    .history-modal-list{
+      flex:1;
+      min-height:0;
+      overflow-y:auto !important;
+      overflow-x:hidden;
+      -webkit-overflow-scrolling:touch;
+      overscroll-behavior-y:contain;
+      touch-action:pan-y;
+      padding:10px 16px 28px;
+      scrollbar-width:none;
+    }
+
+    .history-modal-list::-webkit-scrollbar{
+      display:none;
+      width:0;
+    }
+
+    body.history-modal-open .app{
+      overflow:hidden !important;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <header id="mainHeader" class="header">
+
+    <div class="brand telegram-profile-head">
+
+      <div id="headerAvatar" class="header-logo header-avatar">
+        J
+      </div>
+
+      <div class="header-user-copy">
+
+        <div id="headerUserName" class="brand-title">
+          JASLIN USER
+        </div>
+
+        <div class="header-user-meta">
+          <span class="player-online-dot"></span>
+          <span class="player-online-text">ONLINE</span>
+          <span class="header-dot">•</span>
+          <span id="headerLevelRank">Lv.1 • SPARK CORE</span>
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="header-actions">
+
+      <button
+        id="headerWalletBtn"
+        class="header-wallet-btn"
+        onclick="headerWalletAction()"
+        aria-label="JASLIN Wallet"
+      >
+        <span class="header-wallet-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="19" height="19" fill="none">
+            <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H18a2 2 0 0 1 2 2v2H7a3 3 0 0 0 0 6h13v2a2 2 0 0 1-2 2H6.5A2.5 2.5 0 0 1 4 16.5v-9Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            <path d="M7 9h13v6H7a3 3 0 1 1 0-6Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            <circle cx="16.5" cy="12" r="1" fill="currentColor"/>
+          </svg>
+        </span>
+        <span id="headerWalletText">WALLET</span>
+      </button>
+
+      <button
+        id="headerWithdrawBtn"
+        class="header-withdraw-btn"
+        onclick="headerWithdrawAction()"
+        aria-label="Withdraw JASLIN"
+      >
+        ↓ WITHDRAW
+      </button>
+
+    </div>
+
+    <div id="ton-connect" class="ton-connect-hidden" aria-hidden="true"></div>
+
+  </header>
+
+  <div id="systemBanner" class="system-banner" role="status" aria-live="polite">
+    <div id="systemBannerTitle" class="system-banner-title">JASLIN NETWORK</div>
+    <div id="systemBannerMessage" class="system-banner-message"></div>
+  </div>
+
+
+  <!-- ================= MINE ================= -->
+
+  <main
+    id="page-mine"
+    class="page active"
+  >
+
+    <section class="card level-card">
+
+      <div class="level-badge">
+
+        <div class="level-label">
+          LEVEL
+        </div>
+
+        <div
+          id="topLevel"
+          class="level-hex"
+        >
+          1
+        </div>
+
+        <div class="level-label">
+          CORE LEVEL
+        </div>
+
+      </div>
+
+
+      <div class="level-content">
+
+        <div class="row">
+
+          <div>
+
+            <div class="next-level-title">
+              TOKEN VAULT BALANCE
+            </div>
+
+            <div>
+              <span
+                id="topVaultBalance"
+                class="next-level-price"
+              >
+                0 TOKEN
+              </span>
+            </div>
+
+          </div>
+
+
+          <div>
+
+            <div
+              id="topUpgradeStatus"
+              class="upgrade-status"
+            >
+              NEED 200 JASLIN
+            </div>
+
+            <div class="small muted" style="margin-top:6px">
+              Holding requirement
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="progress">
+
+          <div
+            id="topProgress"
+            class="progress-fill"
+          ></div>
+
+        </div>
+
+        <div
+          id="topProgressText"
+          class="small muted"
+          style="margin-top:8px"
+        >
+          0 / 200 JASLIN
+        </div>
+
+        <div class="level-requirement">
+          <div
+            id="topRequirementText"
+            class="requirement-main"
+          >
+            Hold 200 JASLIN to unlock Level 2
+          </div>
+          <div
+            id="topRequirementGram"
+            class="requirement-sub gram-estimate"
+          >
+            Live GRAM equivalent follows the pool rate.
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <section class="card mine-vault-card">
+
+      <div class="vault-top">
+
+        <div class="vault-holding-title">
+          <div class="section-title">HOLDING POWER</div>
+          <div class="small muted" style="margin-top:6px">ON-CHAIN + TOTAL</div>
+        </div>
+
+
+        <div class="wallet-mini">
+
+          <div class="wallet-mini-row">
+
+            <span>
+              🔐 ON-CHAIN HOLDING:
+            </span>
+
+            <span>
+              <b id="holdingBalance">
+                0
+              </b>
+              <span class="gold">
+                TOKEN
+              </span>
+            </span>
+
+          </div>
+
+
+          <div class="wallet-mini-row">
+
+            <span>
+              ⚡ TOTAL HOLDING:
+            </span>
+
+            <span>
+              <b id="poolBalance">
+                0
+              </b>
+              <span class="gold">
+                TOKEN
+              </span>
+            </span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div
+        id="coreTapArea"
+        class="core-wrap"
+        onclick="activateCorePulse()"
+        role="button"
+        tabindex="0"
+        aria-label="Tap JASLIN Core 3 times to activate Core Pulse"
+      >
+
+        <div class="core-ring"></div>
+
+        <img
+          src="/jaslin-logo.png"
+          alt="JASLIN"
+          class="jaslin-coin"
+        >
+
+      </div>
+
+
+      <div id="corePulseIndicator" class="core-pulse-indicator" aria-live="polite">
+        <div class="core-pulse-indicator-head">
+          <span>CORE PULSE</span>
+          <strong id="pulseStatus">READY • 0/3</strong>
+        </div>
+        <div class="core-pulse-dots" aria-hidden="true">
+          <span id="pulseBar1" class="core-pulse-dot"></span>
+          <span id="pulseBar2" class="core-pulse-dot"></span>
+          <span id="pulseBar3" class="core-pulse-dot"></span>
+        </div>
+        <div id="pulseHelp" class="core-pulse-help">Tap logo JASLIN 3× untuk MAX SPEED</div>
+      </div>
+
+      <div class="mining-claim-panel">
+
+        <div class="core-output">
+
+          <div class="core-output-title">
+            LIVE CORE OUTPUT
+          </div>
+
+          <div id="pendingMining">
+            0.00000000
+          </div>
+
+          <div class="live-unit">
+            MINING IN PROGRESS
+          </div>
+
+          <div class="output-sub">
+            Real-time token accumulation
+          </div>
+
+        </div>
+
+        <button
+          id="collectBtn"
+          class="btn btn-gold mining-claim-btn"
+          onclick="claimMining()"
+        >
+          ❯ &nbsp; CLAIM
+        </button>
+
+      </div>
+
+
+      <div class="stats">
+
+        <div class="stat">
+
+          <div
+            id="coreLevel"
+            class="stat-value"
+          >
+            1
+          </div>
+
+          <div class="stat-label">
+            CORE LEVEL
+          </div>
+
+        </div>
+
+
+        <div class="stat">
+
+          <div
+            id="miningRate"
+            class="stat-value"
+          >
+            0.045
+          </div>
+
+          <div class="stat-label">
+            CORE / MIN
+          </div>
+
+        </div>
+
+
+        <div class="stat">
+
+          <div
+            id="miningTime"
+            class="stat-value"
+          >
+            00:00:00
+          </div>
+
+          <div class="stat-label">
+            MINING TIME
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+  </main>
+
+
+  <!-- ================= TASKS ================= -->
+
+  <main
+    id="page-tasks"
+    class="page"
+  >
+
+    <section class="card">
+
+      <div class="section-title">
+        SOCIAL MISSIONS
+      </div>
+
+      <h2>
+        JASLIN TASKS
+      </h2>
+
+      <div class="notice" style="margin-bottom:10px">
+        Connect your X account, complete the JASLIN missions, then verify them automatically through the JASLIN server.
+      </div>
+
+      <div id="xAccountCard" class="notice" style="margin-bottom:12px">
+        <div class="row" style="align-items:center">
+          <div>
+            <div class="task-title">𝕏 ACCOUNT</div>
+            <div id="xAccountStatus" class="small muted" style="margin-top:4px">Checking connection...</div>
+          </div>
+          <button id="xConnectBtn" class="mini-btn" onclick="connectXAccount()">CONNECT X</button>
+        </div>
+      </div>
+
+      <div id="socialTasksList">
+        <div class="notice">Loading X missions...</div>
+      </div>
+
+      <button id="xVerifyBtn" class="btn btn-gold" onclick="handleXPrimaryAction()" style="margin-top:12px">
+        VERIFY X MISSIONS
+      </button>
+
+      <div id="xVerifyNotice" class="notice" style="margin-top:12px">
+        Complete all 4 X missions to unlock one-time claim: <strong>500 JASLIN</strong>.
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- ================= MINERS ================= -->
+
+  <main
+    id="page-miners"
+    class="page"
+  >
+
+    <section class="card miner-progress-card">
+
+      <div class="core-progress-top">
+
+        <div>
+          <div class="section-title">CORE PROGRESS</div>
+          <div class="core-level-big">
+            LEVEL <span id="bottomLevel">1</span>
+          </div>
+        </div>
+
+        <div class="upgrade-info">
+          <div class="small muted">Next Upgrade</div>
+          <div id="upgradePrice" class="upgrade-price">200 JASLIN</div>
+          <div class="small muted" style="margin-top:4px">
+            <span id="upgradeUsd" class="gram-estimate">≈ 0.023 GRAM</span>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="progress">
+        <div id="bottomProgress" class="progress-fill"></div>
+      </div>
+
+      <div class="progress-row">
+        <span id="bottomProgressText">0 / 200 JASLIN</span>
+        <span id="bottomUpgradeStatus" class="gold">NEED 200</span>
+      </div>
+
+      <button id="upgradeCoreBtn" class="btn btn-dark" onclick="upgradeCore()">
+        ⚡ UPGRADE CORE
+      </button>
+
+    </section>
+
+    <section class="card miner-milestone-card">
+      <div class="miner-card-head">
+        <div>
+          <div class="section-title">NEXT MILESTONE</div>
+          <h2 id="minerNextRank" class="miner-card-title">FORGE CORE</h2>
+        </div>
+        <div class="milestone-orb">✦</div>
+      </div>
+
+      <div class="rank-current-line">
+        <span id="minerCurrentRank">SPARK CORE</span>
+        <span class="rank-arrow">→</span>
+        <span id="minerTargetRank">FORGE CORE</span>
+      </div>
+
+      <div class="milestone-copy" id="minerMilestoneCopy">
+        Keep leveling your Core to reach the next rank.
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-title">CORE PERFORMANCE</div>
+
+      <div class="miner-performance-grid">
+        <div class="miner-metric">
+          <span>LIVE RATE</span>
+          <strong id="minerPerfRate">0.208</strong>
+          <small>JASLIN / MIN</small>
+        </div>
+
+        <div class="miner-metric">
+          <span>8H OUTPUT</span>
+          <strong id="minerPerfOutput">100.00</strong>
+          <small>JASLIN</small>
+        </div>
+
+        <div class="miner-metric">
+          <span>CORE POWER</span>
+          <strong id="minerPerfPulse">1.00×</strong>
+          <small>ACTIVE MULTIPLIER</small>
+        </div>
+
+        <div class="miner-metric">
+          <span>SESSION</span>
+          <strong>8H</strong>
+          <small>MAX CYCLE</small>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="miner-card-head">
+        <div>
+          <div class="section-title">CORE RANK PATH</div>
+          <h2 class="miner-card-title">EVOLUTION</h2>
+        </div>
+        <div class="rank-signal">LIVE</div>
+      </div>
+
+      <div class="rank-path" id="minerRankPath">
+        <div class="rank-node active" data-rank="SPARK"><span>01</span><b>SPARK</b></div>
+        <div class="rank-node" data-rank="FORGE"><span>02</span><b>FORGE</b></div>
+        <div class="rank-node" data-rank="PRIME"><span>03</span><b>PRIME</b></div>
+        <div class="rank-node" data-rank="APEX"><span>04</span><b>APEX</b></div>
+        <div class="rank-node" data-rank="VORTEX"><span>05</span><b>VORTEX</b></div>
+        <div class="rank-node" data-rank="QUANTUM"><span>06</span><b>QUANTUM</b></div>
+        <div class="rank-node" data-rank="NOVA"><span>07</span><b>NOVA</b></div>
+        <div class="rank-node" data-rank="GENESIS"><span>08</span><b>GENESIS</b></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-title">HOLDING POWER</div>
+
+      <div class="holding-power-main">
+        <div>
+          <span>Total Holding</span>
+          <strong id="minerHoldingTotal">0.00 JASLIN</strong>
+        </div>
+
+        <div class="holding-status-badge" id="minerHoldingStatus">
+          CHECKING
+        </div>
+      </div>
+
+      <div class="holding-detail-grid">
+        <div>
+          <span>Next Requirement</span>
+          <strong id="minerHoldingRequired">200 JASLIN</strong>
+        </div>
+        <div>
+          <span>Difference</span>
+          <strong id="minerHoldingDifference">200 JASLIN</strong>
+        </div>
+      </div>
+
+      <div class="milestone-copy">
+        Holding Power combines your game balance and connected on-chain JASLIN. Tokens are not spent when your Core level increases.
+      </div>
+    </section>
+
+    <section class="card core-benefit-card">
+      <div class="section-title">CORE BENEFITS</div>
+      <div class="benefit-title">LEVEL UP. POWER UP.</div>
+      <div class="benefit-copy">
+        Higher Core levels increase your base mining output. Core speed grows gradually and is capped at the maximum mining multiplier.
+      </div>
+
+      <div class="benefit-strip">
+        <span>LEVEL</span>
+        <div class="benefit-line"></div>
+        <strong>UP TO 3× CORE SPEED</strong>
+      </div>
+    </section>
+
+  </main>
+
+
+  <!-- ================= FRIENDS ================= -->
+
+  <main id="page-friends" class="page">
+    <section class="card friends-card">
+      <div class="section-title">JASLIN CORE NETWORK</div>
+      <h2>FRIENDS</h2>
+      <div class="friends-stats">
+        <div class="friends-stat"><div id="friendCount" class="friends-stat-value">0</div><div class="friends-stat-label">INVITED</div></div>
+        <div class="friends-stat"><div id="referralCommissionTop" class="friends-stat-value">0</div><div class="friends-stat-label">COMMISSION</div></div>
+        <div class="friends-stat"><div class="friends-stat-value">TIER 1</div><div class="friends-stat-label">NETWORK</div></div>
+      </div>
+      <div id="referralLink" class="referral-link-box">Referral link loading...</div>
+      <div class="friends-actions">
+        <button class="btn btn-gold" onclick="shareReferral()">INVITE FRIEND</button>
+        <button class="btn btn-dark" onclick="copyReferral()">COPY REFERRAL LINK</button>
+      </div>
+      <div class="commission-card">
+        <div class="commission-head"><div><div class="commission-title">Referral Commission</div><div class="commission-sub">10% dari mining claim referral langsung.</div></div></div>
+        <div class="commission-value"><span id="referralCommissionBalance">0.0000</span><span class="commission-unit">JASLIN</span></div>
+        <button id="claimReferralCommissionBtn" class="btn btn-gold" onclick="claimReferralCommission()" disabled>CLAIM COMMISSION</button>
+        <div class="referral-note">Komisi disimpan terpisah dan masuk ke Game Balance hanya setelah kamu claim manual.</div>
+      </div>
+      <div class="referral-network">
+        <div class="referral-network-head"><div><div class="referral-network-title">My Referrals</div><div class="referral-network-sub">Referral yang sudah berhasil bergabung.</div></div><div id="referralListCount" class="referral-network-count">0 USER</div></div>
+        <div id="referralList" class="referral-list"><div class="referral-empty">Belum ada referral yang bergabung.</div></div>
+      </div>
+    </section>
+  </main>
+
+
+  <!-- ================= PROFILE ================= -->
+
+  <main
+    id="page-profile"
+    class="page"
+  >
+
+    <section class="card">
+
+      <div class="profile-overview">
+        <div class="profile-overview-top">
+          <div id="profileAvatar" class="profile-avatar">J</div>
+
+          <div class="profile-overview-copy">
+            <div class="section-title">PLAYER PROFILE</div>
+            <div class="profile-player-status">
+              <span class="player-online-dot"></span>
+              ACTIVE • ONLINE
+            </div>
+            <div id="profileRank" class="rank-chip">SPARK CORE</div>
+          </div>
+
+          <div class="profile-level-box">
+            <div class="small muted">LEVEL</div>
+            <div id="profileLevel" class="profile-level-number">1</div>
+          </div>
+        </div>
+
+        <div class="profile-mini-summary">
+          <div>
+            <span>Telegram</span>
+            <strong id="profileName">JASLIN USER</strong>
+          </div>
+          <div>
+            <span>Network</span>
+            <strong>TON</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="profile-grid">
+        <div class="profile-box">
+          <div class="profile-box-label">Game Balance</div>
+          <div id="profileBalance" class="profile-box-value">0.00 JASLIN</div>
+        </div>
+
+        <div class="profile-box">
+          <div class="profile-box-label">On-chain Holding</div>
+          <div id="profileOnchain" class="profile-box-value">0.00 JASLIN</div>
+        </div>
+
+        <div class="profile-box">
+          <div class="profile-box-label">Total Holding Power</div>
+          <div id="profileTotalHolding" class="profile-box-value">0.00 JASLIN</div>
+        </div>
+
+        <div class="profile-box">
+          <div class="profile-box-label">8H Core Output</div>
+          <div id="profileOutput" class="profile-box-value">100.00 JASLIN</div>
+        </div>
+
+        <div class="profile-box">
+          <div class="profile-box-label">Core Pulse</div>
+          <div id="profilePulse" class="profile-box-value">1.00×</div>
+        </div>
+
+        <div class="profile-box">
+          <div class="profile-box-label">Friends</div>
+          <div id="profileFriends" class="profile-box-value">0</div>
+        </div>
+      </div>
+
+      <div class="sound-row">
+        <button id="sfxToggle" class="sound-toggle on" onclick="toggleSfx()">🔊 EFFECTS ON</button>
+        <button id="motionToggle" class="sound-toggle" onclick="toggleReduceMotion()">✨ MOTION ON</button>
+      </div>
+
+    </section>
+    <!-- TON WALLET MOVED TO HEADER -->
+
+    <section class="card">
+      <div class="section-title">JASLIN LEDGER</div>
+      <h2>HISTORY CENTER</h2>
+
+      <div class="ledger-launch-grid">
+        <button class="ledger-launch-card" onclick="openHistoryModal('activity')">
+          <span class="ledger-launch-icon">◫</span>
+          <span class="ledger-launch-copy">
+            <strong>Activity History</strong>
+            <small>Mining, referral, spin, upgrade & rewards</small>
+          </span>
+          <span class="ledger-launch-arrow">›</span>
+        </button>
+
+        <button class="ledger-launch-card" onclick="openHistoryModal('withdrawal')">
+          <span class="ledger-launch-icon">⇩</span>
+          <span class="ledger-launch-copy">
+            <strong>Withdrawal History</strong>
+            <small>Status, fee, wallet & on-chain confirmation</small>
+          </span>
+          <span class="ledger-launch-arrow">›</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- WITHDRAW -->
+
+    <section id="withdrawSection" class="card">
+
+      <div class="section-title">
+        WITHDRAW JASLIN
+      </div>
+
+      <h2>
+        WITHDRAW JASLIN
+      </h2>
+
+      <div class="small muted">
+        Minimum request 2,000 JASLIN. Fixed network/service fee: 300 JASLIN.
+      </div>
+
+
+      <div
+        id="withdrawWalletInfo"
+        class="notice"
+      >
+        Connect wallet terlebih dahulu.
+      </div>
+
+
+      <input
+        id="withdrawAmount"
+        class="input"
+        type="number"
+        min="2000"
+        step="1"
+        placeholder="Minimum 2,000 JASLIN"
+        oninput="updateWithdrawPreview()"
+      >
+
+      <div class="withdraw-summary">
+
+        <div class="withdraw-summary-row">
+          <span>Game balance</span>
+          <strong id="withdrawGameBalance">0.00 JASLIN</strong>
+        </div>
+
+        <div class="withdraw-summary-row">
+          <span>Withdrawal request</span>
+          <strong id="withdrawRequest">0 JASLIN</strong>
+        </div>
+
+        <div class="withdraw-summary-row">
+          <span>Fixed fee</span>
+          <strong>300 JASLIN</strong>
+        </div>
+
+        <div class="withdraw-summary-row net">
+          <span>You receive</span>
+          <strong id="withdrawReceive">0 JASLIN</strong>
+        </div>
+
+      </div>
+
+
+      <button
+        id="withdrawSubmitBtn"
+        class="btn btn-gold"
+        onclick="withdrawJaslin()"
+      >
+        WITHDRAW JASLIN
+      </button>
+
+      <div id="withdrawSystemStatus" class="withdraw-status-note disabled">
+        Withdrawal status sedang diperiksa...
+      </div>
+
+      <div class="notice">
+        Setelah withdrawal berhasil, saldo game berkurang sebesar jumlah request.
+        Token bersih masuk ke TON wallet yang terhubung dan ikut dihitung sebagai
+        On-chain Holding Power.
+      </div>
+
+    </section>
+
+  </main>
+
+</div>
+
+
+
+<!-- HISTORY MODALS -->
+
+<div id="activityHistoryModal" class="history-modal" aria-hidden="true">
+  <div class="history-modal-backdrop" onclick="closeHistoryModal('activity')"></div>
+
+  <section class="history-modal-panel" role="dialog" aria-modal="true" aria-labelledby="activityHistoryTitle">
+    <div class="history-modal-header">
+      <div>
+        <div class="section-title">JASLIN LEDGER</div>
+        <h2 id="activityHistoryTitle">ACTIVITY HISTORY</h2>
+        <div class="history-sub">Mining, referral, spin, upgrade dan rewards. Core Pulse tidak ditampilkan.</div>
+      </div>
+
+      <button class="history-modal-close" onclick="closeHistoryModal('activity')" aria-label="Close activity history">✕</button>
+    </div>
+
+    <div class="history-modal-toolbar">
+      <button class="history-refresh" onclick="loadProfileHistory(true)">REFRESH</button>
+    </div>
+
+    <div id="activityHistory" class="history-list history-modal-list">
+      <div class="history-empty">Activity history akan muncul di sini.</div>
+    </div>
+  </section>
+</div>
+
+
+<div id="withdrawalHistoryModal" class="history-modal" aria-hidden="true">
+  <div class="history-modal-backdrop" onclick="closeHistoryModal('withdrawal')"></div>
+
+  <section class="history-modal-panel" role="dialog" aria-modal="true" aria-labelledby="withdrawalHistoryTitle">
+    <div class="history-modal-header">
+      <div>
+        <div class="section-title">JASLIN LEDGER</div>
+        <h2 id="withdrawalHistoryTitle">WITHDRAWAL HISTORY</h2>
+        <div class="history-sub">Request, fee, receive amount, wallet, status dan transaksi on-chain.</div>
+      </div>
+
+      <button class="history-modal-close" onclick="closeHistoryModal('withdrawal')" aria-label="Close withdrawal history">✕</button>
+    </div>
+
+    <div class="history-modal-toolbar">
+      <button class="history-refresh" onclick="loadProfileHistory(true)">REFRESH</button>
+    </div>
+
+    <div id="withdrawalHistory" class="history-list history-modal-list">
+      <div class="history-empty">Belum ada withdrawal.</div>
+    </div>
+  </section>
+</div>
+
+
+<!-- DAILY -->
+
+<button
+  id="dailyFloat"
+  class="daily-float"
+  onclick="openDaily()"
+>
+
+  <span
+    id="dailyDot"
+    class="daily-dot"
+  ></span>
+
+  <span class="daily-icon">
+    🎁
+  </span>
+
+  <span>
+    CORE
+  </span>
+
+  <span class="daily-small">
+    DROP
+  </span>
+
+</button>
+
+
+<div
+  id="dailyModal"
+  class="modal"
+>
+
+  <div class="modal-card">
+
+    <div class="row">
+      <div>
+        <div class="section-title">DAILY CORE DROP</div>
+        <h2 style="margin-bottom:4px">UNLOCK YOUR DAILY CORE SIGNAL</h2>
+        <div class="small muted">One energized Core Drop every 24 hours.</div>
+      </div>
+
+      <button class="mini-btn" onclick="closeDaily()">✕</button>
+    </div>
+
+    <div id="dailyOrb" class="drop-orb">✦</div>
+
+    <div id="dailyDropResult" class="drop-result">
+      Possible drops: 10 • 20 • 30 • 50 • 100 JASLIN
+    </div>
+
+    <button
+      id="dailyBtn"
+      class="btn btn-gold"
+      onclick="claimDaily()"
+    >
+      OPEN DAILY CORE
+    </button>
+
+    <div id="dailyStatus" class="notice">Checking Daily Core Drop...</div>
+
+  </div>
+
+</div>
+
+<!-- NAV -->
+
+<nav class="bottom-nav">
+
+  <button
+    id="nav-mine"
+    class="nav-btn active"
+    onclick="showPage('mine')"
+  >
+    <span class="nav-icon">⛏</span>
+    Mine
+  </button>
+
+
+  <button
+    id="nav-tasks"
+    class="nav-btn"
+    onclick="showPage('tasks')"
+  >
+    <span class="nav-icon">📋</span>
+    Tasks
+  </button>
+
+
+  <button
+    id="nav-miners"
+    class="nav-btn"
+    onclick="showPage('miners')"
+  >
+    <span class="nav-icon">👥</span>
+    Miners
+  </button>
+
+
+  <button
+    id="nav-friends"
+    class="nav-btn"
+    onclick="showPage('friends')"
+  >
+    <span class="nav-icon">👥</span>
+    Friends
+  </button>
+
+
+  <button
+    id="nav-profile"
+    class="nav-btn"
+    onclick="showPage('profile')"
+  >
+    <span class="nav-icon">👤</span>
+    Profile
+  </button>
+
+</nav>
+
+
+<div
+  id="toast"
+  class="toast"
+></div>
+
+
+<script>
+
+const tg =
+  window.Telegram?.WebApp;
+
+if(tg){
+
+  tg.ready();
+  tg.expand();
+
+  try{
+    // Prevent normal in-app vertical scrolling from minimizing the Mini App.
+    // Telegram still allows the user to minimize/close from the app header.
+    const stabilizeTelegramViewport = () => {
+      try{
+        if(typeof tg.disableVerticalSwipes === "function"){
+          tg.disableVerticalSwipes();
+        }
+      }catch(e){}
+    };
+
+    // Call once. Repeated calls during viewport changes can interfere with
+    // normal content scrolling on some Telegram Android WebViews.
+    stabilizeTelegramViewport();
+
+    tg.setHeaderColor("#020202");
+    tg.setBackgroundColor("#020202");
+
+    if(typeof tg.setBottomBarColor === "function"){
+      tg.setBottomBarColor("#020202");
+    }
+  }catch(e){
+    console.warn("Telegram WebApp setup warning:", e);
+  }
+
+}
+
+
+let state = null;
+let appConfig = null;
+let profileHistoryLoadedAt = 0;
+
+let level = 1;
+
+let miningStarted =
+  Date.now();
+
+let tonConnectUI = null;
+
+let connectedTonAddress = "";
+let connectedTonVerified = false;
+let tonProofPayload = "";
+let tonProofPreparedAt = 0;
+
+const WITHDRAW_MIN_JASLIN = 2000;
+const WITHDRAW_FEE_JASLIN = 300;
+
+let liveMiningSnapshot = 0;
+let liveMiningSnapshotAt = Date.now();
+let audioContext = null;
+let sfxEnabled = true;
+let reduceMotion = false;
+
+// Core Pulse request queue: UI merespons langsung, request server tetap
+// diproses satu per satu agar tap 1/3 -> 2/3 -> 3/3 tidak saling balapan.
+let corePulseRequestQueue = Promise.resolve();
+let corePulsePendingTaps = 0;
+let corePulseOptimisticLevel = null;
+
+let tonConnectLoadPromise = null;
+let stateLoadPromise = null;
+let lastStateSyncAt = 0;
+
+const LEVEL_QUOTE_CACHE_MS = 45000;
+let levelQuoteCache = {
+  key: "",
+  at: 0,
+  data: null
+};
+let levelQuotePending = null;
+
+
+/* ================= API ================= */
+
+function headers(){
+
+  return {
+    "Content-Type":
+      "application/json",
+
+    "X-Telegram-Init-Data":
+      tg?.initData || ""
+  };
+
+}
+
+
+async function api(
+  url,
+  options={}
+){
+
+  const response =
+    await fetch(
+      url,
+      {
+        ...options,
+
+        headers:{
+          ...headers(),
+          ...(options.headers || {})
+        }
+      }
+    );
+
+
+  const result =
+    await response
+      .json()
+      .catch(()=>({}));
+
+
+  if(!response.ok){
+
+    throw new Error(
+      result.error ||
+      result.message ||
+      "Request failed"
+    );
+
+  }
+
+
+  return result;
+
+}
+
+
+/* ================= HELPERS ================= */
+
+function number(
+  value,
+  decimal=2
+){
+
+  return Number(
+    value || 0
+  ).toLocaleString(
+    "en-US",
+    {
+      minimumFractionDigits:
+        decimal,
+
+      maximumFractionDigits:
+        decimal
+    }
+  );
+
+}
+
+
+// Compact display for large JASLIN amounts without changing the real server/database value.
+// 93814 -> 93.8K, 1250000 -> 1.2M, 1250000000 -> 1.2B.
+function compactJaslin(value){
+  const n = Math.max(0, Number(value || 0));
+  const abs = Math.abs(n);
+
+  const format = (divisor, suffix) => {
+    const scaled = n / divisor;
+    const decimals = Math.abs(scaled) < 100 ? 1 : 0;
+    return scaled.toLocaleString("en-US", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: decimals
+    }) + suffix;
+  };
+
+  if(abs >= 1e12) return format(1e12, "T");
+  if(abs >= 1e9)  return format(1e9, "B");
+  if(abs >= 1e6)  return format(1e6, "M");
+  if(abs >= 1e3)  return format(1e3, "K");
+
+  return Math.floor(n).toLocaleString("en-US");
+}
+
+
+function escapeHtml(value){
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+
+function toast(message){
+
+  const el =
+    document.getElementById(
+      "toast"
+    );
+
+  el.textContent =
+    message;
+
+  el.classList.add(
+    "show"
+  );
+
+
+  clearTimeout(
+    window.toastTimer
+  );
+
+
+  window.toastTimer =
+    setTimeout(
+      ()=>{
+
+        el.classList.remove(
+          "show"
+        );
+
+      },
+      2500
+    );
+
+}
+
+
+/* ================= AUDIO ================= */
+
+function ensureAudioContext(){
+  if(!audioContext){
+    const AudioCtx =
+      window.AudioContext ||
+      window.webkitAudioContext;
+
+    if(AudioCtx){
+      audioContext = new AudioCtx();
+    }
+  }
+
+  if(audioContext?.state === "suspended"){
+    audioContext.resume();
+  }
+
+  return audioContext;
+}
+
+function playTone(freq, duration, volume, type = "sine", delay = 0){
+  if(!sfxEnabled){
+    return;
+  }
+
+  const ctx = ensureAudioContext();
+  if(!ctx){
+    return;
+  }
+
+  const oscillator = ctx.createOscillator();
+  const gain = ctx.createGain();
+  const startAt = ctx.currentTime + delay;
+
+  oscillator.type = type;
+  oscillator.frequency.setValueAtTime(freq, startAt);
+
+  gain.gain.setValueAtTime(0.0001, startAt);
+  gain.gain.exponentialRampToValueAtTime(
+    Math.max(0.0002, volume),
+    startAt + 0.015
+  );
+  gain.gain.exponentialRampToValueAtTime(
+    0.0001,
+    startAt + duration
+  );
+
+  oscillator.connect(gain);
+  gain.connect(ctx.destination);
+  oscillator.start(startAt);
+  oscillator.stop(startAt + duration + 0.03);
+}
+
+function haptic(type = "light"){
+  try{
+    const hf = tg?.HapticFeedback;
+    if(!hf) return;
+
+    if(type === "success" || type === "warning" || type === "error"){
+      hf.notificationOccurred(type);
+      return;
+    }
+
+    if(type === "selection"){
+      hf.selectionChanged();
+      return;
+    }
+
+    hf.impactOccurred(type);
+  }catch(e){}
+}
+
+function playClaimSound(){
+  playTone(440, .18, .055, "sine", 0);
+  playTone(660, .22, .05, "sine", .08);
+  playTone(880, .28, .045, "triangle", .16);
+  haptic("success");
+}
+
+function playPulseSound(level = 1){
+  playTone(180 + level * 70, .12, .035, "triangle", 0);
+  playTone(300 + level * 85, .16, .03, "sine", .05);
+  haptic(level >= 3 ? "medium" : "light");
+}
+
+function applyMotionPreference(){
+  document.documentElement.classList.toggle("reduce-motion", reduceMotion);
+}
+
+function updateAudioButtons(){
+  const sfxBtn = document.getElementById("sfxToggle");
+  const motionBtn = document.getElementById("motionToggle");
+
+  if(sfxBtn){
+    sfxBtn.textContent = sfxEnabled
+      ? "🔊 EFFECTS ON"
+      : "🔇 EFFECTS OFF";
+    sfxBtn.classList.toggle("on", sfxEnabled);
+  }
+
+  if(motionBtn){
+    motionBtn.textContent = reduceMotion
+      ? "◌ REDUCE MOTION"
+      : "✨ MOTION ON";
+    motionBtn.classList.toggle("on", !reduceMotion);
+  }
+}
+
+function toggleSfx(){
+  sfxEnabled = !sfxEnabled;
+  localStorage.setItem("jaslin_sfx", sfxEnabled ? "1" : "0");
+  if(sfxEnabled){
+    playTone(520, .12, .03, "sine");
+    haptic("selection");
+  }
+  updateAudioButtons();
+}
+
+function toggleReduceMotion(){
+  reduceMotion = !reduceMotion;
+  localStorage.setItem("jaslin_reduce_motion", reduceMotion ? "1" : "0");
+  applyMotionPreference();
+  updateAudioButtons();
+  haptic("selection");
+}
+
+function restoreAudioSettings(){
+  sfxEnabled = localStorage.getItem("jaslin_sfx") !== "0";
+  const systemReduced =
+    window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches === true;
+  const saved = localStorage.getItem("jaslin_reduce_motion");
+  reduceMotion = saved === null ? systemReduced : saved === "1";
+  applyMotionPreference();
+  updateAudioButtons();
+}
+
+
+/* ================= SYSTEM CONFIG + HISTORY ================= */
+
+function formatHistoryTime(timestamp){
+  const value = Number(timestamp || 0);
+  if(!value) return "";
+  try{
+    return new Date(value).toLocaleString("id-ID", {
+      day:"2-digit", month:"short", hour:"2-digit", minute:"2-digit"
+    });
+  }catch{return "";}
+}
+
+function activityLabel(type){
+  const labels = {
+    claim:"Mining Claim",
+    mining_claim:"Mining Claim",
+    referral:"Referral Bonus",
+    referral_commission_pending:"Referral Commission",
+    referral_commission_claim:"Commission Claimed",
+    daily_spin:"Daily Core Drop",
+    upgrade_core:"Core Upgrade",
+    core_pulse:"Core Pulse",
+    withdraw_pending:"Withdrawal Request",
+    withdraw_sent:"Withdrawal Sent",
+    withdraw_refund:"Withdrawal Refund"
+  };
+  return labels[String(type || "")] || String(type || "Activity").replaceAll("_", " ");
+}
+
+async function loadPublicConfig(){
+  try{
+    const response = await fetch("/api/config", { cache:"no-store" });
+    if(!response.ok) return;
+    appConfig = await response.json();
+
+    const banner = document.getElementById("systemBanner");
+    const title = document.getElementById("systemBannerTitle");
+    const message = document.getElementById("systemBannerMessage");
+
+    const maintenance = Boolean(appConfig?.maintenance);
+    const announcement = appConfig?.announcement || {};
+    const show = maintenance || Boolean(announcement.active);
+
+    if(banner){
+      banner.classList.toggle("show", show);
+      banner.classList.toggle("maintenance", maintenance);
+    }
+    if(title){
+      title.textContent = maintenance
+        ? "⚠ JASLIN MAINTENANCE"
+        : (announcement.title || "JASLIN NETWORK UPDATE");
+    }
+    if(message){
+      message.textContent = maintenance
+        ? (announcement.message || "Beberapa aksi game sedang dinonaktifkan sementara.")
+        : (announcement.message || "");
+    }
+
+    const withdrawBtn = document.getElementById("withdrawSubmitBtn");
+    const withdrawStatus = document.getElementById("withdrawSystemStatus");
+    const enabled = Boolean(appConfig?.withdrawalsEnabled);
+    if(withdrawBtn){
+      withdrawBtn.disabled = !enabled;
+      withdrawBtn.textContent = enabled ? "WITHDRAW JASLIN" : "WITHDRAWAL TEMPORARILY DISABLED";
+    }
+    if(withdrawStatus){
+      withdrawStatus.classList.toggle("enabled", enabled);
+      withdrawStatus.classList.toggle("disabled", !enabled);
+      withdrawStatus.textContent = enabled
+        ? "● Auto Withdrawal aktif • Min 2,000 JASLIN • Fee 300 • 24h cooldown."
+        : "● Auto Withdrawal sedang OFF. Balance dan mining tetap berjalan normal.";
+    }
+  }catch(error){
+    console.warn("Config load error:", error);
+  }
+}
+
+
+function openHistoryModal(kind){
+  const id =
+    kind === "withdrawal"
+      ? "withdrawalHistoryModal"
+      : "activityHistoryModal";
+
+  const modal =
+    document.getElementById(id);
+
+  if(!modal) return;
+
+  modal.classList.add("show");
+  modal.setAttribute("aria-hidden","false");
+  document.body.classList.add("history-modal-open");
+  haptic("selection");
+
+  // Lazy-load history only when the user actually opens History Center.
+  loadProfileHistory(true);
+}
+
+function closeHistoryModal(kind){
+  const id =
+    kind === "withdrawal"
+      ? "withdrawalHistoryModal"
+      : "activityHistoryModal";
+
+  const modal =
+    document.getElementById(id);
+
+  if(!modal) return;
+
+  modal.classList.remove("show");
+  modal.setAttribute("aria-hidden","true");
+
+  if(!document.querySelector(".history-modal.show")){
+    document.body.classList.remove("history-modal-open");
+  }
+}
+
+async function loadProfileHistory(force=false){
+  if(!force && Date.now() - profileHistoryLoadedAt < 15000) return;
+  profileHistoryLoadedAt = Date.now();
+
+  const activityEl = document.getElementById("activityHistory");
+  const withdrawalEl = document.getElementById("withdrawalHistory");
+
+  try{
+    const [activity, withdrawals] = await Promise.all([
+      api("/api/transactions?limit=15"),
+      api("/api/withdrawals")
+    ]);
+
+    const rows =
+      (activity?.transactions || [])
+        .filter((item) =>
+          String(item?.type || "").toLowerCase() !== "core_pulse"
+        );
+
+    if(activityEl){
+      activityEl.innerHTML = rows.length ? rows.map((item)=>{
+        const amount = Number(item.amount || 0);
+        const amountClass = amount < 0 ? "negative" : "";
+        const sign = amount > 0 ? "+" : "";
+        return `<div class="history-item">
+          <div class="history-main">
+            <div class="history-name">${escapeHtml(activityLabel(item.type))}</div>
+            <div class="history-note">${escapeHtml(item.note || "JASLIN account activity")}</div>
+            <div class="history-time">${escapeHtml(formatHistoryTime(item.createdAt))}</div>
+          </div>
+          <div class="history-side">
+            <div class="history-amount ${amountClass}">${sign}${number(amount,4)} JASLIN</div>
+            <div class="history-status ${escapeHtml(item.status || "completed")}">${escapeHtml(item.status || "completed")}</div>
+          </div>
+        </div>`;
+      }).join("") : '<div class="history-empty">Belum ada activity.</div>';
+    }
+
+    const wrows = withdrawals?.withdrawals || [];
+    if(withdrawalEl){
+      withdrawalEl.innerHTML = wrows.length ? wrows.map((item)=>{
+        const status = String(item.status || "pending");
+        const statusLabel = ({
+          reserved:"RESERVED", processing:"PROCESSING", sent:"SENT",
+          confirmed:"COMPLETED", refunded:"REFUNDED", review:"NETWORK REVIEW", failed:"FAILED"
+        })[status] || status.toUpperCase();
+        return `<div class="history-item">
+          <div class="history-main">
+            <div class="history-name">Withdraw ${number(item.amount || 0,0)} JASLIN</div>
+            <div class="history-note">Receive ${number(item.receive_amount || 0,0)} • Fee ${number(item.fee || 0,0)} JASLIN</div>
+            <div class="history-note">Wallet ${escapeHtml(shortTonAddress(item.wallet || ""))}${item.tx_hash ? ` • TX ${escapeHtml(String(item.tx_hash).slice(0,8))}…${escapeHtml(String(item.tx_hash).slice(-6))}` : ""}</div>
+            <div class="history-time">${escapeHtml(formatHistoryTime(item.created_at))}</div>
+          </div>
+          <div class="history-side">
+            <div class="history-amount">${number(item.receive_amount || 0,0)} JASLIN</div>
+            <div class="history-status ${escapeHtml(status)}">${escapeHtml(statusLabel)}</div>
+          </div>
+        </div>`;
+      }).join("") : '<div class="history-empty">Belum ada withdrawal.</div>';
+    }
+  }catch(error){
+    console.warn("History load error:", error);
+    if(activityEl) activityEl.innerHTML = '<div class="history-empty">History belum bisa dimuat. Coba refresh.</div>';
+    if(withdrawalEl) withdrawalEl.innerHTML = '<div class="history-empty">Withdrawal history belum tersedia.</div>';
+  }
+}
+
+
+function headerWithdrawAction(){
+  showPage("profile");
+
+  // Wait until the profile page becomes visible, then scroll the internal
+  // Telegram-safe .app scroller to the WD card.
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      const section = document.getElementById("withdrawSection");
+      const scroller = document.querySelector(".app");
+      if(!section || !scroller) return;
+
+      const target =
+        section.getBoundingClientRect().top -
+        scroller.getBoundingClientRect().top +
+        scroller.scrollTop -
+        12;
+
+      scroller.scrollTo({
+        top: Math.max(0, target),
+        behavior:"smooth"
+      });
+    });
+  });
+}
+
+
+/* ================= NAVIGATION ================= */
+
+function showPage(name){
+  if(name === "tasks"){
+    setTimeout(loadSocialTasks, 0);
+  }
+
+  const mainHeader =
+    document.getElementById("mainHeader");
+
+  if(mainHeader){
+    mainHeader.style.display = "flex";
+  }
+
+  document
+    .querySelectorAll(".page")
+    .forEach(
+      page =>
+        page.classList.remove(
+          "active"
+        )
+    );
+
+
+  document
+    .querySelectorAll(".nav-btn")
+    .forEach(
+      btn =>
+        btn.classList.remove(
+          "active"
+        )
+    );
+
+
+  document
+    .getElementById(
+      "page-" + name
+    )
+    ?.classList.add(
+      "active"
+    );
+
+
+  document
+    .getElementById(
+      "nav-" + name
+    )
+    ?.classList.add(
+      "active"
+    );
+
+
+  document
+    .getElementById(
+      "dailyFloat"
+    )
+    .style.display =
+      name === "mine"
+        ? "flex"
+        : "none";
+
+
+  if(name === "profile"){
+    loadPublicConfig();
+  }
+
+  window.scrollTo(
+    0,
+    0
+  );
+
+  if(name === "friends"){
+    loadReferrals();
+  }
+
+}
+
+
+/* ================= SESSION ================= */
+
+async function start(){
+
+  try{
+
+    // Prefer Telegram's signed start_param. Fallbacks only help older
+    // Telegram clients expose the same launch parameter in the WebView URL.
+    const urlParams = new URLSearchParams(window.location.search);
+    const hashParams = new URLSearchParams(
+      String(window.location.hash || "").replace(/^#/, "")
+    );
+
+    const startParam =
+      String(
+        tg?.initDataUnsafe?.start_param ||
+        urlParams.get("tgWebAppStartParam") ||
+        urlParams.get("startapp") ||
+        hashParams.get("tgWebAppStartParam") ||
+        ""
+      ).trim();
+
+    // FAST LOGIN:
+    // config dan session dimulai bersamaan. Hasil /api/session
+    // sudah berisi state lengkap, jadi tidak perlu /api/state kedua.
+    const configPromise =
+      loadPublicConfig();
+
+    state =
+      await api(
+        "/api/session",
+        {
+          method:"POST",
+
+          body:
+            JSON.stringify({
+              startParam
+            })
+        }
+      );
+
+    lastStateSyncAt = Date.now();
+    render();
+
+    // Config tidak boleh menahan login utama.
+    await configPromise;
+
+  }
+
+  catch(error){
+
+    console.error(
+      error
+    );
+
+    toast(
+      "Buka JASLIN melalui Telegram."
+    );
+
+  }
+
+}
+
+
+async function loadState(){
+
+  if(stateLoadPromise){
+    return stateLoadPromise;
+  }
+
+  stateLoadPromise = (async ()=>{
+    try{
+
+      state =
+        await api(
+          "/api/state"
+        );
+
+      lastStateSyncAt = Date.now();
+      render();
+
+      if(document.getElementById("page-friends")?.classList.contains("active")){
+        loadReferrals();
+      }
+
+      return state;
+
+    }
+
+    catch(error){
+
+      console.error(
+        error
+      );
+
+      return null;
+
+    }
+
+    finally{
+      stateLoadPromise = null;
+    }
+  })();
+
+  return stateLoadPromise;
+}
+
+
+/* ================= MINERS DASHBOARD ================= */
+
+const CORE_RANKS = [
+  "SPARK",
+  "FORGE",
+  "PRIME",
+  "APEX",
+  "VORTEX",
+  "QUANTUM",
+  "NOVA",
+  "GENESIS"
+];
+
+function renderMinersDashboard(){
+  if(!state) return;
+
+  const currentRank = String(state.coreRank || "SPARK").toUpperCase();
+  const currentIndex = Math.max(0, CORE_RANKS.indexOf(currentRank));
+  const nextRank =
+    currentIndex >= CORE_RANKS.length - 1
+      ? "MAX CORE"
+      : CORE_RANKS[currentIndex + 1] + " CORE";
+
+  const currentRankEl = document.getElementById("minerCurrentRank");
+  const targetRankEl = document.getElementById("minerTargetRank");
+  const nextRankEl = document.getElementById("minerNextRank");
+  const copyEl = document.getElementById("minerMilestoneCopy");
+
+  if(currentRankEl) currentRankEl.textContent = currentRank + " CORE";
+  if(targetRankEl) targetRankEl.textContent = nextRank;
+  if(nextRankEl) nextRankEl.textContent = nextRank;
+
+  if(copyEl){
+    copyEl.textContent =
+      nextRank === "MAX CORE"
+        ? "Genesis reached. Your Core is at the highest rank path."
+        : "Keep increasing your Core level and Holding Power to advance toward " + nextRank + ".";
+  }
+
+  const rate = Number(state.miningPerMinute ?? (100 / 480));
+  const output = Number(state.eightHourOutput || (rate * 480));
+  const pulse = Number(state.pulseMultiplier || 1);
+
+  const rateEl = document.getElementById("minerPerfRate");
+  const outputEl = document.getElementById("minerPerfOutput");
+  const pulseEl = document.getElementById("minerPerfPulse");
+
+  if(rateEl) rateEl.textContent = number(rate, 3);
+  if(outputEl) outputEl.textContent = number(output, 2);
+  if(pulseEl) pulseEl.textContent = pulse.toFixed(2) + "×";
+
+  document.querySelectorAll("#minerRankPath .rank-node").forEach((node, index)=>{
+    node.classList.toggle("reached", index <= currentIndex);
+    node.classList.toggle("active", index === currentIndex);
+  });
+}
+
+/* ================= RENDER ================= */
+
+function render(){
+
+  if(!state){
+    return;
+  }
+
+
+  const balance =
+    Number(
+      state.balance || 0
+    );
+
+  const topVaultBalance = document.getElementById("topVaultBalance");
+  if(topVaultBalance){
+    topVaultBalance.textContent =
+      String(Math.max(0, Math.floor(balance))) + " TOKEN";
+  }
+
+  const vaultBalancePlain = document.getElementById("vaultBalance");
+  if(vaultBalancePlain){
+    vaultBalancePlain.textContent =
+      String(Math.max(0, Math.floor(balance)));
+  }
+
+
+  const pending =
+    Number(
+      state.mining ??
+      state.pendingMining ??
+      0
+    );
+
+
+  const rate =
+    Number(
+      state.miningPerMinute ??
+      (100 / 480)
+    );
+
+
+  level =
+    Number(
+      state.level || 1
+    );
+
+
+  const username =
+    state.user?.firstName ||
+    tg?.initDataUnsafe?.user
+      ?.first_name ||
+    "JASLIN User";
+
+
+  document
+    .getElementById(
+      "profileName"
+    )
+    .textContent =
+      username;
+
+
+  const removedVaultBalance = document.getElementById("balance");
+  if(removedVaultBalance){
+    removedVaultBalance.textContent =
+      String(Math.max(0, Math.floor(balance)));
+  }
+
+
+  document
+    .getElementById(
+      "holdingBalance"
+    )
+    .textContent =
+      String(Math.max(0, Math.floor(balance)));
+
+
+  document
+    .getElementById(
+      "profileBalance"
+    )
+    .textContent =
+      String(Math.max(0, Math.floor(balance))) + " TOKEN";
+
+  const withdrawGameBalance =
+    document.getElementById(
+      "withdrawGameBalance"
+    );
+
+  if (withdrawGameBalance) {
+    withdrawGameBalance.textContent =
+      String(Math.max(0, Math.floor(balance))) + " TOKEN";
+  }
+
+  updateWithdrawPreview();
+
+
+  liveMiningSnapshot = pending;
+  liveMiningSnapshotAt = Date.now();
+
+  miningStarted = Number(
+    state.miningStartedAt ||
+    miningStarted ||
+    Date.now()
+  );
+
+  document
+    .getElementById(
+      "pendingMining"
+    )
+    .textContent =
+      number(
+        pending,
+        8
+      );
+
+
+  document
+    .getElementById(
+      "miningRate"
+    )
+    .textContent =
+      number(
+        rate,
+        3
+      );
+
+
+  const minerRateEl = document.getElementById("minerRate");
+  if(minerRateEl){
+    minerRateEl.textContent = number(rate, 3);
+  }
+
+
+  document
+    .getElementById(
+      "topLevel"
+    )
+    .textContent =
+      level;
+
+
+  document
+    .getElementById(
+      "coreLevel"
+    )
+    .textContent =
+      level;
+
+
+  document
+    .getElementById(
+      "bottomLevel"
+    )
+    .textContent =
+      level;
+
+
+  const minerLevelEl = document.getElementById("minerLevel");
+  if(minerLevelEl){
+    minerLevelEl.textContent = level;
+  }
+
+
+  document
+    .getElementById(
+      "profileLevel"
+    )
+    .textContent =
+      level;
+
+
+  const rank = state.coreRank || "SPARK";
+  const pulseLevel = Number(state.pulseLevel || 0);
+  const pulseMultiplier = Number(state.pulseMultiplier || 1);
+
+  const tgUser = tg?.initDataUnsafe?.user || null;
+  const headerName = document.getElementById("headerUserName");
+  const headerLevelRank = document.getElementById("headerLevelRank");
+  const headerAvatar = document.getElementById("headerAvatar");
+
+  const telegramFullName = tgUser
+    ? [tgUser.first_name, tgUser.last_name].filter(Boolean).join(" ")
+    : username;
+
+  if(headerName){
+    headerName.textContent = telegramFullName || username || "JASLIN USER";
+  }
+
+  if(headerLevelRank){
+    headerLevelRank.textContent = `Lv.${level} • ${rank} CORE`;
+  }
+
+  if(headerAvatar){
+    const photoUrl = tgUser?.photo_url || "";
+
+    if(photoUrl && headerAvatar.dataset.photoUrl !== photoUrl){
+      headerAvatar.dataset.photoUrl = photoUrl;
+      headerAvatar.innerHTML = "";
+
+      const img = document.createElement("img");
+      img.src = photoUrl;
+      img.alt = "Telegram profile";
+      img.referrerPolicy = "no-referrer";
+      img.onerror = () => {
+        headerAvatar.innerHTML = "";
+        headerAvatar.textContent = String(telegramFullName || username || "J")
+          .trim().charAt(0).toUpperCase() || "J";
+      };
+
+      headerAvatar.appendChild(img);
+    }else if(!photoUrl && !headerAvatar.querySelector("img")){
+      headerAvatar.textContent = String(telegramFullName || username || "J")
+        .trim().charAt(0).toUpperCase() || "J";
+    }
+  }
+
+  const profileRank = document.getElementById("profileRank");
+  if(profileRank){
+    profileRank.textContent = rank + " CORE";
+  }
+
+  const avatar = document.getElementById("profileAvatar");
+  if(avatar){
+    const profilePhotoUrl = tgUser?.photo_url || "";
+
+    if(profilePhotoUrl && avatar.dataset.photoUrl !== profilePhotoUrl){
+      avatar.dataset.photoUrl = profilePhotoUrl;
+      avatar.innerHTML = "";
+
+      const profileImg = document.createElement("img");
+      profileImg.src = profilePhotoUrl;
+      profileImg.alt = "Telegram profile";
+      profileImg.referrerPolicy = "no-referrer";
+      profileImg.style.width = "100%";
+      profileImg.style.height = "100%";
+      profileImg.style.objectFit = "cover";
+      profileImg.style.borderRadius = "inherit";
+      profileImg.onerror = () => {
+        avatar.innerHTML = "";
+        avatar.textContent = String(username || "J").trim().charAt(0).toUpperCase() || "J";
+      };
+
+      avatar.appendChild(profileImg);
+    }else if(!profilePhotoUrl && !avatar.querySelector("img")){
+      avatar.textContent = String(username || "J").trim().charAt(0).toUpperCase() || "J";
+    }
+  }
+
+  const profileOutput = document.getElementById("profileOutput");
+  if(profileOutput){
+    profileOutput.textContent =
+      number(state.eightHourOutput || 0, 2) + " JASLIN";
+  }
+
+  const profilePulse = document.getElementById("profilePulse");
+  if(profilePulse){
+    profilePulse.textContent = pulseMultiplier.toFixed(2) + "×";
+  }
+
+  const friends = Number(state.referralCount || 0);
+  const friendCount = document.getElementById("friendCount");
+  if(friendCount){
+    friendCount.textContent = friends;
+  }
+
+  const referralCommissionBalance = Number(state.referralCommissionBalance || 0);
+  const referralCommissionTop = document.getElementById("referralCommissionTop");
+  if(referralCommissionTop){ referralCommissionTop.textContent = number(referralCommissionBalance, 2); }
+  const referralCommissionBalanceEl = document.getElementById("referralCommissionBalance");
+  if(referralCommissionBalanceEl){ referralCommissionBalanceEl.textContent = number(referralCommissionBalance, 4); }
+  const claimReferralCommissionBtn = document.getElementById("claimReferralCommissionBtn");
+  if(claimReferralCommissionBtn){ claimReferralCommissionBtn.disabled = referralCommissionBalance <= 0; }
+
+  const profileFriends = document.getElementById("profileFriends");
+  if(profileFriends){
+    profileFriends.textContent = friends;
+  }
+
+  renderPulseUI();
+  renderMinersDashboard();
+
+  const vaultBalanceFinal = document.getElementById("vaultBalance");
+  if(vaultBalanceFinal){
+    vaultBalanceFinal.textContent =
+      String(Math.max(0, Math.floor(balance)));
+  }
+
+  renderUpgrade(
+    balance
+  );
+
+
+  document
+    .getElementById(
+      "referralLink"
+    )
+    .textContent =
+      state.referralLink ||
+      "Referral link unavailable";
+
+
+  const available =
+    state.dailySpinAvailable !==
+    false;
+
+
+  document
+    .getElementById(
+      "dailyStatus"
+    )
+    .textContent =
+      available
+      ? "Daily Core Drop tersedia."
+      : "Daily Core Drop sudah dibuka. Kembali lagi dalam 24 jam.";
+
+
+  document
+    .getElementById(
+      "dailyBtn"
+    )
+    .disabled =
+      !available;
+
+
+  document
+    .getElementById(
+      "dailyBtn"
+    )
+    .style.opacity =
+      available
+        ? "1"
+        : ".4";
+
+
+  document
+    .getElementById(
+      "dailyDot"
+    )
+    .style.display =
+      available
+        ? "block"
+        : "none";
+
+}
+
+
+/* ================= LEVEL ================= */
+
+function requiredHoldingJaslin(targetLevel) {
+  const safeLevel = Math.max(
+    2,
+    Math.min(
+      5000,
+      Number(targetLevel || 2)
+    )
+  );
+
+  const n = safeLevel - 1;
+
+  return Math.round(
+    200 * Math.pow(n, 1.73)
+  );
+}
+
+
+
+function levelQuoteCacheKey(targetLevel){
+  const walletKey =
+    state?.user?.wallet ||
+    connectedTonAddress ||
+    "";
+
+  const balanceKey =
+    Number(state?.balance || 0)
+      .toFixed(4);
+
+  return [
+    Number(targetLevel || 0),
+    walletKey,
+    balanceKey
+  ].join("|");
+}
+
+function invalidateLevelQuoteCache(){
+  levelQuoteCache = {
+    key: "",
+    at: 0,
+    data: null
+  };
+}
+
+async function getLevelQuoteCached(targetLevel, force=false){
+  const key = levelQuoteCacheKey(targetLevel);
+  const now = Date.now();
+
+  if(
+    !force &&
+    levelQuoteCache.data &&
+    levelQuoteCache.key === key &&
+    now - levelQuoteCache.at < LEVEL_QUOTE_CACHE_MS
+  ){
+    return levelQuoteCache.data;
+  }
+
+  if(
+    !force &&
+    levelQuotePending?.key === key
+  ){
+    return levelQuotePending.promise;
+  }
+
+  const promise = (async ()=>{
+    const response = await fetch(
+      "/api/level-quote",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-telegram-init-data":
+            window.Telegram?.WebApp?.initData || ""
+        },
+        body: JSON.stringify({
+          targetLevel
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    if(!response.ok){
+      throw new Error(
+        data?.error ||
+        "Gagal menghitung Holding Power."
+      );
+    }
+
+    levelQuoteCache = {
+      key,
+      at: Date.now(),
+      data
+    };
+
+    return data;
+  })();
+
+  levelQuotePending = {
+    key,
+    promise
+  };
+
+  try{
+    return await promise;
+  }finally{
+    if(levelQuotePending?.promise === promise){
+      levelQuotePending = null;
+    }
+  }
+}
+
+
+async function renderUpgrade(balance, force=false) {
+
+  try {
+    const currentLevel =
+      Number(state?.level || 1);
+
+    const targetLevel =
+      currentLevel + 1;
+
+    if (currentLevel >= 5000) {
+      const topLevelPriceMax = document.getElementById("topLevelPrice");
+      if(topLevelPriceMax) topLevelPriceMax.textContent = "MAX LEVEL";
+
+      document
+        .getElementById("upgradePrice")
+        .textContent = "MAX LEVEL";
+
+      const topUsdMax = document.getElementById("topUsd");
+      if(topUsdMax) topUsdMax.textContent = "LEVEL 5000";
+
+      document
+        .getElementById("upgradeUsd")
+        .textContent = "MAX CORE";
+
+      document
+        .getElementById("topProgress")
+        .style.width = "100%";
+
+      document
+        .getElementById("bottomProgress")
+        .style.width = "100%";
+
+      document
+        .getElementById("topProgressText")
+        .textContent = "MAXIMUM CORE LEVEL";
+
+      document
+        .getElementById("bottomProgressText")
+        .textContent = "MAXIMUM CORE LEVEL";
+
+      const topStatus =
+        document.getElementById(
+          "topUpgradeStatus"
+        );
+
+      if (topStatus) {
+        topStatus.textContent = "MAX LEVEL";
+        topStatus.classList.add("ready");
+      }
+
+      const bottomStatus =
+        document.getElementById(
+          "bottomUpgradeStatus"
+        );
+
+      if (bottomStatus) {
+        bottomStatus.textContent = "MAX";
+      }
+
+      const minerHoldingStatus = document.getElementById("minerHoldingStatus");
+      if(minerHoldingStatus){
+        minerHoldingStatus.textContent = "MAX CORE";
+        minerHoldingStatus.classList.add("ready");
+      }
+
+      const requirement =
+        document.getElementById(
+          "topRequirementText"
+        );
+
+      if (requirement) {
+        requirement.textContent =
+          "Core Level 5000 reached.";
+      }
+
+      return;
+    }
+
+    const data =
+      await getLevelQuoteCached(
+        targetLevel,
+        force
+      );
+
+    const requiredJaslin =
+      Number(
+        data.requiredJaslin ||
+        requiredHoldingJaslin(targetLevel)
+      );
+
+    const gameBalance =
+      Number(
+        data.gameBalance ??
+        balance ??
+        0
+      );
+
+    const walletBalance =
+      Number(
+        data.walletBalance || 0
+      );
+
+    const totalHoldingJaslin =
+      Number(
+        data.totalHoldingJaslin ??
+        (gameBalance + walletBalance)
+      );
+
+    const requiredGram =
+      Number(
+        data.requiredGram || 0
+      );
+
+    const holdingPowerGram =
+      Number(
+        data.holdingPowerGram || 0
+      );
+
+    const missingJaslin =
+      Math.max(
+        0,
+        Number(
+          data.missingJaslin ??
+          (requiredJaslin - totalHoldingJaslin)
+        )
+      );
+
+    const progress =
+      requiredJaslin > 0
+        ? Math.min(
+            100,
+            totalHoldingJaslin /
+              requiredJaslin *
+              100
+          )
+        : 0;
+
+    const eligible =
+      data.eligible === true ||
+      totalHoldingJaslin >= requiredJaslin;
+
+    const minerHoldingTotal = document.getElementById("minerHoldingTotal");
+    const minerHoldingRequired = document.getElementById("minerHoldingRequired");
+    const minerHoldingDifference = document.getElementById("minerHoldingDifference");
+    const minerHoldingStatus = document.getElementById("minerHoldingStatus");
+
+    if(minerHoldingTotal){
+      minerHoldingTotal.textContent = number(totalHoldingJaslin, 2) + " JASLIN";
+    }
+
+    if(minerHoldingRequired){
+      minerHoldingRequired.textContent = number(requiredJaslin, 0) + " JASLIN";
+    }
+
+    if(minerHoldingDifference){
+      minerHoldingDifference.textContent =
+        eligible
+          ? "+" + compactJaslin(Math.max(0, totalHoldingJaslin - requiredJaslin)) + " JASLIN"
+          : compactJaslin(missingJaslin) + " JASLIN LEFT";
+    }
+
+    if(minerHoldingStatus){
+      minerHoldingStatus.textContent = eligible ? "READY" : "BUILD POWER";
+      minerHoldingStatus.classList.toggle("ready", eligible);
+    }
+
+    const priceText =
+      compactJaslin(requiredJaslin) +
+      " JASLIN";
+
+    const gramText =
+      requiredGram > 0
+        ? "≈ " +
+          requiredGram.toFixed(6) +
+          " GRAM"
+        : "LIVE POOL RATE";
+
+    const progressText =
+      compactJaslin(totalHoldingJaslin) +
+      " / " +
+      compactJaslin(requiredJaslin) +
+      " JASLIN";
+
+    const topLevelPrice = document.getElementById("topLevelPrice");
+    if(topLevelPrice) topLevelPrice.textContent = priceText;
+
+    document
+      .getElementById(
+        "upgradePrice"
+      )
+      .textContent =
+        priceText;
+
+    const topUsd = document.getElementById("topUsd");
+    if(topUsd) topUsd.textContent = gramText;
+
+    document
+      .getElementById(
+        "upgradeUsd"
+      )
+      .textContent =
+        gramText;
+
+    document
+      .getElementById(
+        "topProgress"
+      )
+      .style.width =
+        progress + "%";
+
+    document
+      .getElementById(
+        "bottomProgress"
+      )
+      .style.width =
+        progress + "%";
+
+    document
+      .getElementById(
+        "topProgressText"
+      )
+      .textContent =
+        progressText;
+
+    document
+      .getElementById(
+        "bottomProgressText"
+      )
+      .textContent =
+        progressText;
+
+    const topStatus =
+      document.getElementById(
+        "topUpgradeStatus"
+      );
+
+    if (topStatus) {
+      topStatus.textContent =
+        eligible
+          ? "READY TO UPGRADE"
+          : "NEED " +
+            compactJaslin(missingJaslin) +
+            " JASLIN";
+
+      topStatus.classList.toggle(
+        "ready",
+        eligible
+      );
+    }
+
+    const bottomStatus =
+      document.getElementById(
+        "bottomUpgradeStatus"
+      );
+
+    if (bottomStatus) {
+      bottomStatus.textContent =
+        eligible
+          ? "READY"
+          : "NEED " +
+            compactJaslin(missingJaslin);
+    }
+
+    const requirement =
+      document.getElementById(
+        "topRequirementText"
+      );
+
+    if (requirement) {
+      requirement.textContent =
+        "Hold " +
+        compactJaslin(requiredJaslin) +
+        " JASLIN to unlock Level " +
+        targetLevel;
+    }
+
+    const requirementGram =
+      document.getElementById(
+        "topRequirementGram"
+      );
+
+    if (requirementGram) {
+      requirementGram.textContent =
+        requiredGram > 0
+          ? "Current Holding Power: " +
+            holdingPowerGram.toFixed(6) +
+            " / " +
+            requiredGram.toFixed(6) +
+            " GRAM"
+          : "GRAM equivalent follows the live pool rate.";
+    }
+
+    document
+      .getElementById(
+        "holdingBalance"
+      )
+      .textContent =
+        String(Math.max(0, Math.floor(walletBalance)));
+
+    document
+      .getElementById(
+        "poolBalance"
+      )
+      .textContent =
+        String(Math.max(0, Math.floor(totalHoldingJaslin)));
+
+    const profileOnchain = document.getElementById("profileOnchain");
+    if(profileOnchain){
+      profileOnchain.textContent =
+        number(walletBalance, 2) + " JASLIN";
+    }
+
+    const profileTotalHolding = document.getElementById("profileTotalHolding");
+    if(profileTotalHolding){
+      profileTotalHolding.textContent =
+        number(totalHoldingJaslin, 2) + " JASLIN";
+    }
+
+  } catch (error) {
+    console.error(
+      "Render upgrade error:",
+      error
+    );
+  }
+}
+
+/* ================= LIVE CORE + PULSE ================= */
+
+function updateLiveMiningCounter(){
+  if(!state){
+    return;
+  }
+
+  const capAt = Number(state.miningCapAt || 0);
+  const now = Date.now();
+  const effectiveNow = capAt > 0
+    ? Math.min(now, capAt)
+    : now;
+
+  const elapsedMs = Math.max(
+    0,
+    effectiveNow - liveMiningSnapshotAt
+  );
+
+  const pulseExpiresAt = Number(state?.pulseExpiresAt || 0);
+  const pulseActive = Number(state?.pulseLevel || 0) === 3 && pulseExpiresAt > now;
+  const ratePerMinute = Number(
+    pulseActive
+      ? (state.miningPerMinute || 0)
+      : (state.baseMiningPerMinute ?? state.miningPerMinute ?? 0)
+  );
+
+  const liveValue =
+    liveMiningSnapshot +
+    (elapsedMs / 60000) * ratePerMinute;
+
+  const el = document.getElementById("pendingMining");
+  if(el){
+    el.textContent = number(liveValue, 8);
+  }
+
+  renderPulseUI();
+}
+
+function renderPulseUI(){
+  let pulseLevel = Math.min(3, Math.max(0, Number(state?.pulseLevel || 0)));
+  const expiresAt = Number(state?.pulseExpiresAt || 0);
+  const now = Date.now();
+
+  if(expiresAt > 0 && now >= expiresAt){
+    pulseLevel = 0;
+  }
+
+  const indicator = document.getElementById("corePulseIndicator");
+  const status = document.getElementById("pulseStatus");
+  const help = document.getElementById("pulseHelp");
+
+  for(let i = 1; i <= 3; i += 1){
+    document.getElementById("pulseBar" + i)?.classList.toggle("on", i <= pulseLevel);
+  }
+
+  const maxActive = pulseLevel === 3 && expiresAt > now;
+  indicator?.classList.toggle("max", maxActive);
+
+  if(maxActive){
+    const seconds = Math.max(0, (expiresAt - now) / 1000);
+    if(status) status.textContent = "⚡ MAX ×1.10";
+    if(help) help.textContent = seconds.toFixed(1) + "s • Core Pulse aktif";
+  }else{
+    if(status) status.textContent = pulseLevel + "/3";
+    if(help){
+      help.textContent = pulseLevel > 0
+        ? "Tap lagi sampai 3× untuk MAX SPEED"
+        : "Tap logo JASLIN 3× untuk MAX SPEED";
+    }
+  }
+}
+
+function snapshotLiveMiningForPulse(now = Date.now()){
+  if(!state) return;
+
+  const capAt = Number(state.miningCapAt || 0);
+  const effectiveNow = capAt > 0 ? Math.min(now, capAt) : now;
+  const elapsedMs = Math.max(0, effectiveNow - liveMiningSnapshotAt);
+  const expiresAt = Number(state.pulseExpiresAt || 0);
+  const active = Number(state.pulseLevel || 0) === 3 && expiresAt > now;
+  const rate = Number(
+    active
+      ? (state.miningPerMinute || 0)
+      : (state.baseMiningPerMinute ?? state.miningPerMinute ?? 0)
+  );
+
+  liveMiningSnapshot += (elapsedMs / 60000) * rate;
+  liveMiningSnapshotAt = now;
+}
+
+function applyPulseOnly(result){
+  if(!state || !result) return;
+
+  state.pulseLevel = Number(result.pulseLevel || 0);
+  state.pulseMultiplier = Number(result.pulseMultiplier || 1);
+  state.pulseExpiresAt = Number(result.pulseExpiresAt || 0);
+
+  const baseRate = Number(
+    state.baseMiningPerMinute ??
+    state.miningPerMinute ??
+    0
+  );
+
+  state.miningPerMinute = baseRate * state.pulseMultiplier;
+
+  const miningRate = document.getElementById("miningRate");
+  if(miningRate) miningRate.textContent = number(state.miningPerMinute, 3);
+
+  const minerPulse = document.getElementById("minerPerfPulse");
+  if(minerPulse) minerPulse.textContent = state.pulseMultiplier.toFixed(2) + "×";
+
+  const profilePulse = document.getElementById("profilePulse");
+  if(profilePulse) profilePulse.textContent = state.pulseMultiplier.toFixed(2) + "×";
+
+  renderPulseUI();
+}
+
+function activateCorePulse(){
+  if(!state) return;
+
+  const area = document.getElementById("coreTapArea");
+  area?.classList.remove("pulse-hit");
+  void area?.offsetWidth;
+  area?.classList.add("pulse-hit");
+
+  const now = Date.now();
+  const currentExpiry = Number(state.pulseExpiresAt || 0);
+
+  // MAX yang sudah habis dianggap READY lagi di sisi UI.
+  if(Number(state.pulseLevel || 0) === 3 && currentExpiry <= now){
+    state.pulseLevel = 0;
+    state.pulseMultiplier = 1;
+    state.pulseExpiresAt = 0;
+    corePulseOptimisticLevel = null;
+  }
+
+  if(Number(state.pulseLevel || 0) === 3 && Number(state.pulseExpiresAt || 0) > now){
+    return;
+  }
+
+  const currentLevel = corePulseOptimisticLevel === null
+    ? Math.max(0, Math.min(3, Number(state.pulseLevel || 0)))
+    : corePulseOptimisticLevel;
+
+  if(currentLevel >= 3) return;
+
+  // Putus snapshot tepat saat tap supaya perubahan multiplier tidak
+  // diterapkan mundur ke waktu sebelum tap.
+  snapshotLiveMiningForPulse(now);
+
+  const nextLevel = Math.min(3, currentLevel + 1);
+  corePulseOptimisticLevel = nextLevel;
+  corePulsePendingTaps += 1;
+
+  // OPTIMISTIC UI: animasi + indikator berubah seketika, tanpa menunggu network.
+  const optimistic = {
+    pulseLevel: nextLevel,
+    pulseMultiplier: nextLevel === 3 ? 1.10 : 1,
+    pulseExpiresAt: nextLevel === 3 ? now + 5000 : 0
+  };
+
+  applyPulseOnly(optimistic);
+  playPulseSound(nextLevel);
+
+  toast(
+    nextLevel === 3
+      ? "⚡ CORE PULSE MAX • ×1.10 selama 5 detik"
+      : "Core Pulse " + nextLevel + "/3"
+  );
+
+  // Request diproses serial. Triple-tap cepat tetap tercatat berurutan di server.
+  corePulseRequestQueue = corePulseRequestQueue.then(async ()=>{
+    try{
+      const result = await api(
+        "/api/core-pulse",
+        { method: "POST" }
+      );
+
+      corePulsePendingTaps = Math.max(0, corePulsePendingTaps - 1);
+
+      // Jangan turunkan UI sementara masih ada tap berikutnya di queue.
+      if(corePulsePendingTaps === 0){
+        corePulseOptimisticLevel = null;
+        applyPulseOnly(result);
+      }
+
+    }catch(error){
+      corePulsePendingTaps = Math.max(0, corePulsePendingTaps - 1);
+      toast(error.message || "Core Pulse gagal.");
+
+      if(corePulsePendingTaps === 0){
+        corePulseOptimisticLevel = null;
+        // Reconcile di background. Tidak menahan animasi tap.
+        loadState();
+      }
+    }
+  });
+}
+
+
+/* ================= TIMER ================= */
+
+function updateTimer(){
+
+  const seconds =
+    Math.floor(
+      (
+        Date.now() -
+        miningStarted
+      ) /
+      1000
+    );
+
+
+  const h =
+    Math.floor(
+      seconds / 3600
+    );
+
+
+  const m =
+    Math.floor(
+      seconds % 3600 / 60
+    );
+
+
+  const s =
+    seconds % 60;
+
+
+  const text =
+    String(h).padStart(2,"0")
+    + ":" +
+    String(m).padStart(2,"0")
+    + ":" +
+    String(s).padStart(2,"0");
+
+
+  document
+    .getElementById(
+      "miningTime"
+    )
+    .textContent =
+      text;
+
+
+  const minerTimeEl = document.getElementById("minerTime");
+  if(minerTimeEl){
+    minerTimeEl.textContent = text;
+  }
+
+}
+
+
+/* ================= COLLECT ================= */
+
+async function claimMining(){
+
+  const btn = document.getElementById("collectBtn");
+  if(!state || !btn || btn.disabled) return;
+
+  const now = Date.now();
+  const capAt = Number(state.miningCapAt || 0);
+  const effectiveNow = capAt > 0 ? Math.min(now, capAt) : now;
+  const elapsedMs = Math.max(0, effectiveNow - liveMiningSnapshotAt);
+  const pulseExpiresAt = Number(state.pulseExpiresAt || 0);
+  const pulseActive = Number(state.pulseLevel || 0) === 3 && pulseExpiresAt > now;
+  const ratePerMinute = Number(
+    pulseActive
+      ? (state.miningPerMinute || 0)
+      : (state.baseMiningPerMinute ?? state.miningPerMinute ?? 0)
+  );
+
+  const optimisticAmount = Math.max(
+    0,
+    liveMiningSnapshot + (elapsedMs / 60000) * ratePerMinute
+  );
+
+  if(optimisticAmount <= 0){
+    toast("Belum ada mining.");
+    return;
+  }
+
+  // Snapshot untuk rollback bila server menolak claim.
+  const previousState = { ...state };
+  const previousLiveMiningSnapshot = liveMiningSnapshot;
+  const previousLiveMiningSnapshotAt = liveMiningSnapshotAt;
+  const previousMiningStarted = miningStarted;
+
+  try{
+    btn.disabled = true;
+    btn.textContent = "✓ CLAIMED";
+
+    // OPTIMISTIC UI: token langsung terlihat masuk tanpa menunggu jaringan.
+    state = {
+      ...state,
+      balance: Number(state.balance || 0) + optimisticAmount,
+      mining: 0,
+      pendingMining: 0,
+      miningStartedAt: now,
+      miningCapAt: now + (8 * 60 * 60 * 1000)
+    };
+
+    liveMiningSnapshot = 0;
+    liveMiningSnapshotAt = now;
+    miningStarted = now;
+
+    render();
+    playClaimSound();
+    toast("+" + number(optimisticAmount, 3) + " JASLIN");
+
+    const result = await api(
+      "/api/claim",
+      { method:"POST" }
+    );
+
+    // Server tetap sumber kebenaran. Koreksi tampilan dengan nilai final.
+    state = {
+      ...state,
+      balance: Number(result.balance ?? state.balance ?? 0),
+      mining: Number(result.mining ?? 0),
+      pendingMining: Number(result.mining ?? 0),
+      miningStartedAt: Number(result.miningStartedAt ?? state.miningStartedAt ?? now),
+      miningCapAt: Number(result.miningCapAt ?? state.miningCapAt ?? (now + 8 * 60 * 60 * 1000))
+    };
+
+    liveMiningSnapshot = Number(state.mining || 0);
+    liveMiningSnapshotAt = Date.now();
+    miningStarted = Number(state.miningStartedAt || Date.now());
+    lastStateSyncAt = Date.now();
+    render();
+
+  }catch(error){
+    // Jika server gagal, kembalikan UI ke kondisi sebelum claim.
+    state = previousState;
+    liveMiningSnapshot = previousLiveMiningSnapshot;
+    liveMiningSnapshotAt = previousLiveMiningSnapshotAt;
+    miningStarted = previousMiningStarted;
+    render();
+    toast(error?.message || "Claim mining gagal.");
+  }finally{
+    btn.disabled = false;
+    btn.innerHTML = "❯ &nbsp; CLAIM";
+  }
+}
+
+
+/* ================= DAILY ================= */
+
+function openDaily(){
+
+  document
+    .getElementById(
+      "dailyModal"
+    )
+    .classList.add(
+      "show"
+    );
+
+}
+
+
+function closeDaily(){
+
+  document
+    .getElementById(
+      "dailyModal"
+    )
+    .classList.remove(
+      "show"
+    );
+
+}
+
+
+async function claimDaily(){
+
+  try{
+
+    const result =
+      await api(
+        "/api/spin",
+        {
+          method:"POST"
+        }
+      );
+
+
+    const reward =
+      Number(
+        result.reward ??
+        result.amount ??
+        10
+      );
+
+    const rarity =
+      String(result.rarity || "COMMON");
+
+    const resultBox =
+      document.getElementById("dailyDropResult");
+
+    if(resultBox){
+      resultBox.innerHTML =
+        `<span class="gold">${rarity}</span><br>` +
+        `<b style="font-size:20px">+${number(reward,0)} JASLIN</b>`;
+    }
+
+    playClaimSound();
+
+    toast(
+      rarity +
+      " • +" +
+      number(reward, 0) +
+      " JASLIN"
+    );
+
+    await loadState();
+
+  }
+
+  catch(error){
+
+    toast(
+      error.message
+    );
+
+  }
+
+}
+
+
+
+/* ================= HEADER TON WALLET ================= */
+
+function updateHeaderWalletButton(){
+  const btn = document.getElementById("headerWalletBtn");
+  const label = document.getElementById("headerWalletText");
+
+  if(!btn || !label) return;
+
+  if(connectedTonAddress){
+    btn.classList.add("connected");
+    label.textContent = "WALLET";
+    btn.title = "TON Wallet connected";
+  }else{
+    btn.classList.remove("connected");
+    label.textContent = "CONNECT";
+    btn.title = "Connect TON Wallet";
+  }
+
+  updateWalletQuickModal();
+}
+
+function headerWalletAction(){
+  openWalletQuick();
+}
+
+function openWalletQuick(){
+  const modal = document.getElementById("walletQuickModal");
+  if(!modal) return;
+
+  updateWalletQuickModal();
+  modal.classList.add("show");
+}
+
+function closeWalletQuick(){
+  document.getElementById("walletQuickModal")?.classList.remove("show");
+}
+
+function walletQuickBackdrop(event){
+  if(event.target?.id === "walletQuickModal"){
+    closeWalletQuick();
+  }
+}
+
+function updateWalletQuickModal(){
+  const disconnected = document.getElementById("walletQuickDisconnected");
+  const connected = document.getElementById("walletQuickConnected");
+  const address = document.getElementById("walletQuickAddress");
+
+  if(!disconnected || !connected) return;
+
+  if(connectedTonAddress){
+    disconnected.style.display = "none";
+    connected.style.display = "block";
+    if(address) address.textContent = shortTonAddress(connectedTonAddress);
+  }else{
+    disconnected.style.display = "block";
+    connected.style.display = "none";
+  }
+}
+
+async function connectWalletFromQuick(){
+  closeWalletQuick();
+
+  try{
+    if(!tonConnectUI){
+      await initTonConnect();
+    }
+
+    if(tonConnectUI?.openModal){
+      tonConnectUI.openModal();
+      return;
+    }
+  }catch(error){
+    console.error(
+      "TON wallet connect error:",
+      error
+    );
+  }
+
+  toast("TON Wallet belum siap. Coba lagi.");
+  haptic("error");
+}
+
+async function disconnectWalletFromQuick(){
+  await disconnectTonWallet();
+  updateHeaderWalletButton();
+  updateWalletQuickModal();
+}
+
+/* ================= TON CONNECT ================= */
+
+function shortTonAddress(address){
+
+  if(!address){
+    return "";
+  }
+
+
+  return (
+    address.slice(0,6) +
+    "..." +
+    address.slice(-6)
+  );
+
+}
+
+
+function loadTonConnectLibrary(){
+  if(window.TON_CONNECT_UI){
+    return Promise.resolve(true);
+  }
+
+  if(tonConnectLoadPromise){
+    return tonConnectLoadPromise;
+  }
+
+  tonConnectLoadPromise = new Promise((resolve, reject)=>{
+    const script = document.createElement("script");
+
+    script.src =
+      "https://unpkg.com/@tonconnect/ui@3.0.2/dist/tonconnect-ui.min.js";
+
+    script.async = true;
+
+    script.onload = ()=>resolve(true);
+    script.onerror = ()=>reject(
+      new Error("TON Connect library gagal dimuat.")
+    );
+
+    document.head.appendChild(script);
+  });
+
+  return tonConnectLoadPromise;
+}
+
+
+
+async function prepareTonProofRequest(force = false){
+  if(!tonConnectUI) return "";
+
+  const fresh =
+    tonProofPayload &&
+    (Date.now() - tonProofPreparedAt) < (4 * 60 * 1000);
+
+  if(fresh && !force){
+    return tonProofPayload;
+  }
+
+  tonConnectUI.setConnectRequestParameters({
+    state:"loading"
+  });
+
+  try{
+    const data = await api("/api/ton-proof/payload", {
+      method:"POST",
+      body:"{}"
+    });
+
+    tonProofPayload = String(data?.payload || "");
+    tonProofPreparedAt = Date.now();
+
+    if(!tonProofPayload){
+      throw new Error("Payload verifikasi wallet kosong.");
+    }
+
+    tonConnectUI.setConnectRequestParameters({
+      state:"ready",
+      value:{
+        tonProof:tonProofPayload
+      }
+    });
+
+    return tonProofPayload;
+  }catch(error){
+    tonConnectUI.setConnectRequestParameters(null);
+    throw error;
+  }
+}
+
+async function verifyConnectedTonWallet(wallet){
+  const address = String(wallet?.account?.address || "");
+  const chain = String(wallet?.account?.chain || "");
+  const publicKey = String(wallet?.account?.publicKey || "");
+  const walletStateInit = String(wallet?.account?.walletStateInit || "");
+  const tonProofItem = wallet?.connectItems?.tonProof;
+
+  // Restored TON Connect sessions may not include a new proof.
+  // Ask the backend to compare canonical TON addresses and confirm that this
+  // exact wallet was already proof-verified for this Telegram account.
+  if(!tonProofItem || !("proof" in tonProofItem)){
+    const status = await api("/api/ton-proof/status", {
+      method:"POST",
+      body:JSON.stringify({
+        address
+      })
+    });
+
+    if(status?.verified){
+      if(state?.user){
+        state.user.wallet = status.wallet || address;
+        state.user.walletVerifiedAt =
+          Number(status.walletVerifiedAt || 0);
+      }
+
+      return status;
+    }
+
+    throw new Error(
+      "Wallet belum terverifikasi. Disconnect lalu CONNECT WALLET kembali."
+    );
+  }
+
+  const result = await api("/api/ton-proof/verify", {
+    method:"POST",
+    body:JSON.stringify({
+      account:{
+        address,
+        chain,
+        publicKey,
+        walletStateInit
+      },
+      proof:tonProofItem.proof
+    })
+  });
+
+  if(!result?.verified){
+    throw new Error("Verifikasi kepemilikan wallet gagal.");
+  }
+
+  if(state?.user){
+    state.user.wallet = result.wallet || address;
+    state.user.walletVerifiedAt = Number(result.walletVerifiedAt || Date.now());
+  }
+
+  return result;
+}
+
+
+async function initTonConnect(){
+
+  if(tonConnectUI){
+    return tonConnectUI;
+  }
+
+  try{
+
+    await loadTonConnectLibrary();
+
+    if(
+      typeof TON_CONNECT_UI ===
+      "undefined"
+    ){
+      throw new Error(
+        "TON Connect library tidak tersedia."
+      );
+    }
+
+    tonConnectUI =
+      new TON_CONNECT_UI.TonConnectUI({
+
+        manifestUrl:
+          window.location.origin +
+          "/tonconnect-manifest.json",
+
+        buttonRootId:
+          "ton-connect"
+
+      });
+
+
+    try{
+      await prepareTonProofRequest();
+    }catch(error){
+      console.warn("TON proof payload warning:", error?.message || error);
+    }
+
+    tonConnectUI.onStatusChange(
+      async wallet => {
+
+        if(
+          wallet?.account?.address
+        ){
+
+          try{
+            const verified =
+              await verifyConnectedTonWallet(wallet);
+
+            connectedTonAddress =
+              verified.wallet ||
+              wallet.account.address;
+
+            connectedTonVerified = true;
+
+            updateHeaderWalletButton();
+            updateWalletQuickModal();
+
+            const short =
+              shortTonAddress(
+                connectedTonAddress
+              );
+
+            const tonWalletInfo =
+              document.getElementById(
+                "tonWalletInfo"
+              );
+
+            if(tonWalletInfo){
+              tonWalletInfo.innerHTML =
+                `
+                <span class="green">
+                  ● VERIFIED WALLET
+                </span>
+
+                <br><br>
+
+                <b>${short}</b>
+                `;
+            }
+
+            const withdrawWalletInfo =
+              document.getElementById(
+                "withdrawWalletInfo"
+              );
+
+            if(withdrawWalletInfo){
+              withdrawWalletInfo.innerHTML =
+                `
+                Verified Destination:
+                <br>
+
+                <b class="gold">
+                  ${short}
+                </b>
+                `;
+            }
+
+            const disconnectTonBtn =
+              document.getElementById(
+                "disconnectTonBtn"
+              );
+
+            if(disconnectTonBtn){
+              disconnectTonBtn.style.display =
+                "block";
+            }
+
+            invalidateLevelQuoteCache();
+
+            if(state){
+              renderUpgrade(
+                Number(state.balance || 0),
+                true
+              );
+            }
+
+            haptic("success");
+
+          }catch(error){
+            connectedTonAddress = "";
+            connectedTonVerified = false;
+            updateHeaderWalletButton();
+            updateWalletQuickModal();
+
+            toast(
+              error?.message ||
+              "Wallet belum terverifikasi. Connect ulang sekali."
+            );
+            haptic("error");
+
+            // V6 intentionally invalidates legacy, unverified wallet sessions.
+            // Disconnect the stale SDK session so the next CONNECT opens a
+            // genuinely fresh proof-capable connection.
+            try{
+              await tonConnectUI?.disconnect();
+            }catch(e){}
+
+            try{
+              await prepareTonProofRequest(true);
+            }catch(e){}
+          }
+
+        }
+
+        else{
+
+          connectedTonAddress =
+            "";
+          connectedTonVerified = false;
+
+          updateHeaderWalletButton();
+          updateWalletQuickModal();
+
+          const tonWalletInfo =
+            document.getElementById(
+              "tonWalletInfo"
+            );
+
+          if(tonWalletInfo){
+            tonWalletInfo.textContent =
+              "Wallet belum terhubung.";
+          }
+
+          const withdrawWalletInfo =
+            document.getElementById(
+              "withdrawWalletInfo"
+            );
+
+          if(withdrawWalletInfo){
+            withdrawWalletInfo.textContent =
+              "Connect wallet terlebih dahulu.";
+          }
+
+          const disconnectTonBtn =
+            document.getElementById(
+              "disconnectTonBtn"
+            );
+
+          if(disconnectTonBtn){
+            disconnectTonBtn.style.display =
+              "none";
+          }
+
+        }
+
+      },
+
+      (error) => {
+        console.error(
+          "TON Connect status error:",
+          error
+        );
+
+        const message =
+          error?.message ||
+          "Koneksi wallet gagal.";
+
+        toast(message);
+        haptic("error");
+      }
+
+    );
+
+    try{
+      const restored =
+        await tonConnectUI.connectionRestored;
+
+      if(!restored && !tonConnectUI.wallet){
+        connectedTonAddress = "";
+        connectedTonVerified = false;
+        updateHeaderWalletButton();
+        updateWalletQuickModal();
+
+        try{
+          await prepareTonProofRequest(true);
+        }catch(e){}
+      }
+    }catch(error){
+      console.warn(
+        "TON connection restore warning:",
+        error?.message || error
+      );
+    }
+
+
+
+    return tonConnectUI;
+
+  }
+
+  catch(error){
+
+    console.error(
+      "TON Connect Error:",
+      error
+    );
+
+    tonConnectUI = null;
+    tonConnectLoadPromise = null;
+    return null;
+
+  }
+
+}
+
+
+/* SAVE CONNECTED TON ADDRESS */
+
+async function saveTonWallet(address){
+  // V6: a non-empty wallet is persisted only by /api/ton-proof/verify.
+  // Keeping this helper avoids legacy callers from silently writing unverified addresses.
+  if(!address) return;
+  return true;
+}
+
+
+/* DISCONNECT */
+
+async function disconnectTonWallet(){
+
+  if(!tonConnectUI){
+    return;
+  }
+
+
+  try{
+
+    await tonConnectUI.disconnect();
+
+    connectedTonAddress =
+      "";
+    connectedTonVerified = false;
+
+    try{
+      await api("/api/wallet", {
+        method:"POST",
+        body:JSON.stringify({ wallet:"" })
+      });
+
+      if(state?.user){
+        state.user.wallet = "";
+        state.user.walletVerifiedAt = 0;
+      }
+    }catch(e){
+      console.warn("Clear wallet warning:", e?.message || e);
+    }
+
+    try{
+      await prepareTonProofRequest(true);
+    }catch(e){}
+
+    updateHeaderWalletButton();
+    updateWalletQuickModal();
+
+    toast(
+      "TON Wallet disconnected."
+    );
+
+  }
+
+  catch(error){
+
+    console.error(error);
+
+    toast(
+      "Gagal disconnect wallet."
+    );
+
+  }
+
+}
+
+
+/* ================= WITHDRAW ================= */
+
+function updateWithdrawPreview() {
+  const input =
+    document.getElementById(
+      "withdrawAmount"
+    );
+
+  const requestEl =
+    document.getElementById(
+      "withdrawRequest"
+    );
+
+  const receiveEl =
+    document.getElementById(
+      "withdrawReceive"
+    );
+
+  if (!input || !requestEl || !receiveEl) {
+    return;
+  }
+
+  const amount =
+    Math.max(
+      0,
+      Number(input.value || 0)
+    );
+
+  const receive =
+    amount >= WITHDRAW_MIN_JASLIN
+      ? Math.max(
+          0,
+          amount - WITHDRAW_FEE_JASLIN
+        )
+      : 0;
+
+  requestEl.textContent =
+    number(amount, 0) +
+    " JASLIN";
+
+  receiveEl.textContent =
+    number(receive, 0) +
+    " JASLIN";
+}
+
+
+async function withdrawJaslin(){
+  const input = document.getElementById("withdrawAmount");
+  const btn = document.getElementById("withdrawSubmitBtn");
+  const amount = Math.floor(Number(input?.value || 0));
+
+  if(!connectedTonAddress || !connectedTonVerified){
+    toast("Connect dan verifikasi wallet terlebih dahulu.");
+    haptic("error");
+    return;
+  }
+  if(!amount || amount < WITHDRAW_MIN_JASLIN){
+    toast("Minimum withdrawal 2,000 JASLIN.");
+    return;
+  }
+
+  const balance = Number(state?.balance || 0);
+  if(amount > balance){
+    toast("Saldo game JASLIN tidak cukup.");
+    return;
+  }
+
+  const receive = amount - WITHDRAW_FEE_JASLIN;
+  const ok = window.confirm(
+    `Auto Withdraw ${number(amount,0)} JASLIN?\n` +
+    `Fee: 300 JASLIN\n` +
+    `Receive: ${number(receive,0)} JASLIN\n\n` +
+    `Token akan dikirim otomatis ke TON Wallet yang terhubung.`
+  );
+  if(!ok) return;
+
+  const requestId =
+    (globalThis.crypto?.randomUUID?.() ||
+     (`wd_${Date.now()}_${Math.random().toString(36).slice(2,10)}`))
+    .replaceAll("-", "_");
+
+  try{
+    if(btn){
+      btn.disabled = true;
+      btn.textContent = "SENDING JASLIN...";
+    }
+
+    const result = await api("/api/withdraw", {
+      method: "POST",
+      body: JSON.stringify({ amount, requestId })
+    });
+
+    const wdStatus = String(result?.withdrawalStatus || "");
+
+    if(wdStatus === "sent" || wdStatus === "confirmed"){
+      state = result;
+      if(input) input.value = "";
+      render();
+      playClaimSound();
+      toast(
+        "✓ Auto WD terkirim • " +
+        number(result.received || receive,0) +
+        " JASLIN"
+      );
+    }else{
+      // 202/review: do not replace the complete game state with a partial API response.
+      await loadState();
+      toast(
+        wdStatus === "review"
+          ? "Withdrawal sedang diperiksa jaringan. Jangan kirim ulang."
+          : "Withdrawal sedang diproses."
+      );
+    }
+
+    await loadProfileHistory(true);
+  }catch(error){
+    // The server refunds automatically only when it knows no on-chain broadcast happened.
+    await loadState().catch(()=>{});
+    await loadProfileHistory(true).catch(()=>{});
+    toast(error?.message || "Auto withdrawal gagal.");
+  }finally{
+    if(btn){
+      const enabled = Boolean(appConfig?.withdrawalsEnabled);
+      btn.disabled = !enabled;
+      btn.textContent = enabled ? "WITHDRAW JASLIN" : "WITHDRAWAL TEMPORARILY DISABLED";
+    }
+  }
+}
+
+
+/* ================= UPGRADE ================= */
+
+async function upgradeCore() {
+  const btn =
+    document.getElementById("upgradeCoreBtn");
+
+  const originalText =
+    btn?.textContent || "⚡ UPGRADE CORE";
+
+  if(btn?.disabled){
+    return;
+  }
+
+  try {
+    if(btn){
+      btn.disabled = true;
+      btn.textContent = "⚡ UPGRADING...";
+      btn.setAttribute("aria-busy","true");
+    }
+
+    haptic("light");
+
+    const response =
+      await fetch(
+        "/api/upgrade-core",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-telegram-init-data":
+              window.Telegram?.WebApp?.initData || ""
+          }
+        }
+      );
+
+    const data =
+      await response.json();
+
+    if (!response.ok) {
+      const missing =
+        Number(data?.missingJaslin || 0);
+
+      toast(
+        missing > 0
+          ? `Holding Power belum cukup. Kurang ${number(missing,0)} JASLIN.`
+          : (data?.error || "Upgrade Core gagal.")
+      );
+
+      haptic("error");
+      return;
+    }
+
+    /*
+     * V6.5 receives a lean upgrade response.
+     * Merge only fields that actually changed instead of replacing the whole
+     * game state and forcing several extra server/database reads.
+     */
+    if(!state){
+      state = {};
+    }
+
+    state.level =
+      Number(data.newLevel || state.level || 1);
+
+    if(
+      data.balance !== undefined &&
+      data.balance !== null
+    ){
+      state.balance =
+        Number(data.balance);
+    }
+
+    lastStateSyncAt = Date.now();
+    invalidateLevelQuoteCache();
+
+    // Immediate visual feedback: level changes now, without waiting for a
+    // second on-chain quote request.
+    const levelNode =
+      document.getElementById("level");
+
+    if(levelNode){
+      levelNode.textContent =
+        String(state.level);
+    }
+
+    render();
+
+    toast(
+      `Core berhasil naik ke Level ${data.newLevel}!`
+    );
+
+    playPulseSound(3);
+    haptic("success");
+
+    /*
+     * Refresh next-level Holding Power in the background.
+     * This no longer blocks the success animation/toast.
+     */
+    setTimeout(() => {
+      renderUpgrade(
+        Number(state?.balance || 0),
+        true
+      ).catch((error)=>{
+        console.warn(
+          "Background Core quote refresh:",
+          error
+        );
+      });
+    }, 80);
+
+  } catch (error) {
+    console.error(
+      "Upgrade Core error:",
+      error
+    );
+
+    toast(
+      "Upgrade Core gagal."
+    );
+    haptic("error");
+
+  } finally {
+    if(btn){
+      btn.disabled = false;
+      btn.textContent = originalText;
+      btn.removeAttribute("aria-busy");
+    }
+  }
+}
+
+
+/* ================= REFERRAL ================= */
+
+function shareReferral(){
+
+  const link =
+    state?.referralLink;
+
+
+  if(!link){
+
+    toast(
+      "Referral link belum tersedia."
+    );
+
+    return;
+
+  }
+
+
+  const url =
+    "https://t.me/share/url?url=" +
+    encodeURIComponent(
+      link
+    ) +
+    "&text=" +
+    encodeURIComponent(
+      "Join JASLIN Network ⚡"
+    );
+
+
+  if(tg){
+
+    tg.openTelegramLink(
+      url
+    );
+
+  }
+
+  else{
+
+    window.open(
+      url,
+      "_blank"
+    );
+
+  }
+
+}
+
+
+async function copyReferral(){
+
+  const link =
+    state?.referralLink;
+
+
+  if(!link){
+
+    toast(
+      "Referral link belum tersedia."
+    );
+
+    return;
+
+  }
+
+
+  try{
+
+    await navigator
+      .clipboard
+      .writeText(
+        link
+      );
+
+
+    toast(
+      "Referral link berhasil dicopy."
+    );
+
+  }
+
+  catch{
+
+    toast(
+      "Gagal copy referral."
+    );
+
+  }
+
+}
+
+
+async function loadReferrals(){
+  const list = document.getElementById("referralList");
+  const count = document.getElementById("referralListCount");
+  if(!list || !count) return;
+  try{
+    const data = await api("/api/referrals");
+    const referrals = Array.isArray(data?.referrals) ? data.referrals : [];
+    count.textContent = referrals.length + (referrals.length === 1 ? " USER" : " USERS");
+    if(!referrals.length){
+      list.innerHTML = '<div class="referral-empty">Belum ada referral yang bergabung.<br>Bagikan link kamu untuk membangun Core Network.</div>';
+      return;
+    }
+    list.innerHTML = referrals.map((ref) => {
+      const name = escapeHtml(ref.firstName || ref.username || "JASLIN User");
+      const username = ref.username ? "@" + escapeHtml(ref.username) : "Telegram user";
+      const online = ref.status === "online";
+      const initial = String(ref.firstName || ref.username || "J").trim().charAt(0).toUpperCase();
+      const lastSeen = Number(ref.lastSeenAt || 0);
+      const presenceLabel = online
+        ? "ACTIVE"
+        : (lastSeen ? "INACTIVE" : "INACTIVE");
+      return `<div class="referral-user"><div class="referral-avatar">${escapeHtml(initial)}</div><div class="referral-user-main"><div class="referral-user-name">${name}</div><div class="referral-user-handle">${username}</div></div><div class="presence ${online ? "online" : "offline"}">${presenceLabel}</div></div>`;
+    }).join("");
+  }catch(error){
+    console.error("Load referrals error:", error);
+    list.innerHTML = '<div class="referral-empty">Daftar referral belum bisa dimuat.</div>';
+  }
+}
+
+async function pingPresence(){
+  if(!tg?.initData) return;
+  try{
+    await api("/api/presence/ping", { method:"POST" });
+  }catch(error){
+    console.warn("Presence ping failed:", error);
+  }
+}
+
+async function claimReferralCommission(){
+  const button = document.getElementById("claimReferralCommissionBtn");
+  if(button?.disabled) return;
+  try{
+    if(button){ button.disabled = true; button.textContent = "CLAIMING..."; }
+    const data = await api("/api/referral-commission/claim", { method: "POST" });
+    state = data;
+    render();
+    await loadReferrals();
+    toast(`Komisi ${number(data.claimedReferralCommission || 0, 4)} JASLIN berhasil diclaim.`);
+  }catch(error){
+    console.error("Claim referral commission error:", error);
+    toast(error?.message || "Claim commission gagal.");
+  }finally{
+    if(button){ button.textContent = "CLAIM COMMISSION"; button.disabled = Number(state?.referralCommissionBalance || 0) <= 0; }
+  }
+}
+
+
+
+const SOCIAL_TASK_LINKS = {
+  x_follow: "https://x.com/JaslinGame",
+  x_like: "https://x.com/JaslinGame/status/2095592517043646787",
+  x_repost: "https://x.com/JaslinGame/status/2095592517043646787",
+  x_comment: "https://x.com/JaslinGame/status/2095592517043646787"
+};
+
+let xAccountState = {
+  connected: false,
+  username: "",
+  name: ""
+};
+
+let xVerificationState = {
+  follow: false,
+  like: false,
+  repost: false,
+  comment: false,
+  allVerified: false,
+  claimed: false,
+  reward: 500
+};
+
+function openExternalTask(url){
+  try{
+    if(tg?.openLink){
+      tg.openLink(url);
+    }else{
+      window.open(url, "_blank", "noopener,noreferrer");
+    }
+  }catch(e){
+    window.open(url, "_blank", "noopener,noreferrer");
+  }
+}
+
+function updateXPrimaryButton(){
+  const button = document.getElementById("xVerifyBtn");
+  if(!button) return;
+
+  if(xVerificationState.claimed){
+    button.disabled = true;
+    button.textContent = "✓ 500 JASLIN CLAIMED";
+    return;
+  }
+
+  button.disabled = false;
+  button.textContent = xVerificationState.allVerified
+    ? "CLAIM 500 JASLIN"
+    : "VERIFY X MISSIONS";
+}
+
+function renderXTasks(){
+  const box = document.getElementById("socialTasksList");
+  if(!box) return;
+
+  const tasks = [
+    { key:"follow", icon:"➕", title:"Follow @JaslinGame", reward:100, url:SOCIAL_TASK_LINKS.x_follow },
+    { key:"like", icon:"♥", title:"Like JASLIN Post", reward:100, url:SOCIAL_TASK_LINKS.x_like },
+    { key:"repost", icon:"↻", title:"Repost JASLIN Post", reward:150, url:SOCIAL_TASK_LINKS.x_repost },
+    { key:"comment", icon:"💬", title:"Comment on JASLIN Post", reward:150, url:SOCIAL_TASK_LINKS.x_comment }
+  ];
+
+  box.innerHTML = tasks.map(task => {
+    const verified = Boolean(xVerificationState?.[task.key]);
+    return `
+      <div class="task">
+        <div class="task-icon">${task.icon}</div>
+        <div class="task-info">
+          <div class="task-title">${escapeHtml(task.title)}</div>
+          <div class="task-reward">${verified ? "✓ VERIFIED" : "MISSION"} • +${task.reward} JASLIN</div>
+        </div>
+        <button class="mini-btn" onclick="openExternalTask('${task.url}')">
+          ${verified ? "OPEN" : "START"}
+        </button>
+      </div>`;
+  }).join("");
+
+  box.innerHTML += `
+    <div class="notice" style="margin-top:12px">
+      Reward bundle: Follow 100 + Like 100 + Repost 150 + Comment 150 = <strong>500 JASLIN</strong>.<br>
+      Reward hanya dapat diclaim satu kali setelah semua mission terverifikasi.
+    </div>`;
+
+  updateXPrimaryButton();
+}
+
+async function loadXStatus(){
+  const status = document.getElementById("xAccountStatus");
+  const button = document.getElementById("xConnectBtn");
+  const notice = document.getElementById("xVerifyNotice");
+
+  try{
+    const data = await api("/api/x/status");
+    xAccountState = {
+      connected: Boolean(data?.connected),
+      username: data?.username || "",
+      name: data?.name || ""
+    };
+
+    const v = data?.verification || {};
+    xVerificationState = {
+      follow: Boolean(v.follow),
+      like: Boolean(v.like),
+      repost: Boolean(v.repost),
+      comment: Boolean(v.comment),
+      allVerified: Boolean(v.allVerified),
+      claimed: Boolean(data?.claimed),
+      reward: Number(data?.reward || 500)
+    };
+
+    if(status){
+      status.textContent = xAccountState.connected
+        ? `Connected as @${xAccountState.username || "X user"}`
+        : "Not connected";
+    }
+
+    if(button){
+      button.textContent = xAccountState.connected ? "DISCONNECT" : "CONNECT X";
+      button.onclick = xAccountState.connected ? disconnectXAccount : connectXAccount;
+    }
+
+    renderXTasks();
+
+    if(notice){
+      const done = ["follow","like","repost","comment"].filter(k => xVerificationState[k]).length;
+      notice.textContent = xVerificationState.claimed
+        ? "✓ 500 JASLIN reward sudah diclaim."
+        : xVerificationState.allVerified
+          ? "✓ 4/4 X missions verified. Claim 500 JASLIN sekarang."
+          : `${done}/4 X missions verified • Complete all missions to unlock 500 JASLIN.`;
+    }
+  }catch(error){
+    console.error("Load X status error:", error);
+    if(status) status.textContent = "Unable to read X connection";
+  }
+}
+
+async function connectXAccount(){
+  try{
+    const data = await api("/api/x/connect");
+    if(!data?.authorizationUrl){
+      throw new Error("X authorization URL tidak tersedia.");
+    }
+    openExternalTask(data.authorizationUrl);
+  }catch(error){
+    toast(error?.message || "Connect X gagal.");
+  }
+}
+
+async function disconnectXAccount(){
+  try{
+    await api("/api/x/disconnect", { method:"POST" });
+    xAccountState = { connected:false, username:"", name:"" };
+    xVerificationState = { follow:false, like:false, repost:false, comment:false, allVerified:false, claimed:false, reward:500 };
+    renderXTasks();
+    await loadXStatus();
+    toast("Akun X diputus dari JASLIN.");
+  }catch(error){
+    toast(error?.message || "Disconnect X gagal.");
+  }
+}
+
+async function verifyXTasks(){
+  const button = document.getElementById("xVerifyBtn");
+  const notice = document.getElementById("xVerifyNotice");
+
+  if(!xAccountState.connected){
+    toast("Connect akun X terlebih dahulu.");
+    return;
+  }
+
+  try{
+    if(button){
+      button.disabled = true;
+      button.textContent = "VERIFYING...";
+    }
+
+    const data = await api("/api/social-tasks/verify", {
+      method:"POST",
+      body: JSON.stringify({ platform:"x" })
+    });
+
+    const v = data?.verification || {};
+    xVerificationState = {
+      follow: Boolean(v.follow),
+      like: Boolean(v.like),
+      repost: Boolean(v.repost),
+      comment: Boolean(v.comment),
+      allVerified: Boolean(v.allVerified),
+      claimed: Boolean(data?.claimed),
+      reward: Number(data?.reward || 500)
+    };
+
+    renderXTasks();
+
+    const done = ["follow","like","repost","comment"].filter(k => xVerificationState[k]).length;
+    if(notice){
+      notice.textContent = xVerificationState.allVerified
+        ? (xVerificationState.claimed
+            ? "✓ All X missions verified • 500 JASLIN already claimed."
+            : "✓ All X missions verified • 500 JASLIN ready to claim.")
+        : `${done}/4 X missions verified. Complete the remaining mission(s), then verify again.`;
+    }
+
+    if(xVerificationState.allVerified){
+      playClaimSound();
+      toast(xVerificationState.claimed
+        ? "Semua X mission sudah selesai."
+        : "4/4 verified • 500 JASLIN siap diclaim.");
+    }else{
+      toast(`${done}/4 X mission terverifikasi.`);
+    }
+  }catch(error){
+    console.error("Verify X tasks error:", error);
+    toast(error?.message || "Verifikasi X gagal.");
+    if(notice) notice.textContent = error?.message || "X verification failed.";
+  }finally{
+    updateXPrimaryButton();
+  }
+}
+
+async function claimXReward(){
+  const button = document.getElementById("xVerifyBtn");
+  const notice = document.getElementById("xVerifyNotice");
+
+  if(!xVerificationState.allVerified){
+    toast("Verifikasi semua X mission terlebih dahulu.");
+    return;
+  }
+
+  if(xVerificationState.claimed){
+    toast("Reward X sudah pernah diclaim.");
+    return;
+  }
+
+  try{
+    if(button){
+      button.disabled = true;
+      button.textContent = "CLAIMING 500 JASLIN...";
+    }
+
+    const data = await api("/api/social-tasks/claim-x", { method:"POST" });
+
+    xVerificationState.claimed = Boolean(data?.claimed);
+    xVerificationState.reward = Number(data?.reward || 500);
+
+    if(data?.state){
+      state = data.state;
+      lastStateSyncAt = Date.now();
+      render();
+    }else{
+      await loadState();
+    }
+
+    renderXTasks();
+    playClaimSound();
+
+    if(notice){
+      notice.textContent = data?.alreadyClaimed
+        ? "✓ Reward 500 JASLIN sudah pernah diclaim."
+        : "✓ 500 JASLIN berhasil masuk ke balance JASLIN.";
+    }
+
+    toast(data?.alreadyClaimed
+      ? "Reward X sudah pernah diclaim."
+      : "+500 JASLIN berhasil diclaim!");
+  }catch(error){
+    console.error("Claim X reward error:", error);
+    toast(error?.message || "Claim 500 JASLIN gagal.");
+    if(notice) notice.textContent = error?.message || "Claim X reward failed.";
+  }finally{
+    updateXPrimaryButton();
+  }
+}
+
+function handleXPrimaryAction(){
+  if(xVerificationState.claimed){
+    toast("Reward X sudah pernah diclaim.");
+    return;
+  }
+
+  if(xVerificationState.allVerified){
+    claimXReward();
+    return;
+  }
+
+  verifyXTasks();
+}
+
+async function loadSocialTasks(){
+  renderXTasks();
+  await loadXStatus();
+}
+
+// OAuth X can return through Telegram Mini App start_param or legacy ?x=connected.
+try{
+  const params = new URLSearchParams(window.location.search);
+  const startParam = String(tg?.initDataUnsafe?.start_param || "");
+  const xConnectedReturn = params.get("x") === "connected" || startParam === "x_connected";
+
+  if(xConnectedReturn){
+    setTimeout(async ()=>{
+      await loadXStatus();
+      renderXTasks();
+      toast("Akun X berhasil terhubung.");
+      try{
+        const clean = new URL(window.location.href);
+        clean.searchParams.delete("x");
+        window.history.replaceState({}, "", clean.pathname + clean.search + clean.hash);
+      }catch(e){}
+    }, 400);
+  }
+}catch(e){}
+
+
+function comingSoon(){
+
+  toast(
+    "Task segera tersedia."
+  );
+
+}
+
+
+/* ================= START ================= */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  ()=>{
+
+    restoreAudioSettings();
+
+    // Login/render utama jalan dulu. TON Connect dimuat paralel di background.
+    start();
+
+    setTimeout(
+      ()=>initTonConnect(),
+      0
+    );
+
+    updateTimer();
+
+
+    setInterval(
+      updateTimer,
+      1000
+    );
+
+    setInterval(
+      updateLiveMiningCounter,
+      500
+    );
+
+
+    setInterval(
+      ()=>{
+
+        if(
+          state &&
+          document.visibilityState === "visible"
+        ){
+          loadState();
+        }
+
+      },
+      60000
+    );
+
+    // Lightweight heartbeat keeps Friends ACTIVE / INACTIVE accurate
+    // without reloading the full game state.
+    setInterval(
+      ()=>{
+        if(document.visibilityState === "visible" && state){
+          pingPresence();
+        }
+      },
+      30000
+    );
+
+    // Refresh referral list while the Friends page is open.
+    setInterval(
+      ()=>{
+        const friendsPage = document.getElementById("page-friends");
+        if(
+          document.visibilityState === "visible" &&
+          friendsPage?.classList.contains("active")
+        ){
+          loadReferrals();
+        }
+      },
+      15000
+    );
+
+    document.addEventListener(
+      "visibilitychange",
+      ()=>{
+        if(
+          document.visibilityState === "visible" &&
+          state &&
+          Date.now() - lastStateSyncAt > 30000
+        ){
+          loadState();
+        }
+      }
+    );
+
+    setInterval(loadPublicConfig, 60000);
+
+  }
+);
+
+</script>
+
+
+<div id="walletQuickModal" class="wallet-quick-modal" onclick="walletQuickBackdrop(event)">
+  <div class="wallet-quick-card" role="dialog" aria-modal="true" aria-labelledby="walletQuickTitle">
+    <button class="wallet-quick-close" onclick="closeWalletQuick()">×</button>
+
+    <div class="wallet-quick-icon">
+      <svg viewBox="0 0 24 24" width="28" height="28" fill="none">
+        <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H18a2 2 0 0 1 2 2v2H7a3 3 0 0 0 0 6h13v2a2 2 0 0 1-2 2H6.5A2.5 2.5 0 0 1 4 16.5v-9Z" stroke="currentColor" stroke-width="1.8"/>
+        <path d="M7 9h13v6H7a3 3 0 1 1 0-6Z" stroke="currentColor" stroke-width="1.8"/>
+        <circle cx="16.5" cy="12" r="1" fill="currentColor"/>
+      </svg>
+    </div>
+
+    <div id="walletQuickDisconnected">
+      <div id="walletQuickTitle" class="wallet-quick-title">MASUKAN WALLET</div>
+      <div class="wallet-quick-sub">Hubungkan dan verifikasi wallet untuk Holding Power dan withdrawal.</div>
+
+      <button class="wallet-quick-connect" onclick="connectWalletFromQuick()">
+        CONNECT WALLET
+      </button>
+    </div>
+
+    <div id="walletQuickConnected" style="display:none">
+      <div class="wallet-quick-title">WALLET CONNECTED</div>
+      <div class="wallet-quick-sub">TON Wallet aktif</div>
+
+      <div id="walletQuickAddress" class="wallet-quick-address">-</div>
+
+      <button class="wallet-quick-disconnect" onclick="disconnectWalletFromQuick()">
+        Disconnect
+      </button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
